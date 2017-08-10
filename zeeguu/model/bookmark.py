@@ -16,6 +16,7 @@ from zeeguu.model.text import Text
 from zeeguu.model.url import Url
 from zeeguu.model.user import User
 from zeeguu.model.user_word import UserWord
+from zeeguu.util.timer_logging_decorator import time_this
 
 db = zeeguu.db
 
@@ -130,6 +131,7 @@ class Bookmark(db.Model):
             (len(self.origin.word) < 3)
         )
 
+    @time_this
     def good_for_study(self):
 
         last_outcome = self.latest_exercise_outcome()
