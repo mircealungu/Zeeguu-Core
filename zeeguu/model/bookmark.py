@@ -155,10 +155,26 @@ class Bookmark(db.Model):
     @time_this
     def _fit_for_study(self):
 
+        """
+
+            A bookmark is good for study if it respects several
+            properties:
+
+            - has not been learned already
+            - is a quality bookmark
+            - there's no feedback from the user that prevents us from showing it
+            - the last outcome is not "too easy"
+            
+        :return:
+        """
+
         last_outcome = self.latest_exercise_outcome()
 
         if not last_outcome:
             return self.quality_bookmark() and not self.events_prevent_further_study()
+
+        if self.is_learned_based_on_exercise_outcomes():
+            return False
 
         return (self.quality_bookmark and
                 not last_outcome.too_easy() and
@@ -313,8 +329,8 @@ class Bookmark(db.Model):
         else:
             return None
 
-    def check_if_learned_based_on_exercise_outcomes(self,
-                                                    add_to_result_time=False):
+    def is_learned_based_on_exercise_outcomes(self,
+                                              add_to_result_time=False):
         """
         TODO: This should replace check_is_latest_outcome in the future...
 
@@ -372,7 +388,7 @@ class Bookmark(db.Model):
         """
 
         # The first case is when we have an exercise outcome set to Too EASY
-        learned, time = self.check_if_learned_based_on_exercise_outcomes(True)
+        learned, time = self.is_learned_based_on_exercise_outcomes(True)
         if learned:
             if also_return_time:
                 return True, time
