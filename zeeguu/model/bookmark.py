@@ -373,8 +373,12 @@ class Bookmark(db.Model):
         :return:
         """
         is_learned, learned_time = self.is_learned_based_on_exercise_outcomes(True)
-        self.learned_time = learned_time
-        session.add(self)
+        if is_learned:
+            print("bookmark learned!")
+            self.learned_time = learned_time
+            session.add(self)
+        else:
+            print("bookmark not learned yet...")
 
 
     def events_indicate_its_learned(self):
