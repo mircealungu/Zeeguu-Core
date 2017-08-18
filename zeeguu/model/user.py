@@ -44,7 +44,6 @@ class User(db.Model):
     cohort_id = Column(Integer, ForeignKey(Cohort.id))
     cohort = relationship(Cohort)
 
-
     def __init__(self, email, name, password, learned_language=None, native_language=None, invitation_code=None):
         self.email = email
         self.name = name
@@ -221,7 +220,6 @@ class User(db.Model):
                 urls_by_date.setdefault(date, set()).add(bookmark.text.url)
                 texts_by_url.setdefault(bookmark.text.url, set()).add(bookmark.text)
         return most_recent_n_days, urls_by_date, texts_by_url
-
 
     def bookmarks_to_study(self, bookmark_count=10):
         """

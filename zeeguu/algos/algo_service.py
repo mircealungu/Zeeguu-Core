@@ -1,5 +1,6 @@
 import itertools
 import traceback
+from timeit import timeit
 
 import zeeguu
 
@@ -48,7 +49,9 @@ class AlgoService:
         db.session.commit()
 
     @classmethod
+    @timeit
     def update_bookmark_priority(cls, db, user):
+
         try:
             bookmarks_for_user = user.all_bookmarks()
             if len(bookmarks_for_user) == 0:
