@@ -148,7 +148,7 @@ class Bookmark(db.Model):
         :param session:
         :return:
         """
-        self.fit_for_study = self._fit_for_study
+        self.fit_for_study = self._fit_for_study()
         session.add(self)
 
     @time_this
