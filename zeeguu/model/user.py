@@ -168,7 +168,7 @@ class User(db.Model):
         from zeeguu.model.bookmark import Bookmark
         return Bookmark.query. \
             filter_by(user_id=self.id). \
-            filter(fit_for_study=True).all()
+            filter_by(fit_for_study=True).all()
 
     def bookmarks_chronologically(self):
         from zeeguu.model.bookmark import Bookmark
