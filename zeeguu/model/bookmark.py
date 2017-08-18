@@ -92,7 +92,7 @@ class Bookmark(db.Model):
         try:
             return self.origin.word.lower() == self.translation.word.lower()
         except:
-            print ("missing word for bookmark with id {0}".format(self.id))
+            print("missing word for bookmark with id {0}".format(self.id))
             return False
 
     def is_subset_of_larger_bookmark(self):
@@ -138,9 +138,6 @@ class Bookmark(db.Model):
             # very short words are also not great quality
             (len(self.origin.word) < 3)
         )
-
-        if bad_quality:
-            zeeguu.log("bad quality bookmark")
 
         return bad_quality
 

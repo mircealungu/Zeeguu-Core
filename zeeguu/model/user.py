@@ -164,6 +164,12 @@ class User(db.Model):
             filter(Bookmark.time <= before_date). \
             order_by(Bookmark.time.desc()).all()
 
+    def all_bookmarks_fit_for_study(self):
+        from zeeguu.model.bookmark import Bookmark
+        return Bookmark.query. \
+            filter_by(user_id=self.id). \
+            filter(fit_for_study=True).all()
+
     def bookmarks_chronologically(self):
         from zeeguu.model.bookmark import Bookmark
         return Bookmark.query.filter_by(user_id=self.id).order_by(
