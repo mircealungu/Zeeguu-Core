@@ -93,6 +93,7 @@ class Bookmark(db.Model):
             return self.origin.word.lower() == self.translation.word.lower()
         except:
             print ("missing word for bookmark with id {0}".format(self.id))
+            return False
 
     def is_subset_of_larger_bookmark(self):
         """
