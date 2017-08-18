@@ -58,6 +58,8 @@ class Bookmark(db.Model):
 
     fit_for_study = db.Column(db.Boolean)
 
+    learned_time = db.Column(db.DateTime)
+
     def __init__(self, origin: UserWord, translation: UserWord, user: 'User',
                  text: str, time: datetime):
         self.origin = origin
@@ -164,7 +166,7 @@ class Bookmark(db.Model):
             - is a quality bookmark
             - there's no feedback from the user that prevents us from showing it
             - the last outcome is not "too easy"
-            
+
         :return:
         """
 
@@ -330,11 +332,11 @@ class Bookmark(db.Model):
             return None
 
     def is_learned_based_on_exercise_outcomes(self,
-                                              add_to_result_time=False):
+                                              also_return_time=False):
         """
         TODO: This should replace check_is_latest_outcome in the future...
 
-        :param add_to_result_time:
+        :param also_return_time:
         :return:
         """
         sorted_exercise_log_by_latest = sorted(self.exercise_log,
@@ -346,7 +348,7 @@ class Bookmark(db.Model):
 
             # If last outcome is TOO EASY we know it
             if last_exercise.outcome.outcome == ExerciseOutcome.TOO_EASY:
-                if add_to_result_time:
+                if also_return_time:
                     return True, last_exercise.time
                 return True
 
@@ -359,9 +361,21 @@ class Bookmark(db.Model):
                        sorted_exercise_log_by_latest[0:CORRECTS_IN_A_ROW - 1]):
                     return True, last_exercise.time
 
-        if add_to_result_time:
+        if also_return_time:
             return False, None
         return False
+
+    def update_learned_status(self, session):
+        """
+            To call when something happened to the bookmark,
+             that requires it's "learned" status to be updated.
+        :param session:
+        :return:
+        """
+        is_learned, learned_time = self.is_learned_based_on_exercise_outcomes(True)
+        self.learned_time = learned_time
+        session.add(self)
+
 
     def events_indicate_its_learned(self):
         from zeeguu.model.smartwatch.watch_interaction_event import \
