@@ -150,7 +150,6 @@ class Bookmark(db.Model):
         """
         self.fit_for_study = self._fit_for_study
         session.add(self)
-        session.commit()
 
     @time_this
     def _fit_for_study(self):
