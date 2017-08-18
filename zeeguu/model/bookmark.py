@@ -135,10 +135,15 @@ class Bookmark(db.Model):
             (self.is_subset_of_larger_bookmark()) or
 
             # too long for our exercises
-            (self.origin_word_count() > 4) or
+            (self.origin_word_count() > 3) or
 
             # very short words are also not great quality
             (len(self.origin.word) < 3)
+
+            or
+            # a too long context is not good either
+            self.context_word_count() > 20
+
         )
 
         return bad_quality
@@ -163,7 +168,7 @@ class Bookmark(db.Model):
             properties:
 
             - has not been learned already
-            - is a quality bookmark
+            - is a quality bookmark (which includes those starred by the user)
             - there's no feedback from the user that prevents us from showing it
             - the last outcome is not "too easy"
 
@@ -205,6 +210,10 @@ class Bookmark(db.Model):
                 result.append(word)
 
         return result
+
+    def context_word_count(self):
+        words = self.split_words_from_context()
+        return len(words)
 
     def json_serializable_dict(self, with_context=True):
         try:
