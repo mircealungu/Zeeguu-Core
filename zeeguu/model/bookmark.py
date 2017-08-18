@@ -109,6 +109,7 @@ class Bookmark(db.Model):
 
         # If it's starred by the user, then it's good quality!
         if self.starred:
+            zeeguu.log("starred -> good quality")
             return True
 
         # Else it just should not be bad quality!
@@ -116,7 +117,7 @@ class Bookmark(db.Model):
 
     def bad_quality_bookmark(self):
         # following are reasons that disqualify a bookmark from
-        return (
+        bad_quality = (
 
             # translation is same as origin
             self.origin_same_as_translation() or
@@ -130,6 +131,11 @@ class Bookmark(db.Model):
             # very short words are also not great quality
             (len(self.origin.word) < 3)
         )
+
+        if bad_quality:
+            zeeguu.log("bad quality bookmark")
+
+        return bad_quality
 
     @time_this
     def good_for_study(self):
