@@ -89,7 +89,10 @@ class Bookmark(db.Model):
         return any([x.prevents_further_study() for x in events_for_self])
 
     def origin_same_as_translation(self):
-        return self.origin.word.lower() == self.translation.word.lower()
+        try:
+            return self.origin.word.lower() == self.translation.word.lower()
+        except:
+            print ("missing word for bookmark with id {0}".format(self.id))
 
     def is_subset_of_larger_bookmark(self):
         """
