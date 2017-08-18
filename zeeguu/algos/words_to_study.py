@@ -17,7 +17,7 @@ def bookmarks_to_study(user, desired_bookmarks_count=-1):
 
     bookmarks = []
     for each in _bookmarks:
-        if each.good_for_study():
+        if each.fit_for_study:
             bookmarks.append(each)
         else:
             zeeguu.log("rejected bookmark {0} since it is not good for study: {1}".format(each.id, each.origin.word))

@@ -56,6 +56,8 @@ class Bookmark(db.Model):
 
     starred = db.Column(db.Boolean)
 
+    fit_for_study = db.Column(db.Boolean)
+
     def __init__(self, origin: UserWord, translation: UserWord, user: 'User',
                  text: str, time: datetime):
         self.origin = origin
@@ -64,6 +66,7 @@ class Bookmark(db.Model):
         self.time = time
         self.text = text
         self.stared = False
+        self.fit_for_study = self._fit_for_study()
 
     def __repr__(self):
         return "Bookmark[{3} of {4}: {0}->{1} in '{2}...']\n". \
@@ -137,8 +140,20 @@ class Bookmark(db.Model):
 
         return bad_quality
 
+    def update_fit_for_study(self, session):
+        """
+            Called when something happened to the bookmark,
+             that requires it's "fit for study" status to be
+              updated.
+        :param session:
+        :return:
+        """
+        self.fit_for_study = self._fit_for_study
+        session.add(self)
+        session.commit()
+
     @time_this
-    def good_for_study(self):
+    def _fit_for_study(self):
 
         last_outcome = self.latest_exercise_outcome()
 
