@@ -52,6 +52,7 @@ class AlgoService:
     def update_bookmark_priority(cls, db, user):
 
         try:
+            print ("in update bookmark priority...")
             bookmarks_for_user = user.all_bookmarks()
             if len(bookmarks_for_user) == 0:
                 return
