@@ -20,7 +20,7 @@ class Text(db.Model):
 
     content_hash = db.Column(db.String(255))
 
-    language_id = db.Column(db.String(2), db.ForeignKey(Language.id))
+    language_id = db.Column(db.Integer, db.ForeignKey(Language.id))
     language = db.relationship(Language)
 
     url_id = db.Column(db.Integer, db.ForeignKey(Url.id))

@@ -21,7 +21,7 @@ class RSSFeed(db.Model):
     title = db.Column(db.String(2083))
     description = db.Column(db.String(2083))
 
-    language_id = db.Column(db.String(2), db.ForeignKey(Language.id))
+    language_id = db.Column(db.Integer, db.ForeignKey(Language.id))
     language = db.relationship(Language)
 
     url_id = db.Column(db.Integer, db.ForeignKey(Url.id))
@@ -47,7 +47,7 @@ class RSSFeed(db.Model):
             title=self.title,
             url=self.url.as_string(),
             description=self.description,
-            language=self.language.id,
+            language=self.language.code,
             image_url=image_url
         )
 
@@ -122,6 +122,7 @@ class RSSFeed(db.Model):
             session.commit()
             return new
 
-    @classmethod
-    def find_for_language_id(cls, language_id):
-        return cls.query.filter(cls.language_id == language_id).group_by(cls.title).all()
+    # this seems to not be used by anybody
+    # @classmethod
+    # def find_for_language_id(cls, language_id):
+    #     return cls.query.filter(cls.language_id == language_id).group_by(cls.title).all()

@@ -13,7 +13,7 @@ class SimpleKnowledgeEstimator(object):
         if lang_code:
             self.lang_code = lang_code
         else:
-            self.lang_code = self.user.learned_language_id
+            self.lang_code = self.user.learned_language.code
         self.language = Language.find(self.lang_code)
 
     def get_known_bookmarks(self):

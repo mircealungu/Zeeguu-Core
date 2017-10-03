@@ -56,6 +56,10 @@ class Bookmark(db.Model):
 
     starred = db.Column(db.Boolean)
 
+    fit_for_study = db.Column(db.Boolean)
+
+    learned_time = db.Column(db.DateTime)
+
     def __init__(self, origin: UserWord, translation: UserWord, user: 'User',
                  text: str, time: datetime):
         self.origin = origin
@@ -64,6 +68,7 @@ class Bookmark(db.Model):
         self.time = time
         self.text = text
         self.stared = False
+        self.fit_for_study = self._fit_for_study()
 
     def __repr__(self):
         return "Bookmark[{3} of {4}: {0}->{1} in '{2}...']\n". \
@@ -86,7 +91,11 @@ class Bookmark(db.Model):
         return any([x.prevents_further_study() for x in events_for_self])
 
     def origin_same_as_translation(self):
-        return self.origin.word.lower() == self.translation.word.lower()
+        try:
+            return self.origin.word.lower() == self.translation.word.lower()
+        except:
+            print("missing word for bookmark with id {0}".format(self.id))
+            return False
 
     def is_subset_of_larger_bookmark(self):
         """
@@ -109,6 +118,7 @@ class Bookmark(db.Model):
 
         # If it's starred by the user, then it's good quality!
         if self.starred:
+            zeeguu.log("starred -> good quality")
             return True
 
         # Else it just should not be bad quality!
@@ -116,7 +126,7 @@ class Bookmark(db.Model):
 
     def bad_quality_bookmark(self):
         # following are reasons that disqualify a bookmark from
-        return (
+        bad_quality = (
 
             # translation is same as origin
             self.origin_same_as_translation() or
@@ -125,19 +135,53 @@ class Bookmark(db.Model):
             (self.is_subset_of_larger_bookmark()) or
 
             # too long for our exercises
-            (self.origin_word_count() > 4) or
+            (self.origin_word_count() > 3) or
 
             # very short words are also not great quality
             (len(self.origin.word) < 3)
+
+            or
+            # a too long context is not good either
+            self.context_word_count() > 20
+
         )
 
+        return bad_quality
+
+    def update_fit_for_study(self, session):
+        """
+            Called when something happened to the bookmark,
+             that requires it's "fit for study" status to be
+              updated.
+        :param session:
+        :return:
+        """
+        self.fit_for_study = self._fit_for_study()
+        session.add(self)
+
     @time_this
-    def good_for_study(self):
+    def _fit_for_study(self):
+
+        """
+
+            A bookmark is good for study if it respects several
+            properties:
+
+            - has not been learned already
+            - is a quality bookmark (which includes those starred by the user)
+            - there's no feedback from the user that prevents us from showing it
+            - the last outcome is not "too easy"
+
+        :return:
+        """
 
         last_outcome = self.latest_exercise_outcome()
 
         if not last_outcome:
             return self.quality_bookmark() and not self.events_prevent_further_study()
+
+        if self.is_learned_based_on_exercise_outcomes():
+            return False
 
         return (self.quality_bookmark and
                 not last_outcome.too_easy() and
@@ -167,6 +211,10 @@ class Bookmark(db.Model):
 
         return result
 
+    def context_word_count(self):
+        words = self.split_words_from_context()
+        return len(words)
+
     def json_serializable_dict(self, with_context=True):
         try:
             translation_word = self.translation.word
@@ -178,12 +226,12 @@ class Bookmark(db.Model):
         result = dict(
             id=self.id,
             to=translation_word,
-            from_lang=self.origin.language_id,
-            to_lang=self.translation.language.id,
+            from_lang=self.origin.language.code,
+            to_lang=self.translation.language.code,
             title=self.text.url.title,
             url=self.text.url.as_string(),
             origin_importance=Word.stats(self.origin.word,
-                                         self.origin.language_id).importance
+                                         self.origin.language.code).importance
         )
         result["from"] = self.origin.word
         if with_context:
@@ -292,12 +340,12 @@ class Bookmark(db.Model):
         else:
             return None
 
-    def check_if_learned_based_on_exercise_outcomes(self,
-                                                    add_to_result_time=False):
+    def is_learned_based_on_exercise_outcomes(self,
+                                              also_return_time=False):
         """
         TODO: This should replace check_is_latest_outcome in the future...
 
-        :param add_to_result_time:
+        :param also_return_time:
         :return:
         """
         sorted_exercise_log_by_latest = sorted(self.exercise_log,
@@ -309,7 +357,7 @@ class Bookmark(db.Model):
 
             # If last outcome is TOO EASY we know it
             if last_exercise.outcome.outcome == ExerciseOutcome.TOO_EASY:
-                if add_to_result_time:
+                if also_return_time:
                     return True, last_exercise.time
                 return True
 
@@ -322,9 +370,25 @@ class Bookmark(db.Model):
                        sorted_exercise_log_by_latest[0:CORRECTS_IN_A_ROW - 1]):
                     return True, last_exercise.time
 
-        if add_to_result_time:
+        if also_return_time:
             return False, None
         return False
+
+    def update_learned_status(self, session):
+        """
+            To call when something happened to the bookmark,
+             that requires it's "learned" status to be updated.
+        :param session:
+        :return:
+        """
+        is_learned, learned_time = self.is_learned_based_on_exercise_outcomes(True)
+        if is_learned:
+            print("bookmark learned!")
+            self.learned_time = learned_time
+            session.add(self)
+        else:
+            print("bookmark not learned yet...")
+
 
     def events_indicate_its_learned(self):
         from zeeguu.model.smartwatch.watch_interaction_event import \
@@ -351,7 +415,7 @@ class Bookmark(db.Model):
         """
 
         # The first case is when we have an exercise outcome set to Too EASY
-        learned, time = self.check_if_learned_based_on_exercise_outcomes(True)
+        learned, time = self.is_learned_based_on_exercise_outcomes(True)
         if learned:
             if also_return_time:
                 return True, time

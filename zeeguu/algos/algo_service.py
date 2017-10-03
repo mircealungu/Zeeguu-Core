@@ -3,7 +3,6 @@ import traceback
 
 import zeeguu
 
-from zeeguu.model.bookmark import Bookmark
 from zeeguu.model.bookmark_priority_arts import BookmarkPriorityARTS
 from zeeguu.model.exercise import Exercise
 from zeeguu.model.exercise_source import ExerciseSource
@@ -12,6 +11,7 @@ from zeeguu.algos.algorithm_wrapper import AlgorithmWrapper
 from zeeguu.algos.analysis.normal_distribution import NormalDistribution
 from zeeguu.algos.arts.arts_rt import ArtsRT
 from zeeguu.model.learner_stats.exercise_stats import ExerciseStats
+from zeeguu.util.timer_logging_decorator import time_this
 
 db = zeeguu.db
 
@@ -48,9 +48,12 @@ class AlgoService:
         db.session.commit()
 
     @classmethod
+    @time_this
     def update_bookmark_priority(cls, db, user):
+
         try:
-            bookmarks_for_user = user.all_bookmarks()
+            print ("in update bookmark priority...")
+            bookmarks_for_user = user.all_bookmarks_fit_for_study()
             if len(bookmarks_for_user) == 0:
                 return
 
