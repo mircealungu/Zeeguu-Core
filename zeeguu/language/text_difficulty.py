@@ -66,7 +66,7 @@ def text_difficulty(text, language, known_probabilities, difficulty_computer = '
     words = split_words_from_text(text)
 
     for word in words:
-        difficulty = word_difficulty(known_probabilities, True, Word.stats(word, language.id), word)
+        difficulty = word_difficulty(known_probabilities, True, Word.stats(word, language.code), word)
         word_difficulties.append(difficulty)
 
     # If we can't compute the text difficulty, we estimate hard

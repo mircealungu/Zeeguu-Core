@@ -13,7 +13,7 @@ class WordForm(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     word = db.Column(db.String(255), nullable =False, index = True)
 
-    language_id = db.Column(db.String(2), db.ForeignKey(Language.id))
+    language_id = db.Column(db.Integer, db.ForeignKey(Language.id))
     language = db.relationship(Language)
     db.UniqueConstraint(word, language_id)
 

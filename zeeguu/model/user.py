@@ -29,13 +29,13 @@ class User(db.Model):
     password = db.Column(db.LargeBinary(255))
     password_salt = db.Column(db.LargeBinary(255))
     learned_language_id = db.Column(
-        db.String(2),
+        db.Integer,
         db.ForeignKey(Language.id)
     )
     learned_language = relationship(Language, foreign_keys=[learned_language_id])
 
     native_language_id = db.Column(
-        db.String(2),
+        db.Integer,
         db.ForeignKey(Language.id)
     )
     native_language = relationship(Language, foreign_keys=[native_language_id])
@@ -91,8 +91,8 @@ class User(db.Model):
         return dict(
             email=self.email,
             name=self.name,
-            learned_language=self.learned_language_id,
-            native_language=self.native_language_id
+            learned_language=self.learned_language.code,
+            native_language=self.native_language.code
         )
 
     def text_difficulty(self, text, language):
@@ -246,7 +246,7 @@ class User(db.Model):
             # we might be in a situation where we're on the watch for example...
             # in this case, we add some new ones to the user's account
             from zeeguu.temporary.default_words import create_default_bookmarks
-            new_bookmarks = create_default_bookmarks(zeeguu.db.session, self, self.learned_language_id)
+            new_bookmarks = create_default_bookmarks(zeeguu.db.session, self, self.learned_language.code)
 
             for each_new in new_bookmarks:
                 # try to find if the user has seen this in the past

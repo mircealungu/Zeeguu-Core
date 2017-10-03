@@ -226,12 +226,12 @@ class Bookmark(db.Model):
         result = dict(
             id=self.id,
             to=translation_word,
-            from_lang=self.origin.language_id,
-            to_lang=self.translation.language.id,
+            from_lang=self.origin.language.code,
+            to_lang=self.translation.language.code,
             title=self.text.url.title,
             url=self.text.url.as_string(),
             origin_importance=Word.stats(self.origin.word,
-                                         self.origin.language_id).importance
+                                         self.origin.language.code).importance
         )
         result["from"] = self.origin.word
         if with_context:

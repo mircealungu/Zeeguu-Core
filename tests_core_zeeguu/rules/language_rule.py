@@ -25,6 +25,7 @@ class LanguageRule(BaseRule):
         # "no": "Norwegian",
         # "pt": "Portuguese",
         # "ro": "Romanian"
+        "zh-CN": "Chinese"
     }
 
     @classmethod

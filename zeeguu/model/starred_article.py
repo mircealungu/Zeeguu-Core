@@ -27,7 +27,7 @@ class StarredArticle(zeeguu.db.Model):
 
     title = Column(String(255))
 
-    language_id = Column(String(2), ForeignKey(Language.id))
+    language_id = Column(Integer, ForeignKey(Language.id))
     language = relationship(Language)
 
     # Useful for ordering past read articles
@@ -51,7 +51,7 @@ class StarredArticle(zeeguu.db.Model):
             user_id=self.user_id,
             url=self.url.as_string(),
             title=self.title,
-            language=self.language_id,
+            language=self.language.code,
             starred_date=self.starred_date.strftime("%Y-%m-%dT%H:%M:%S%z")
         )
 

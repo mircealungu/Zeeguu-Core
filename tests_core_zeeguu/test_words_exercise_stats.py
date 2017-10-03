@@ -14,6 +14,7 @@ class WordsExerciseStatsTest(ModelTestMixIn):
         self.user_rule = UserRule()
         self.user_rule.add_bookmarks(self.NUM_BOOKMARKS)
         self.user = self.user_rule.user
+        self.NUM_BOOKMARKS = len(self.user.all_bookmarks_fit_for_study())
 
     def test_no_priority_without_run_of_algorithm(self):
         result = self.__get_table_count(BookmarkPriorityARTS)

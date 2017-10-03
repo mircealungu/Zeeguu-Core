@@ -18,7 +18,7 @@ class UserWord(db.Model, util.JSONSerializable):
 
     id = db.Column(db.Integer, primary_key=True)
     word = db.Column(db.String(255), nullable=False)
-    language_id = db.Column(db.String(2), db.ForeignKey(Language.id))
+    language_id = db.Column(db.Integer, db.ForeignKey(Language.id))
     language = db.relationship(Language)
     db.UniqueConstraint(word, language_id)
 
@@ -38,7 +38,7 @@ class UserWord(db.Model, util.JSONSerializable):
 
     # returns a number between 0 and 10
     def importance_level(self):
-        stats = Word.stats(self.word, self.language.id)
+        stats = Word.stats(self.word, self.language.code)
         if stats:
             return int(min(stats.importance, 10))
         else:
@@ -51,9 +51,9 @@ class UserWord(db.Model, util.JSONSerializable):
 
     @classmethod
     def find(cls, _word: str, language: Language):
-            return (cls.query.filter(cls.word == _word)
-                    .filter(cls.language == language)
-                    .one())
+        return (cls.query.filter(cls.word == _word)
+                .filter(cls.language == language)
+                .one())
 
     @classmethod
     def find_or_create(cls, session, _word: str, language: Language):
@@ -75,13 +75,12 @@ class UserWord(db.Model, util.JSONSerializable):
                     try:
                         session.rollback()
                         w = cls.find(_word, language)
-                        print ("successfully avoided race condition. nice! ")
+                        print("successfully avoided race condition. nice! ")
                         return w
                     except sqlalchemy.orm.exc.NoResultFound:
                         time.sleep(0.3)
                         continue
                     break
-
 
     @classmethod
     def find_all(cls):
