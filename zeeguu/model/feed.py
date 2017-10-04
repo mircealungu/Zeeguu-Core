@@ -124,7 +124,6 @@ class RSSFeed(db.Model):
 
     # although it seems to not be used by anybody,
     # this method is being used from the zeeguu-api
-    # project.
-    # @classmethod
+    @classmethod
     def find_for_language_id(cls, language_code):
         return cls.query.filter(cls.language.code == language_code).group_by(cls.title).all()
