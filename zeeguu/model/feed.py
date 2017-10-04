@@ -122,7 +122,9 @@ class RSSFeed(db.Model):
             session.commit()
             return new
 
-    # this seems to not be used by anybody
+    # although it seems to not be used by anybody,
+    # this method is being used from the zeeguu-api
+    # project.
     # @classmethod
-    # def find_for_language_id(cls, language_id):
-    #     return cls.query.filter(cls.language_id == language_id).group_by(cls.title).all()
+    def find_for_language_id(cls, language_code):
+        return cls.query.filter(cls.code == language_code).group_by(cls.title).all()
