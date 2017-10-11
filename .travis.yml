@@ -9,7 +9,7 @@ language: python
 python:
   - "3.6"
 cache:
-  pip: false
+  pip: true
   directories:
    - $HOME/virtualenv
 
