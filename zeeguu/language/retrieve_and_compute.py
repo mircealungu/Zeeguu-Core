@@ -14,7 +14,7 @@ def retrieve_urls_and_compute_metrics(urls, language, user, timeout=10):
                 # articles are not actually "articles" but probably
                 # parser mistakes
                 difficulty = user.text_difficulty(each['content'], language)
-                print(f'url: {each} / diff: {difficulty}')
+                # print(f'url: {each} / diff: {difficulty}')
                 urls_and_metrics[each['url']] = {
                     'difficulty': {
                         'normalized': difficulty['normalized'],

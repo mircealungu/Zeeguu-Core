@@ -20,28 +20,35 @@ class BookmarkRule(BaseRule):
         self.save(self.bookmark)
 
     def _create_model_object(self, user, **kwargs):
-        random_url = UrlRule().url
 
-        random_text = TextRule().text
+        bookmark = None
 
-        random_origin_word = self.faker.word()
-        random_origin_language = LanguageRule().random
+        while not bookmark:
+            random_url = UrlRule().url
 
-        random_translation_word = self.faker.word()
-        random_translation_language = LanguageRule().random
+            random_text = TextRule().text
 
-        if UserWord.exists(random_origin_word, random_origin_language) \
-                or UserWord.exists(random_translation_word, random_translation_language):
-            return self._create_model_object(user)
+            random_origin_word = self.faker.word()
+            random_origin_language = LanguageRule().random
 
-        random_origin = UserWordRule(random_origin_word,
-                                     random_origin_language).user_word
-        random_translation = UserWordRule(random_translation_word,
-                                          random_translation_language).user_word
-        random_date = self.faker.date_time_this_month()
+            random_translation_word = self.faker.word()
+            random_translation_language = LanguageRule().random
 
-        bookmark = Bookmark(random_origin, random_translation, user,
-                            random_text, random_date)
+            if UserWord.exists(random_origin_word, random_origin_language) \
+                    or UserWord.exists(random_translation_word, random_translation_language):
+                return self._create_model_object(user)
+
+            random_origin = UserWordRule(random_origin_word,
+                                         random_origin_language).user_word
+            random_translation = UserWordRule(random_translation_word,
+                                              random_translation_language).user_word
+            random_date = self.faker.date_time_this_month()
+
+            bookmark = Bookmark(random_origin, random_translation, user,
+                                random_text, random_date)
+            if not bookmark.quality_bookmark():
+                bookmark = False
+                # print ("random bookmark was of low quality. retrying...")
 
         for k in kwargs:
             if k in self.props:

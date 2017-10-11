@@ -20,6 +20,8 @@ class WordsToStudyTest(ModelTestMixIn):
         self.user = self.user_rule.user
 
     def test_new_bookmark_has_the_highest_priority(self):
+        """ Adding a new bookmark, makes it the next thing to study """
+
         # GIVEN
         new_bookmark = self.user_rule.add_bookmarks(1)[0].bookmark
 
@@ -29,9 +31,8 @@ class WordsToStudyTest(ModelTestMixIn):
         # THEN
         bookmark = self.__get_bookmark_with_highest_priority()
 
-        assert new_bookmark == bookmark, "The newly added bookmark does not have the highest priority. Based on non existing exercise"
-
-
+        self.assertTrue(new_bookmark == bookmark,
+                        "The newly added bookmark has the highest priority")
 
     def test_just_finished_bookmark_has_not_the_highest_priority(self):
         # GIVEN
@@ -54,6 +55,8 @@ class WordsToStudyTest(ModelTestMixIn):
 
     def __get_bookmark_with_highest_priority(self):
         bookmarks_to_study = self.user.bookmarks_to_study()
+        if not bookmarks_to_study:
+            return None
         return bookmarks_to_study[0]
 
     def __get_bookmark_with_lowest_priority(self):

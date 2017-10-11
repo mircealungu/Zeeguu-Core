@@ -8,7 +8,7 @@ def time_this(func):
         fname = func.__name__
 
         elapsed_time = (time.time() - start) * 1000
-        print(fname + ' ran for ' + "{0:.2f}".format(elapsed_time) + 'ms')
+        # print(fname + ' ran for ' + "{0:.2f}".format(elapsed_time) + 'ms')
         return result
 
     return wrapper

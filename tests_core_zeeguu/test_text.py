@@ -17,4 +17,4 @@ class TextTest(ModelTestMixIn):
 
     def test_user_word_count(self):
 
-        print (self.text_rule.text.content_hash)
+        self.assertIsNotNone (self.text_rule.text.content_hash)
