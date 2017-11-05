@@ -36,7 +36,7 @@ class Language(db.Model):
     @classmethod
     def available_languages(cls):
         # return list(set(cls.all()) - set([Language.find("en")]))
-        return [Language.find('de'), Language.find('es'), Language.find('fr'), Language.find('nl')]
+        return [Language.find('de'), Language.find('es'), Language.find('fr'), Language.find('nl'), Language.find('en')]
 
     @classmethod
     def find(cls, code):
