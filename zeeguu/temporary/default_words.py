@@ -99,6 +99,7 @@ def create_default_bookmarks(session, user, language_code):
 
     except Exception as e:
         zeeguu.log("could not load default bookmarks for {0}".format(language_code))
-        raise e
+        #raise e
+        return []
 
     return bookmarks
