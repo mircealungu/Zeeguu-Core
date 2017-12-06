@@ -1,15 +1,15 @@
 import itertools
+
 import traceback
 
 import zeeguu
 
+from zeeguu.word_scheduling.algorithm_wrapper import AlgorithmWrapper
+from zeeguu.word_scheduling.analysis.normal_distribution import NormalDistribution
+from zeeguu.word_scheduling.arts.arts_rt import ArtsRT
 from zeeguu.model.bookmark_priority_arts import BookmarkPriorityARTS
 from zeeguu.model.exercise import Exercise
 from zeeguu.model.exercise_source import ExerciseSource
-
-from zeeguu.algos.algorithm_wrapper import AlgorithmWrapper
-from zeeguu.algos.analysis.normal_distribution import NormalDistribution
-from zeeguu.algos.arts.arts_rt import ArtsRT
 from zeeguu.model.learner_stats.exercise_stats import ExerciseStats
 from zeeguu.util.timer_logging_decorator import time_this
 
@@ -17,7 +17,7 @@ db = zeeguu.db
 
 
 class PriorityInfo:
-    MAX_PRIORITY = 1000
+    MAX_PRIORITY = 10
     NO_PRIORITY = -1000
 
     def __init__(self, bookmark, exercise, priority=MAX_PRIORITY):
@@ -26,23 +26,34 @@ class PriorityInfo:
         self.priority = priority
 
 
-class AlgoService:
+class AlgorithmService:
+    """Handles the related tasks for using word scheduling algorithms
+    and also acts as a wrapper that calls the specific algorithm
     """
-        
-        service calls the wrapper that calls the algorithm 
-        
-    """
-    algorithm_wrapper = AlgorithmWrapper(ArtsRT)
+
+    algorithm_wrapper = AlgorithmWrapper(ArtsRT())
+
+    # AlgorithmSDCaller requires that update_exercise_source_stats is being called at some point before
+    # algorithm_wrapper = AlgorithmSDCaller(ArtsDiffFast())
 
     @classmethod
     def update_exercise_source_stats(cls):
+        """Update the ExerciseStats for the ArtsDiffSlow and ArtsDiffFast algorithm to provide
+         normalization information between the different exercise sources"""
         exercise_sources = list(ExerciseSource.query.all())
         for source in exercise_sources:
-            exercises = Exercise.query.filter_by(source_id=source.id)
-            reaction_times = map(lambda x: x.solving_speed, exercises)
+            exercises = Exercise.query.filter_by(source_id=source.id).filter(Exercise.solving_speed <= 30000).all()
+            reaction_times = list(map(lambda x: x.solving_speed, exercises))
+            if len(reaction_times) == 0:
+                # magic values for the reaction, if no data exists
+                reaction_times = [5000, 6000]
+                print('This exercise source has no data yet. ID: ' + str(source.id))
+
             mean, sd = NormalDistribution.calc_normal_distribution(
                 reaction_times)
-            exercise_stats = ExerciseStats(source, mean, sd)
+            if sd is None:
+                sd = 1000
+            exercise_stats = ExerciseStats.find_or_create(db.session, ExerciseStats(source, mean, sd))
             db.session.merge(exercise_stats)
 
         db.session.commit()
@@ -50,7 +61,11 @@ class AlgoService:
     @classmethod
     @time_this
     def update_bookmark_priority(cls, db, user):
+        """ Update all bookmark priorities of one user
 
+        :param db: The connection to the database
+        :param user: The user object
+        """
         try:
             # print ("in update bookmark priority...")
             bookmarks_for_user = user.all_bookmarks_fit_for_study()
@@ -79,6 +94,12 @@ class AlgoService:
 
     @classmethod
     def _calculate_bookmark_priority(cls, x, max_iterations):
+        """Calculate the (new) priority of a bookmark-exercise pair
+
+        :param x: An instance of the bookmark-exercise information (PriorityInfo)
+        :param max_iterations: The current amount of iterations/learning sessions (in the ArtsRT algorithm known as D)
+        :return: The bookmark-exercise information (PriorityInfo) with a updated priority
+        """
         if x.exercise is not None:
 
             if x.exercise.solving_speed > 0:

@@ -8,15 +8,8 @@
     This file takes care of this for the moment.
 
 """
-from datetime import datetime
-
 import zeeguu
-
-from zeeguu.model.bookmark import Bookmark
-from zeeguu.model.language import Language
-from zeeguu.model.text import Text
-from zeeguu.model.url import Url
-from zeeguu.model.user_word import UserWord
+from zeeguu.model import Bookmark
 
 bookmark_data = dict()
 
@@ -83,18 +76,16 @@ bookmark_data['fr'] = [
 
 
 def create_default_bookmarks(session, user, language_code):
-
     bookmarks = []
 
     try:
 
-        print ("trying to load default bookmarks for " + str(user.name))
+        print("trying to load default bookmarks for " + str(user.name))
         for data_point in bookmark_data[language_code]:
-            bookmark = Bookmark.find_or_create(session,
-                                               user,
+            bookmark = Bookmark.find_or_create(session, user,
                                                data_point[0], language_code,
                                                data_point[1], "en",
-                                               data_point[2], data_point[3],  "Zeeguu Exercises")
+                                               data_point[2], data_point[3], "Zeeguu Exercises")
             bookmarks.append(bookmark)
 
     except Exception as e:

@@ -5,6 +5,11 @@ from zeeguu.model.text import Text
 
 
 class TextRule(BaseRule):
+    """A Rule testing class for the zeeguu.model.Text model class.
+
+    Creates a Text object with random data and saves it to the database.
+    """
+
     def __init__(self, length=59):
         super().__init__()
 

@@ -60,7 +60,9 @@ class ExerciseOutcome(db.Model):
             safest not to show such a bookmark until somebody
             manually verified the appropriateness of the
             feedback """
-        return self.outcome not in self.correct_outcomes and self.outcome not in self.wrong_outcomes and self.outcome not in self.too_easy_outcomes
+        return self.outcome not in self.correct_outcomes \
+               and self.outcome not in self.wrong_outcomes \
+               and self.outcome not in self.too_easy_outcomes
 
     @classmethod
     def find(cls, outcome: str):

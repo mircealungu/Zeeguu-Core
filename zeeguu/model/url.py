@@ -35,7 +35,6 @@ class Url(db.Model):
             self.domain = DomainName.for_url_string(url)
 
     def make_new(self, session, url: str, title: str):
-        self.path = Url.get_path(url)
         self.domain = DomainName.for_url_string(url)
         self.title = title
         self.path = Url.get_path(url)

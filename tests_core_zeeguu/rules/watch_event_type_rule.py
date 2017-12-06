@@ -3,6 +3,9 @@ from zeeguu.model.smartwatch.watch_event_type import WatchEventType
 
 
 class WatchEventTypeRule(BaseRule):
+    """A Rule testing class for the zeeguu.model.smartwatch.watch_event_type model class.
+    """
+
     def __init__(self):
         super().__init__()
 

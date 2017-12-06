@@ -1,5 +1,5 @@
-from zeeguu.content_retriever.parallel_retriever import get_content_for_urls
 import zeeguu
+from zeeguu.content_retriever.parallel_retriever import get_content_for_urls
 
 
 def retrieve_urls_and_compute_metrics(urls, language, user, timeout=10):

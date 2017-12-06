@@ -5,6 +5,10 @@ from zeeguu.model.teacher_cohort_map import TeacherCohortMap
 
 
 class CohortRule(BaseRule):
+    """
+        A cohort has a teacher and a bunch of students
+    """
+
     def __init__(self):
         super().__init__()
         self.cohort = self._create_model_object()

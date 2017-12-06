@@ -33,16 +33,24 @@ class UserWord(db.Model, util.JSONSerializable):
     def __repr__(self):
         return '<UserWord %r>' % (self.word)
 
+    def __eq__(self, other):
+        return self.word == other.word and self.language == other.language
+
     def serialize(self):
         return self.word
 
-    # returns a number between 0 and 10
     def importance_level(self):
+        """
+            Note that this code will break if the wordstats throws an exception,
+            which could happen in case the language is inexistent…
+            but this should not happen.
+
+            Note that the importance level is float
+
+        :return: number between 0 and 10 as returned by the wordstats module
+        """
         stats = Word.stats(self.word, self.language.code)
-        if stats:
-            return int(min(stats.importance, 10))
-        else:
-            return 0
+        return int(stats.importance)
 
     # we use this in the bookmarks.html to show the importance of a word
     def importance_level_string(self):
@@ -57,20 +65,15 @@ class UserWord(db.Model, util.JSONSerializable):
 
     @classmethod
     def find_or_create(cls, session, _word: str, language: Language):
-
         try:
             return cls.find(_word, language)
-
         except sqlalchemy.orm.exc.NoResultFound:
-
             try:
                 new = cls(_word, language)
                 session.add(new)
                 session.commit()
                 return new
-
             except:
-
                 for _ in range(10):
                     try:
                         session.rollback()

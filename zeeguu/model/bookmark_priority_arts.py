@@ -27,3 +27,6 @@ class BookmarkPriorityARTS(db.Model):
             return entry.first()
         else:
             return cls(bookmark, priority)
+
+    def __repr__(self):
+        return '{}: (bookmark={}, priority={:8.2f})'.format(self.__class__.__name__, self.bookmark, self.priority)

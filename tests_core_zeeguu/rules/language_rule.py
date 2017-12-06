@@ -8,10 +8,10 @@ from zeeguu.model.language import Language
 
 
 class LanguageRule(BaseRule):
-    """A Testing Rule class for Languages
+    """A Testing Rule class for model class zeeguu.model.Language
 
     Has all supported languages as properties. Languages are created and
-    saved to the database if they don't yet extist in the database.
+    saved to the database if they don't yet exist in the database.
     """
 
     languages = {

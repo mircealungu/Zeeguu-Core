@@ -6,6 +6,9 @@ import os
 if "ZEEGUU_CORE_CONFIG" not in os.environ:
     os.environ["ZEEGUU_CORE_CONFIG"] = os.path.expanduser('~/.config/zeeguu/core_test.cfg')
 
+if "WORD_SCHEDULING_ALGORITHM_CONFIG" not in os.environ:
+    os.environ["WORD_SCHEDULING_ALGORITHM_CONFIG"] = os.path.expanduser('~/.config/zeeguu/word_scheduling_algorithms.ini')
+
 import zeeguu.model
 
 from faker import Faker

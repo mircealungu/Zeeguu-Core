@@ -54,7 +54,9 @@ class Bookmark(db.Model):
                                 secondary="bookmark_exercise_mapping",
                                 order_by="Exercise.id")
 
-    starred = db.Column(db.Boolean)
+    starred = db.Column(db.Boolean, default=False)
+
+    learned = db.Column(db.Boolean, default=False)
 
     fit_for_study = db.Column(db.Boolean)
 
@@ -177,7 +179,7 @@ class Bookmark(db.Model):
 
         last_outcome = self.latest_exercise_outcome()
 
-        if not last_outcome:
+        if last_outcome is None:
             return self.quality_bookmark() and not self.events_prevent_further_study()
 
         if self.is_learned_based_on_exercise_outcomes():
@@ -191,10 +193,10 @@ class Bookmark(db.Model):
     def add_new_exercise_result(self, exercise_source, exercise_outcome,
                                 exercise_solving_speed):
         new_source = ExerciseSource.query.filter_by(
-            source=exercise_source.source
+                source=exercise_source.source
         ).first()
         new_outcome = ExerciseOutcome.query.filter_by(
-            outcome=exercise_outcome.outcome
+                outcome=exercise_outcome.outcome
         ).first()
         exercise = Exercise(new_outcome, new_source, exercise_solving_speed,
                             datetime.now())
@@ -239,8 +241,7 @@ class Bookmark(db.Model):
         return result
 
     @classmethod
-    def find_or_create(cls, session,
-                       user,
+    def find_or_create(cls, session, user,
                        _origin: str, _origin_lang: str,
                        _translation: str, _translation_lang: str,
                        _context: str, _url: str, _url_title: str):
@@ -254,8 +255,8 @@ class Bookmark(db.Model):
         :return:
         """
 
-        origin_lang = Language.find(_origin_lang)
-        translation_lang = Language.find(_translation_lang)
+        origin_lang = Language.find_or_create(_origin_lang)
+        translation_lang = Language.find_or_create(_translation_lang)
 
         origin = UserWord.find_or_create(session, _origin, origin_lang)
 
@@ -288,7 +289,7 @@ class Bookmark(db.Model):
     @classmethod
     def find_by_specific_user(cls, user):
         return cls.query.filter_by(
-            user=user
+                user=user
         ).all()
 
     @classmethod
@@ -302,30 +303,30 @@ class Bookmark(db.Model):
     @classmethod
     def find(cls, b_id):
         return cls.query.filter_by(
-            id=b_id
+                id=b_id
         ).one()
 
     @classmethod
     def find_all_by_user_and_word(cls, user, word):
         return cls.query.filter_by(
-            user=user,
-            origin=word
+                user=user,
+                origin=word
         ).all()
 
     @classmethod
     def find_by_user_word_and_text(cls, user, word, text):
         return cls.query.filter_by(
-            user=user,
-            origin=word,
-            text=text
+                user=user,
+                origin=word,
+                text=text
         ).one()
 
     @classmethod
     def exists(cls, bookmark):
         try:
             cls.query.filter_by(
-                origin_id=bookmark.origin.id,
-                id=bookmark.id
+                    origin_id=bookmark.origin.id,
+                    id=bookmark.id
             ).one()
             return True
         except NoResultFound:
@@ -339,6 +340,41 @@ class Bookmark(db.Model):
             return sorted_exercise_log_by_latest[0].outcome
         else:
             return None
+
+
+    def check_if_learned_based_on_exercise_outcomes(self,
+                                                    add_to_result_time=False):
+        """
+        TODO: This should replace check_is_latest_outcome in the future...
+        :param add_to_result_time:
+        :return:
+        """
+        if len(self.exercise_log) == 0:
+            if add_to_result_time:
+                return False, None
+
+            return False
+
+        last_exercise = self.exercise_log[-1]
+
+        # If last outcome is TOO EASY we know it
+        if last_exercise.outcome.outcome == ExerciseOutcome.TOO_EASY:
+            if add_to_result_time:
+                return True, last_exercise.time
+
+            return True
+
+        CORRECTS_IN_A_ROW = 5
+        if len(self.exercise_log) >= CORRECTS_IN_A_ROW:
+
+            # If we got it right for the last CORRECTS_IN_A_ROW times, we know it
+            if all(exercise.outcome.correct for exercise in self.exercise_log[-CORRECTS_IN_A_ROW:]):
+                return True, last_exercise.time
+
+        if add_to_result_time:
+            return False, None
+
+        return False
 
     def is_learned_based_on_exercise_outcomes(self,
                                               also_return_time=False):
@@ -403,7 +439,7 @@ class Bookmark(db.Model):
 
     def has_been_learned(self, also_return_time=False):
         # TODO: This must be stored in the DB together with the
-        # bookmark... once a bookmark has been learned, we shoud
+        # bookmark... once a bookmark has been learned, we should
         # not ever doubt it ...
 
         """
@@ -419,8 +455,8 @@ class Bookmark(db.Model):
         if learned:
             if also_return_time:
                 return True, time
-            else:
-                return True
+
+            return True
 
         # The second case is when we have an event in the smartwatch event log
         # that indicates that the word has been learned

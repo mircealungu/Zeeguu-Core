@@ -1,3 +1,5 @@
+from sqlalchemy.orm.exc import NoResultFound
+
 import zeeguu
 
 db = zeeguu.db
@@ -19,3 +21,18 @@ class ExerciseSource(db.Model):
     @classmethod
     def find(cls, source):
         return cls.query.filter_by(source=source).one()
+
+    @classmethod
+    def find_or_create(cls, session, _source):
+        try:
+            source = cls.find(_source)
+
+        except NoResultFound as e:
+            source = cls(_source)
+        except Exception as e:
+            raise e
+
+        session.add(source)
+        session.commit()
+
+        return source

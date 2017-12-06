@@ -7,6 +7,10 @@ from zeeguu.model.exercise import Exercise
 
 
 class ExerciseRule(BaseRule):
+    """A Rule testing class for the zeeguu.model.Exercise model class.
+
+    Creates a Exercise object with random data and saves it to the database.
+    """
 
     def __init__(self):
         super().__init__()
@@ -21,8 +25,7 @@ class ExerciseRule(BaseRule):
         random_speed = random.randint(500, 5000)
         random_time = self.faker.date_time_this_month()
 
-        new_exercise = Exercise(random_outcome, random_source, random_speed,
-                                random_time)
+        new_exercise = Exercise(random_outcome, random_source, random_speed, random_time)
 
         if self._exists_in_db(new_exercise):
             return self._create_model_object()

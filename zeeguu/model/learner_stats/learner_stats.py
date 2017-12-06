@@ -1,5 +1,5 @@
-import json
 import datetime
+import json
 
 current_year = datetime.date.today().year
 current_month = datetime.date.today().month
@@ -33,7 +33,7 @@ def compute_learner_stats_during_last_year(user):
                 learned_stats[index_month_when_learned] += 1
             else:
                 learning_stats[0] -= 1
-                learned_stats[0] +=1
+                learned_stats[0] += 1
 
     # take into the account already learned and learning words before in the learning array
     learning_stats[0] -= learned_stats[0]
@@ -43,7 +43,7 @@ def compute_learner_stats_during_last_year(user):
     # for loop which makes learned curve cumulative
     index = 0
     for (index) in range(0, 11):
-        learned_stats[index+1] += learned_stats[index]
+        learned_stats[index + 1] += learned_stats[index]
         index += 1
 
     return [learning_stats, learned_stats]
@@ -64,8 +64,10 @@ def data_to_json(learner_stats_after):
             entry_year -= 1
         entry_date = datetime.datetime(entry_year, entry_month, 1)
         entry_date = str(entry_date.strftime("%b %Y"))
-        result = result + "{\"name\": \"Learning\", \"amount\": \"" + str(learning_stats_after[i]) + "\", \"date\": \"" + entry_date + "\"},"
-        result = result + "{\"name\": \"Learned\", \"amount\": \"" + str(learned_stats_after[i]) + "\", \"date\": \"" + entry_date + "\"},"
+        result = result + "{\"name\": \"Learning\", \"amount\": \"" + str(
+                learning_stats_after[i]) + "\", \"date\": \"" + entry_date + "\"},"
+        result = result + "{\"name\": \"Learned\", \"amount\": \"" + str(
+                learned_stats_after[i]) + "\", \"date\": \"" + entry_date + "\"},"
 
     result = "[" + result[:-1] + "]"
     return json.dumps(result)

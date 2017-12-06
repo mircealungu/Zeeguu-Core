@@ -4,6 +4,10 @@ from zeeguu.model.url import Url
 
 
 class UrlRule(BaseRule):
+    """A Rule testing class for the zeeguu.model.Url model class.
+
+    Creates a Url object with random data and saves it to the database.
+    """
 
     def __init__(self):
         super().__init__()

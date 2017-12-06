@@ -2,25 +2,25 @@
 import datetime
 import json
 import random
+import re
 
 import sqlalchemy.orm
-import zeeguu
 from sqlalchemy import Column, Table, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.exc import NoResultFound
 
+import zeeguu
 from zeeguu import util
 from zeeguu.model.language import Language
 
 db = zeeguu.db
 
-from zeeguu.model.user_word import UserWord
-
-ANONYMOUS_EMAIL_DOMAIN = '@anon.zeeguu'
-
 
 class User(db.Model):
     __table_args__ = {'mysql_collate': 'utf8_bin'}
+
+    EMAIL_VALIDATION_REGEX = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
+    ANONYMOUS_EMAIL_DOMAIN = '@anon.zeeguu'
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True)
@@ -54,7 +54,7 @@ class User(db.Model):
 
     @classmethod
     def create_anonymous(cls, uuid, password, learned_language_code=None, native_language_code=None):
-        """
+        """j
 
         :param uuid:
         :param password:
@@ -64,16 +64,22 @@ class User(db.Model):
         """
 
         # since the DB must have an email we generate a fake one
-        fake_email = uuid + ANONYMOUS_EMAIL_DOMAIN
+        fake_email = uuid + cls.ANONYMOUS_EMAIL_DOMAIN
 
-        try:
-            learned_language = Language.find(learned_language_code)
-        except NoResultFound as e:
+        if learned_language_code is not None:
+            try:
+                learned_language = Language.find_or_create(learned_language_code)
+            except NoResultFound as e:
+                learned_language = None
+        else:
             learned_language = None
 
-        try:
-            native_language = Language.find(native_language_code)
-        except NoResultFound as e:
+        if native_language_code is not None:
+            try:
+                native_language = Language.find_or_create(native_language_code)
+            except NoResultFound as e:
+                native_language = None
+        else:
             native_language = None
 
         new_user = cls(fake_email, uuid, password, learned_language=learned_language, native_language=native_language)
@@ -123,20 +129,23 @@ class User(db.Model):
         a_while_ago = now - dateutil.relativedelta.relativedelta(days=days)
         return self.date_of_last_bookmark() > a_while_ago
 
+    @classmethod
     @sqlalchemy.orm.validates("email")
-    def validate_email(self, col, email):
-        if "@" not in email:
+    def validate_email(cls, col, email):
+        if not re.match(cls.EMAIL_VALIDATION_REGEX, email):
             raise ValueError("Invalid email address")
         return email
 
+    @classmethod
     @sqlalchemy.orm.validates("password")
-    def validate_password(self, col, password):
+    def validate_password(cls, col, password):
         if password is None or len(password) == 0:
             raise ValueError("Invalid password")
         return password
 
+    @classmethod
     @sqlalchemy.orm.validates("name")
-    def validate_name(self, col, name):
+    def validate_name(cls, col, name):
         if name is None or len(name) == 0:
             raise ValueError("Invalid username")
         return name
@@ -147,16 +156,14 @@ class User(db.Model):
         :param password: str
         :return: 
         """
-        self.password_salt = "".join(
-            chr(random.randint(0, 255)) for i in range(32)
-        ).encode('utf-8')
+        self.password_salt = "".join(chr(random.randint(0, 255)) for _ in range(32)).encode('utf-8')
 
         self.password = util.password_hash(password, self.password_salt)
         self.password_salt = self.password_salt
 
     def all_bookmarks(self, after_date=datetime.datetime(1970, 1, 1),
                       before_date=datetime.date.today() + datetime.timedelta(
-                          days=1)):
+                              days=1)):
         from zeeguu.model.bookmark import Bookmark
         return Bookmark.query. \
             filter_by(user_id=self.id). \
@@ -173,7 +180,7 @@ class User(db.Model):
     def bookmarks_chronologically(self):
         from zeeguu.model.bookmark import Bookmark
         return Bookmark.query.filter_by(user_id=self.id).order_by(
-            Bookmark.time.desc()).all()
+                Bookmark.time.desc()).all()
 
     def bookmarks_by_date(self, after_date=datetime.datetime(1970, 1, 1)):
         """
@@ -208,8 +215,8 @@ class User(db.Model):
             for bookmark in bookmarks_by_date[date]:
                 bookmarks.append(bookmark.json_serializable_dict(with_context))
             date_entry = dict(
-                date=date.strftime("%A, %d %B %Y"),
-                bookmarks=bookmarks
+                    date=date.strftime("%A, %d %B %Y"),
+                    bookmarks=bookmarks
             )
             dates.append(date_entry)
         return dates
@@ -227,22 +234,24 @@ class User(db.Model):
                 texts_by_url.setdefault(bookmark.text.url, set()).add(bookmark.text)
         return most_recent_n_days, urls_by_date, texts_by_url
 
-    def bookmarks_to_study(self, bookmark_count=10):
+    def bookmarks_to_study(self, bookmark_count=10, generate_bookmarks_if_needed=False):
         """
-        :param bookmark_count: by default we recommend 10 words 
-        :return: 
+        :param bookmark_count: by default we recommend 10 words
+        :param generate_bookmarks_if_needed: force generating some example words, even if
+            there are none in the history of the user. Before this param was introduced,
+             the system would always generate some examples here...
+        :return:
         """
-        from zeeguu.algos import words_to_study
-        from zeeguu.algos.algo_service import AlgoService
+        from zeeguu.word_scheduling import words_to_study
+        from zeeguu.word_scheduling.algorithm_service import AlgorithmService
 
-        AlgoService.update_bookmark_priority(zeeguu.db, self)
+        # AlgorithmService.update_bookmark_priority(zeeguu.db, self)
 
         bookmarks = words_to_study.bookmarks_to_study(self, bookmark_count)
 
-        if len(bookmarks) == 0 and self.bookmark_count() == 0:
+        if len(bookmarks) == 0 and self.bookmark_count() == 0 and generate_bookmarks_if_needed:
             # we have zero bookmarks in our account... better to generate some
             # bookmarks to study than just whistle...
-
             # we might be in a situation where we're on the watch for example...
             # in this case, we add some new ones to the user's account
             from zeeguu.temporary.default_words import create_default_bookmarks
@@ -260,15 +269,16 @@ class User(db.Model):
 
         return bookmarks
 
-    # returns array with added bookmark amount per each date for the last year
-    # this function is for the activity_graph, generates data
     def bookmark_counts_by_date(self):
+        """returns array with added bookmark amount per each date for the last year
+        this function is for the activity_graph, generates data
+        """
 
         # compute bookmark_counts_by_date
         year = datetime.date.today().year - 1  # get data from year 2015(if this year is 2016)
         month = datetime.date.today().month
         bookmarks_dict, dates = self.bookmarks_by_date(
-            datetime.datetime(year, month, 1))
+                datetime.datetime(year, month, 1))
 
         counts = []
         for date in dates:
@@ -279,9 +289,10 @@ class User(db.Model):
         bookmark_counts_by_date = json.dumps(counts)
         return bookmark_counts_by_date
 
-    # returns array with learned and learning words count per each month for the last year
-    # this function is for the line_graph, generates data
     def learner_stats_data(self):
+        """returns array with learned and learning words count per each month for the last year
+        this function is for the line_graph, generates data
+        """
 
         # compute learner_stats_data
         from zeeguu.model.learner_stats.learner_stats import \
@@ -291,7 +302,7 @@ class User(db.Model):
         return learner_stats_data
 
     def user_words(self):
-        return list(map((lambda x: x.origin.word), self.all_bookmarks()))
+        return [b.origin.word for b in self.all_bookmarks()]
 
     def bookmark_count(self):
         return len(self.all_bookmarks())
@@ -315,8 +326,8 @@ class User(db.Model):
     def exists(cls, user):
         try:
             cls.query.filter_by(
-                email=user.email,
-                id=user.id
+                    email=user.email,
+                    id=user.id
             ).one()
             return True
         except NoResultFound:
@@ -326,19 +337,12 @@ class User(db.Model):
     def authorize(cls, email, password):
         try:
             user = cls.query.filter(cls.email == email).one()
-            if user.password == util.password_hash(password,
-                                                   user.password_salt):
+            if user.password == util.password_hash(password, user.password_salt):
                 return user
         except sqlalchemy.orm.exc.NoResultFound:
             return None
 
     @classmethod
     def authorize_anonymous(cls, uuid, password):
-        email = uuid + ANONYMOUS_EMAIL_DOMAIN
-        try:
-            user = cls.query.filter(cls.email == email).one()
-            if user.password == util.password_hash(password,
-                                                   user.password_salt):
-                return user
-        except sqlalchemy.orm.exc.NoResultFound:
-            return None
+        email = uuid + cls.ANONYMOUS_EMAIL_DOMAIN
+        return cls.authorize(email, password)

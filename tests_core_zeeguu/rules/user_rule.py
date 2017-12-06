@@ -6,6 +6,11 @@ from zeeguu.model.user import User
 
 
 class UserRule(BaseRule):
+    """A Rule testing class for the zeeguu.model.User model class.
+
+    Creates a User object with random data and saves it to the database.
+    """
+
     def __init__(self):
         super().__init__()
 
@@ -36,10 +41,10 @@ class UserRule(BaseRule):
     def _exists_in_db(obj):
         return User.exists(obj)
 
-    def add_bookmarks(self, number, exercises_count=0, **kwargs):
+    def add_bookmarks(self, bookmark_count, exercises_count=0, **kwargs):
         bookmark_rules = []
 
-        for _ in range(number):
+        for _ in range(bookmark_count):
             bookmark_rule = BookmarkRule(self.user, **kwargs)
             bookmark = bookmark_rule.bookmark
 
