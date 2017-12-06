@@ -1,7 +1,7 @@
 from tests_core_zeeguu.model_test_mixin import ModelTestMixIn
 from tests_core_zeeguu.rules.user_rule import UserRule
 from zeeguu.model.bookmark_priority_arts import BookmarkPriorityARTS
-from zeeguu.model.learner_stats.word_exercise_stats import AlgorithmService
+from zeeguu.model.learner_stats.word_exercise_stats import BookmarkPriorityUpdater
 
 
 class WordsExerciseStatsTest(ModelTestMixIn):
@@ -24,7 +24,7 @@ class WordsExerciseStatsTest(ModelTestMixIn):
         # GIVEN
 
         # WHEN
-        AlgorithmService.update_bookmark_priority(self.db, self.user)
+        BookmarkPriorityUpdater.update_bookmark_priority(self.db, self.user)
 
         # THEN
         result = self.__get_table_count(BookmarkPriorityARTS)

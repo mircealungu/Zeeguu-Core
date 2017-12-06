@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, date
 
 from tests_core_zeeguu.rules.language_rule import LanguageRule
 
-from zeeguu.word_scheduling.algorithm_service import AlgorithmService
+from zeeguu.word_scheduling.bookmark_priority_updater import BookmarkPriorityUpdater
 
 from tests_core_zeeguu.model_test_mixin import ModelTestMixIn
 from tests_core_zeeguu.rules.bookmark_rule import BookmarkRule

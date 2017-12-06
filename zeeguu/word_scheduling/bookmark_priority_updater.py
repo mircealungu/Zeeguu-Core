@@ -17,7 +17,10 @@ db = zeeguu.db
 
 
 class PriorityInfo:
-    MAX_PRIORITY = 10
+    """
+    a useful triple...
+    """
+    MAX_PRIORITY = 100
     NO_PRIORITY = -1000
 
     def __init__(self, bookmark, exercise, priority=MAX_PRIORITY):
@@ -26,37 +29,17 @@ class PriorityInfo:
         self.priority = priority
 
 
-class AlgorithmService:
-    """Handles the related tasks for using word scheduling algorithms
+class BookmarkPriorityUpdater:
+    """
+
+    Handles the related tasks for using word scheduling algorithms
     and also acts as a wrapper that calls the specific algorithm
+
+        update_bookmark_priority
+
     """
 
     algorithm_wrapper = AlgorithmWrapper(ArtsRT())
-
-    # AlgorithmSDCaller requires that update_exercise_source_stats is being called at some point before
-    # algorithm_wrapper = AlgorithmSDCaller(ArtsDiffFast())
-
-    @classmethod
-    def update_exercise_source_stats(cls):
-        """Update the ExerciseStats for the ArtsDiffSlow and ArtsDiffFast algorithm to provide
-         normalization information between the different exercise sources"""
-        exercise_sources = list(ExerciseSource.query.all())
-        for source in exercise_sources:
-            exercises = Exercise.query.filter_by(source_id=source.id).filter(Exercise.solving_speed <= 30000).all()
-            reaction_times = list(map(lambda x: x.solving_speed, exercises))
-            if len(reaction_times) == 0:
-                # magic values for the reaction, if no data exists
-                reaction_times = [5000, 6000]
-                print('This exercise source has no data yet. ID: ' + str(source.id))
-
-            mean, sd = NormalDistribution.calc_normal_distribution(
-                reaction_times)
-            if sd is None:
-                sd = 1000
-            exercise_stats = ExerciseStats.find_or_create(db.session, ExerciseStats(source, mean, sd))
-            db.session.merge(exercise_stats)
-
-        db.session.commit()
 
     @classmethod
     @time_this
@@ -84,6 +67,7 @@ class AlgorithmService:
                     entry = BookmarkPriorityARTS.find_or_create(each.bookmark, each.priority)
                     entry.priority = each.priority
                     db.session.add(entry)
+                    print(entry)
 
             db.session.commit()
         except Exception as e:
@@ -91,6 +75,28 @@ class AlgorithmService:
             print('Error during updating bookmark priority')
             print(e)
             print(traceback.format_exc())
+
+    @classmethod
+    def _update_exercise_source_stats(cls):
+        """Update the ExerciseStats for the ArtsDiffSlow and ArtsDiffFast algorithm to provide
+         normalization information between the different exercise sources"""
+        exercise_sources = list(ExerciseSource.query.all())
+        for source in exercise_sources:
+            exercises = Exercise.query.filter_by(source_id=source.id).filter(Exercise.solving_speed <= 30000).all()
+            reaction_times = list(map(lambda x: x.solving_speed, exercises))
+            if len(reaction_times) == 0:
+                # magic values for the reaction, if no data exists
+                reaction_times = [5000, 6000]
+                print('This exercise source has no data yet. ID: ' + str(source.id))
+
+            mean, sd = NormalDistribution.calc_normal_distribution(
+                reaction_times)
+            if sd is None:
+                sd = 1000
+            exercise_stats = ExerciseStats.find_or_create(db.session, ExerciseStats(source, mean, sd))
+            db.session.merge(exercise_stats)
+
+        db.session.commit()
 
     @classmethod
     def _calculate_bookmark_priority(cls, x, max_iterations):

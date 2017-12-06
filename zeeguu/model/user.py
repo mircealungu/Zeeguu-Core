@@ -243,7 +243,7 @@ class User(db.Model):
         :return:
         """
         from zeeguu.word_scheduling import words_to_study
-        from zeeguu.word_scheduling.algorithm_service import AlgorithmService
+        from zeeguu.word_scheduling.bookmark_priority_updater import BookmarkPriorityUpdater
 
         # AlgorithmService.update_bookmark_priority(zeeguu.db, self)
 

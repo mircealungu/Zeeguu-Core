@@ -21,7 +21,7 @@ import flask_sqlalchemy
 from flask import Flask
 
 import zeeguu
-from zeeguu.word_scheduling.algorithm_service import PriorityInfo, AlgorithmService
+from zeeguu.word_scheduling.bookmark_priority_updater import PriorityInfo, BookmarkPriorityUpdater
 from zeeguu.word_scheduling.algorithm_wrapper import AlgorithmWrapper
 from zeeguu.word_scheduling.arts.arts_rt import ArtsRT
 from zeeguu.model import User, ExerciseOutcome, Exercise, ExerciseSource
@@ -414,7 +414,7 @@ if __name__ == "__main__":
     )
 
     # update exercise source stats
-    AlgorithmService.update_exercise_source_stats()
+    BookmarkPriorityUpdater._update_exercise_source_stats()
 
     # optimize for algorithm for these users
     users = User.find_all()
