@@ -162,7 +162,7 @@ class User(db.Model):
 
     def all_bookmarks(self, after_date=datetime.datetime(1970, 1, 1),
                       before_date=datetime.date.today() + datetime.timedelta(
-                              days=1)):
+                          days=1)):
         from zeeguu.model.bookmark import Bookmark
         return Bookmark.query. \
             filter_by(user_id=self.id). \
@@ -179,7 +179,7 @@ class User(db.Model):
     def bookmarks_chronologically(self):
         from zeeguu.model.bookmark import Bookmark
         return Bookmark.query.filter_by(user_id=self.id).order_by(
-                Bookmark.time.desc()).all()
+            Bookmark.time.desc()).all()
 
     def bookmarks_by_date(self, after_date=datetime.datetime(1970, 1, 1)):
         """
@@ -214,8 +214,8 @@ class User(db.Model):
             for bookmark in bookmarks_by_date[date]:
                 bookmarks.append(bookmark.json_serializable_dict(with_context))
             date_entry = dict(
-                    date=date.strftime("%A, %d %B %Y"),
-                    bookmarks=bookmarks
+                date=date.strftime("%A, %d %B %Y"),
+                bookmarks=bookmarks
             )
             dates.append(date_entry)
         return dates
@@ -245,10 +245,9 @@ class User(db.Model):
         """
         from zeeguu.word_scheduling import arts
 
-        arts.update_bookmark_priority(zeeguu.db, self)
-        bookmarks = arts.bookmarks_to_study(self, bookmark_count)
+        bookmarks = arts.bookmarks_to_study(self, bookmark_count, zeeguu.db)
 
-        if len(bookmarks) == 0 and self.bookmark_count() == 0 and generate_bookmarks_if_needed:     
+        if len(bookmarks) == 0 and self.bookmark_count() == 0 and generate_bookmarks_if_needed:
             # we have zero bookmarks in our account... better to generate some
             # bookmarks to study than just whistle...
             # we might be in a situation where we're on the watch for example...
@@ -277,7 +276,7 @@ class User(db.Model):
         year = datetime.date.today().year - 1  # get data from year 2015(if this year is 2016)
         month = datetime.date.today().month
         bookmarks_dict, dates = self.bookmarks_by_date(
-                datetime.datetime(year, month, 1))
+            datetime.datetime(year, month, 1))
 
         counts = []
         for date in dates:
@@ -325,8 +324,8 @@ class User(db.Model):
     def exists(cls, user):
         try:
             cls.query.filter_by(
-                    email=user.email,
-                    id=user.id
+                email=user.email,
+                id=user.id
             ).one()
             return True
         except NoResultFound:

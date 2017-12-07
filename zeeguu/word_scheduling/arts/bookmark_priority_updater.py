@@ -65,7 +65,7 @@ class BookmarkPriorityUpdater:
                     entry = BookmarkPriorityARTS.find_or_create(each.bookmark, each.priority)
                     entry.priority = each.priority
                     db.session.add(entry)
-                    print(entry)
+                    # print(entry)
 
             db.session.commit()
         except Exception as e:

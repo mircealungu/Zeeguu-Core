@@ -32,8 +32,8 @@ class WordsToStudyTest(ModelTestMixIn):
         # THEN
         bookmark = self.__get_bookmark_with_highest_priority()
 
-        print (bookmark)
-        print (new_bookmark)
+        # print (bookmark)
+        # print (new_bookmark)
 
         self.assertTrue(new_bookmark == bookmark,
                         "The newly added bookmark has the highest priority")

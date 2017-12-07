@@ -7,7 +7,8 @@
             update_bookmark_priority
                 this can be time consuming, so the caller might want
                 to call it separately; in theory they can also call
-                it before every call to bookmarks_to_study
+                it before every call to bookmarks_to_study by setting
+                the corresponding method argument in that method to True
 
 """
 
@@ -19,7 +20,22 @@ from . import words_to_study
 from . import bookmark_priority_updater
 
 
-def bookmarks_to_study(user, desired_bookmarks_count=10):
+def bookmarks_to_study(user, desired_bookmarks_count=10, db = None, compute_priority_before=False):
+
+    """
+
+        Note that updating bookmark priority might be slow; this is by default turned off...
+
+    :param user:
+    :param desired_bookmarks_count:
+    :param db: can be none if one needs not update the priorities beforehand
+    :param compute_priority_before: 
+    :return:
+    """
+
+    if compute_priority_before:
+        update_bookmark_priority(db, user)
+
     return words_to_study.bookmarks_to_study(user, desired_bookmarks_count)
 
 
