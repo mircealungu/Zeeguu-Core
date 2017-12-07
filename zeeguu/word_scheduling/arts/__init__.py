@@ -1,4 +1,10 @@
 """
+
+    ARTS algorithm as described in:
+
+        Adaptive response-time-based category sequencing in perceptual learning
+        by Everett Mettler and Philip J. Kellman
+
     The main two public methods of this package are:
 
            bookmarks_to_study
@@ -9,6 +15,9 @@
                 to call it separately; in theory they can also call
                 it before every call to bookmarks_to_study by setting
                 the corresponding method argument in that method to True
+
+    The package assumes the presence of a config file the path to which
+    should be specified in WORD_SCHEDULING_ALGORITHM_CONFIG
 
 """
 
@@ -29,7 +38,7 @@ def bookmarks_to_study(user, desired_bookmarks_count=10, db = None, compute_prio
     :param user:
     :param desired_bookmarks_count:
     :param db: can be none if one needs not update the priorities beforehand
-    :param compute_priority_before: 
+    :param compute_priority_before:
     :return:
     """
 

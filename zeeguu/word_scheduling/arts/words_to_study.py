@@ -9,8 +9,6 @@ def bookmarks_to_study(user, desired_bookmarks_count=10):
         Returns a list of bookmarks with the highest priorities
         An equal amount of bookmarks from each used algorithm (ABTesting) are selected
 
-        If there are no bookmarks_groups (i.e. the bookmarks table is empty, or no Algorithms are declared in the
-        WORD_SCHEDULING_ALGORITHM_CONFIG file) then an empty list is returned.
 
         Otherwise, an equal amount of bookmarks is taken from each bookmark_group and concatenated into a list,
         which is then returned. The amount of bookmarks taken from each group can differ by 1, depending on whether the
