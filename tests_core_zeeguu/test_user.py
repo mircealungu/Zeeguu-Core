@@ -2,16 +2,12 @@ import json
 import random
 import uuid
 from collections import Counter
-from datetime import datetime, timedelta, date
-
-from tests_core_zeeguu.rules.language_rule import LanguageRule
-
-from zeeguu.word_scheduling.bookmark_priority_updater import BookmarkPriorityUpdater
+from datetime import datetime, timedelta
 
 from tests_core_zeeguu.model_test_mixin import ModelTestMixIn
 from tests_core_zeeguu.rules.bookmark_rule import BookmarkRule
 from tests_core_zeeguu.rules.user_rule import UserRule
-from zeeguu.model import User, Language
+from zeeguu.model import User
 
 
 class UserTest(ModelTestMixIn):

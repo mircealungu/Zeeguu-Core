@@ -1,8 +1,8 @@
 import configparser
 
 import zeeguu.util.configuration as utils
-from zeeguu.word_scheduling.algorithm_loader import AlgorithmLoader
-from zeeguu.word_scheduling.algorithm_wrapper import AlgorithmWrapper
+from zeeguu.word_scheduling.arts.algorithm_loader import AlgorithmLoader
+from zeeguu.word_scheduling.arts.algorithm_wrapper import AlgorithmWrapper
 
 
 class ABTesting:

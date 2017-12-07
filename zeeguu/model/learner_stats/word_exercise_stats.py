@@ -2,9 +2,9 @@ import decimal
 
 import sqlalchemy.orm
 import zeeguu
-from zeeguu.word_scheduling.bookmark_priority_updater import BookmarkPriorityUpdater
 from zeeguu.model.user import User
 from zeeguu.model.user_word import UserWord
+from zeeguu.word_scheduling import arts
 
 db = zeeguu.db
 from zeeguu.model.bookmark import Bookmark
@@ -91,7 +91,7 @@ class ExerciseBasedProbability(db.Model):
     # TODO: Think whether it's not much simpler to work with bookmarks
     # TODO: rather than words...
     def update_after_exercise(cls, db, user, word):
-        BookmarkPriorityUpdater.update_bookmark_priority(db, user)
+        arts.update_bookmark_priority(db, user)
         cls._update_bookmark_probability(db, user, word)
 
     @classmethod

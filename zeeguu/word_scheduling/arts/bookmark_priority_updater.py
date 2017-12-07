@@ -1,17 +1,15 @@
 import itertools
-
 import traceback
 
 import zeeguu
-
-from zeeguu.word_scheduling.algorithm_wrapper import AlgorithmWrapper
-from zeeguu.word_scheduling.analysis.normal_distribution import NormalDistribution
-from zeeguu.word_scheduling.arts.arts_rt import ArtsRT
 from zeeguu.model.bookmark_priority_arts import BookmarkPriorityARTS
 from zeeguu.model.exercise import Exercise
 from zeeguu.model.exercise_source import ExerciseSource
 from zeeguu.model.learner_stats.exercise_stats import ExerciseStats
 from zeeguu.util.timer_logging_decorator import time_this
+from zeeguu.word_scheduling.arts.algorithm_wrapper import AlgorithmWrapper
+from zeeguu.word_scheduling.arts.analysis.normal_distribution import NormalDistribution
+from zeeguu.word_scheduling.arts.arts_rt import ArtsRT
 
 db = zeeguu.db
 

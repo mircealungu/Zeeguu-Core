@@ -3,16 +3,15 @@ import math
 import random
 import statistics
 
-from tests_core_zeeguu.rules.user_rule import UserRule
-
 from tests_core_zeeguu.model_test_mixin import ModelTestMixIn
 from tests_core_zeeguu.rules.bookmark_rule import BookmarkRule
-from zeeguu.word_scheduling.ab_testing import ABTesting
-from zeeguu.word_scheduling.bookmark_priority_updater import BookmarkPriorityUpdater
-from zeeguu.word_scheduling.algorithm_loader import AlgorithmLoader
-from zeeguu.word_scheduling.algorithm_wrapper import AlgorithmWrapper
-from zeeguu.word_scheduling.analysis.normal_distribution import NormalDistribution
+from tests_core_zeeguu.rules.user_rule import UserRule
 from zeeguu.word_scheduling.arts import ArtsDiffFast, ArtsDiffSlow, ArtsRT, ArtsRandom
+from zeeguu.word_scheduling.arts.ab_testing import ABTesting
+from zeeguu.word_scheduling.arts.algorithm_loader import AlgorithmLoader
+from zeeguu.word_scheduling.arts.algorithm_wrapper import AlgorithmWrapper
+from zeeguu.word_scheduling.arts.analysis.normal_distribution import NormalDistribution
+from zeeguu.word_scheduling import arts
 
 
 class WordSchedulingAlgosTest(ModelTestMixIn):
@@ -29,7 +28,7 @@ class WordSchedulingAlgosTest(ModelTestMixIn):
                 algorithm_count=random.randint(2, 5))
         ABTesting._algorithms = AlgorithmLoader.load_algorithms(self.config)
 
-        BookmarkPriorityUpdater.update_bookmark_priority(self.db, self.user)
+        arts.update_bookmark_priority(self.db, self.user)
 
     """Tests for class NormalDistribution"""
     def test_calc_normal_distribution(self):

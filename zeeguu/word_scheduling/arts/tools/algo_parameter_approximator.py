@@ -18,13 +18,12 @@ from statistics import median
 from timeit import default_timer as timer
 
 import flask_sqlalchemy
-from flask import Flask
-
 import zeeguu
-from zeeguu.word_scheduling.bookmark_priority_updater import PriorityInfo, BookmarkPriorityUpdater
-from zeeguu.word_scheduling.algorithm_wrapper import AlgorithmWrapper
-from zeeguu.word_scheduling.arts.arts_rt import ArtsRT
+from flask import Flask
 from zeeguu.model import User, ExerciseOutcome, Exercise, ExerciseSource
+from zeeguu.word_scheduling.arts.algorithm_wrapper import AlgorithmWrapper
+from zeeguu.word_scheduling.arts.arts_rt import ArtsRT
+from zeeguu.word_scheduling.arts.bookmark_priority_updater import PriorityInfo, BookmarkPriorityUpdater
 
 
 def mean(numbers):

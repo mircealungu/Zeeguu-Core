@@ -5,11 +5,10 @@ import random
 import re
 
 import sqlalchemy.orm
-from sqlalchemy import Column, Table, ForeignKey, Integer
+import zeeguu
+from sqlalchemy import Column, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.exc import NoResultFound
-
-import zeeguu
 from zeeguu import util
 from zeeguu.model.language import Language
 
@@ -244,12 +243,10 @@ class User(db.Model):
              the system would always generate some examples here...
         :return:
         """
-        from zeeguu.word_scheduling import words_to_study
-        from zeeguu.word_scheduling.bookmark_priority_updater import BookmarkPriorityUpdater
+        from zeeguu.word_scheduling import arts
 
-        BookmarkPriorityUpdater.update_bookmark_priority(zeeguu.db, self)
-
-        bookmarks = words_to_study.bookmarks_to_study(self, bookmark_count)
+        arts.update_bookmark_priority(zeeguu.db, self)
+        bookmarks = arts.bookmarks_to_study(self, bookmark_count)
 
         if len(bookmarks) == 0 and self.bookmark_count() == 0 and generate_bookmarks_if_needed:     
             # we have zero bookmarks in our account... better to generate some
