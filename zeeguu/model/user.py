@@ -236,7 +236,9 @@ class User(db.Model):
 
     def bookmarks_to_study(self, bookmark_count=10, generate_bookmarks_if_needed=False):
         """
+
         :param bookmark_count: by default we recommend 10 words
+
         :param generate_bookmarks_if_needed: force generating some example words, even if
             there are none in the history of the user. Before this param was introduced,
              the system would always generate some examples here...
@@ -245,11 +247,11 @@ class User(db.Model):
         from zeeguu.word_scheduling import words_to_study
         from zeeguu.word_scheduling.bookmark_priority_updater import BookmarkPriorityUpdater
 
-        # AlgorithmService.update_bookmark_priority(zeeguu.db, self)
+        BookmarkPriorityUpdater.update_bookmark_priority(zeeguu.db, self)
 
         bookmarks = words_to_study.bookmarks_to_study(self, bookmark_count)
 
-        if len(bookmarks) == 0 and self.bookmark_count() == 0 and generate_bookmarks_if_needed:
+        if len(bookmarks) == 0 and self.bookmark_count() == 0 and generate_bookmarks_if_needed:     
             # we have zero bookmarks in our account... better to generate some
             # bookmarks to study than just whistle...
             # we might be in a situation where we're on the watch for example...
