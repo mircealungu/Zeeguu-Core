@@ -25,7 +25,12 @@ def bookmarks_to_study(user, desired_bookmarks_count=10):
 
     # Group the bookmarks by their used priority algorithm in lists
     bookmark_groups = ABTesting.split_bookmarks_based_on_algorithm(bookmarks)
-    if len(bookmarks) == 0 or len(bookmark_groups) == 0:
+    if len(bookmarks) == 0:
+        print ("zero bookmarks that match the filter")
+        return []
+
+    if len(bookmark_groups) == 0:
+        print ("zero bookmark groups !!!")
         return []
 
     # Select bookmarks from the algorithm groups
