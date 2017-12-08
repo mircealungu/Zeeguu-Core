@@ -1,16 +1,17 @@
 import configparser
 
-import zeeguu.util.configuration as utils
-from zeeguu.word_scheduling.arts.algorithm_loader import AlgorithmLoader
+from zeeguu.word_scheduling.arts.arts_rt import ArtsRT
+from zeeguu.word_scheduling.arts.experiments.arts_diff_slow import ArtsDiffSlow
 from zeeguu.word_scheduling.arts.algorithm_wrapper import AlgorithmWrapper
 
 
 class ABTesting:
-    _config_file = utils.load_config_file('WORD_SCHEDULING_ALGORITHM_CONFIG')
 
-    _config = configparser.ConfigParser()
-    _config.read(_config_file)
-    _algorithms = AlgorithmLoader.load_algorithms(_config)
+    _algorithms = [
+            ArtsRT(),
+            ArtsRT(0.1, 2, 1.1, 2, 20),
+            ArtsDiffSlow()
+            ]
 
     @classmethod
     def get_algorithm_for_id(cls, id):

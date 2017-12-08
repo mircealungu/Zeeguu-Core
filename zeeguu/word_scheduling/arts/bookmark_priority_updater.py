@@ -18,7 +18,7 @@ class PriorityInfo:
     """
     a useful triple...
     """
-    MAX_PRIORITY = 100
+    MAX_PRIORITY = 1000
     NO_PRIORITY = -1000
 
     def __init__(self, bookmark, exercise, priority=MAX_PRIORITY):

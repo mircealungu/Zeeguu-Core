@@ -21,12 +21,11 @@
 
 """
 
-from .arts_diff_fast import ArtsDiffFast
-from .arts_diff_slow import ArtsDiffSlow
-from .arts_rt import ArtsRT
-from .arts_random import ArtsRandom
-from . import words_to_study
+from zeeguu.word_scheduling.arts.experiments.arts_diff_fast import ArtsDiffFast
+from zeeguu.word_scheduling.arts.experiments.arts_random import ArtsRandom
 from . import bookmark_priority_updater
+from . import words_to_study
+from .arts_rt import ArtsRT
 
 
 def bookmarks_to_study(user, desired_bookmarks_count=10, db = None, compute_priority_before=False):
