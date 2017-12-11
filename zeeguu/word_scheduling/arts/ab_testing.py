@@ -15,7 +15,7 @@ class ABTesting:
 
     @classmethod
     def get_algorithm_for_id(cls, id):
-        """Returns an algorithm specified in WORD_SCHEDULING_ALGORITHM_CONFIG based on the modulo
+        """Returns an algorithm from the_algorithms based on the modulo
         of the ID of the object and the number of algorithms
 
         :param id: An Integer, for which the algorithm should be returned

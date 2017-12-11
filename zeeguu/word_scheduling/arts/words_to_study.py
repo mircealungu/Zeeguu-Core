@@ -1,6 +1,7 @@
 from zeeguu.model.bookmark import Bookmark
 from zeeguu.model.bookmark_priority_arts import BookmarkPriorityARTS
 from zeeguu.word_scheduling.arts.ab_testing import ABTesting
+from zeeguu import log
 
 
 def bookmarks_to_study(user, desired_bookmarks_count=10):
@@ -26,11 +27,11 @@ def bookmarks_to_study(user, desired_bookmarks_count=10):
     # Group the bookmarks by their used priority algorithm in lists
     bookmark_groups = ABTesting.split_bookmarks_based_on_algorithm(bookmarks)
     if len(bookmarks) == 0:
-        print ("zero bookmarks that match the filter")
+        log ("zero bookmarks that match the filter")
         return []
 
     if len(bookmark_groups) == 0:
-        print ("zero bookmark groups !!!")
+        log ("bookmark groups: " + len(bookmark_groups))
         return []
 
     # Select bookmarks from the algorithm groups
