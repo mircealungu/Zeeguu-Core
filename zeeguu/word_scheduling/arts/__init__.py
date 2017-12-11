@@ -20,7 +20,7 @@
     should be specified in WORD_SCHEDULING_ALGORITHM_CONFIG
 
 """
-
+from zeeguu.util.timer_logging_decorator import time_this
 from zeeguu.word_scheduling.arts.experiments.arts_diff_fast import ArtsDiffFast
 from zeeguu.word_scheduling.arts.experiments.arts_random import ArtsRandom
 from . import bookmark_priority_updater
@@ -47,5 +47,6 @@ def bookmarks_to_study(user, desired_bookmarks_count=10, db = None, compute_prio
     return words_to_study.bookmarks_to_study(user, desired_bookmarks_count)
 
 
+@time_this
 def update_bookmark_priority(db, user):
     return bookmark_priority_updater.BookmarkPriorityUpdater.update_bookmark_priority(db, user)
