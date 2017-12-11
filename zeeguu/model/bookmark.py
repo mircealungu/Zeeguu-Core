@@ -127,7 +127,7 @@ class Bookmark(db.Model):
         return not self.bad_quality_bookmark()
 
     def origin_in_context(self):
-        if self.origin.word in self.text:
+        if self.origin.word in self.text.content:
             return True
 
     def bad_quality_bookmark(self):
