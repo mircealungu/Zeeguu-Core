@@ -126,6 +126,10 @@ class Bookmark(db.Model):
         # Else it just should not be bad quality!
         return not self.bad_quality_bookmark()
 
+    def origin_in_context(self):
+        if self.origin.word in self.text:
+            return True
+
     def bad_quality_bookmark(self):
         # following are reasons that disqualify a bookmark from
         bad_quality = (
@@ -145,6 +149,13 @@ class Bookmark(db.Model):
             or
             # a too long context is not good either
             self.context_word_count() > 20
+
+            or
+            # a superset of translation same as origin...
+            # happens in the case of some bugs in translation
+            # where the translation is inserted in the text
+            # till we fix it, we should not show this
+            self.origin_in_context()
 
         )
 
