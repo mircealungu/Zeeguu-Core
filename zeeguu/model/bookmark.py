@@ -425,6 +425,7 @@ class Bookmark(db.Model):
         if is_learned:
             zeeguu.log(f"Log: {exercise_log_summary}: bookmark {self.id} learned!")
             self.learned_time = learned_time
+            self.learned = True
             session.add(self)
         else:
             zeeguu.log(f"Log: {exercise_log_summary}: bookmark {self.id} not learned yet.")
@@ -444,7 +445,7 @@ class Bookmark(db.Model):
         # TODO: This must be stored in the DB together with the
         # bookmark... once a bookmark has been learned, we should
         # not not need to doubt it ... we might still want to confirm
-        # say one month later, or three months later...  
+        # say one month later, or three months later...
 
         """
         :param also_return_time: should the function return also the time when
