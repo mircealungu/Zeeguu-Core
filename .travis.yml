@@ -2,7 +2,6 @@ before_install:
   - mysql -e "create database IF NOT EXISTS zeeguu_test;" -uroot
   - mysql -e "grant all on zeeguu_test.* to 'zeeguu_test'@'localhost' identified by 'zeeguu_test';" -uroot
   - mkdir -p ~/.config/zeeguu/ && cp testing_default.cfg ~/.config/zeeguu/core_test.cfg
-  - cp word_scheduling_algorithms.ini ~/.config/zeeguu/word_scheduling_algorithms.ini
   - pip3 install jieba3k
   - pip3 install coveralls
 
@@ -17,7 +16,6 @@ cache:
 env:
   global:
     - ZEEGUU_CORE_CONFIG=$HOME/.config/zeeguu/core_test.cfg
-    - WORD_SCHEDULING_ALGORITHM_CONFIG=$HOME/.config/zeeguu/word_scheduling_algorithms.ini
 
 install: "python3 setup.py install"
 
