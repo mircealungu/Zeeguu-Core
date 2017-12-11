@@ -28,8 +28,7 @@ from . import words_to_study
 from .arts_rt import ArtsRT
 
 
-def bookmarks_to_study(user, desired_bookmarks_count=10, db = None, compute_priority_before=False):
-
+def bookmarks_to_study(user, desired_bookmarks_count=10, db=None, compute_priority_before=False):
     """
 
         Note that updating bookmark priority might be slow; this is by default turned off...
@@ -47,6 +46,5 @@ def bookmarks_to_study(user, desired_bookmarks_count=10, db = None, compute_prio
     return words_to_study.bookmarks_to_study(user, desired_bookmarks_count)
 
 
-@time_this
 def update_bookmark_priority(db, user):
     return bookmark_priority_updater.BookmarkPriorityUpdater.update_bookmark_priority(db, user)
