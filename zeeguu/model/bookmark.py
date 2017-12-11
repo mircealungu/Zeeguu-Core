@@ -185,7 +185,7 @@ class Bookmark(db.Model):
         if self.is_learned_based_on_exercise_outcomes():
             return False
 
-        return (self.quality_bookmark and
+        return (self.quality_bookmark() and
                 not last_outcome.too_easy() and
                 not last_outcome.unknown_feedback() and
                 not self.events_prevent_further_study())
@@ -443,8 +443,8 @@ class Bookmark(db.Model):
     def has_been_learned(self, also_return_time=False):
         # TODO: This must be stored in the DB together with the
         # bookmark... once a bookmark has been learned, we should
-        # not need to doubt it ... or we could still test after
-        # one month or so... much later than normally we do.
+        # not not need to doubt it ... we might still want to confirm
+        # say one month later, or three months later...  
 
         """
         :param also_return_time: should the function return also the time when
