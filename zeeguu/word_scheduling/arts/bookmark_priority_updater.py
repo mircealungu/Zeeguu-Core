@@ -48,9 +48,11 @@ class BookmarkPriorityUpdater:
         :param user: The user object
         """
         try:
-            # print ("in update bookmark priority...")
             bookmarks_for_user = user.all_bookmarks_fit_for_study()
-            if len(bookmarks_for_user) == 0:
+            fit_for_study_count = len(bookmarks_for_user)
+
+            zeeguu.log(f"{fit_for_study_count} bookmarks fit for study" )
+            if fit_for_study_count == 0:
                 return
 
             # tuple(0=bookmark, 1=exercise)
