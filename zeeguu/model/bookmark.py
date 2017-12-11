@@ -193,10 +193,10 @@ class Bookmark(db.Model):
     def add_new_exercise_result(self, exercise_source, exercise_outcome,
                                 exercise_solving_speed):
         new_source = ExerciseSource.query.filter_by(
-                source=exercise_source.source
+            source=exercise_source.source
         ).first()
         new_outcome = ExerciseOutcome.query.filter_by(
-                outcome=exercise_outcome.outcome
+            outcome=exercise_outcome.outcome
         ).first()
         exercise = Exercise(new_outcome, new_source, exercise_solving_speed,
                             datetime.now())
@@ -289,7 +289,7 @@ class Bookmark(db.Model):
     @classmethod
     def find_by_specific_user(cls, user):
         return cls.query.filter_by(
-                user=user
+            user=user
         ).all()
 
     @classmethod
@@ -303,30 +303,30 @@ class Bookmark(db.Model):
     @classmethod
     def find(cls, b_id):
         return cls.query.filter_by(
-                id=b_id
+            id=b_id
         ).one()
 
     @classmethod
     def find_all_by_user_and_word(cls, user, word):
         return cls.query.filter_by(
-                user=user,
-                origin=word
+            user=user,
+            origin=word
         ).all()
 
     @classmethod
     def find_by_user_word_and_text(cls, user, word, text):
         return cls.query.filter_by(
-                user=user,
-                origin=word,
-                text=text
+            user=user,
+            origin=word,
+            text=text
         ).one()
 
     @classmethod
     def exists(cls, bookmark):
         try:
             cls.query.filter_by(
-                    origin_id=bookmark.origin.id,
-                    id=bookmark.id
+                origin_id=bookmark.origin.id,
+                id=bookmark.id
             ).one()
             return True
         except NoResultFound:
@@ -341,6 +341,10 @@ class Bookmark(db.Model):
         else:
             return None
 
+    def sorted_exercise_log(self):
+        return sorted(self.exercise_log,
+                      key=lambda x: x.time,
+                      reverse=True)
 
     def check_if_learned_based_on_exercise_outcomes(self,
                                                     add_to_result_time=False):
@@ -384,9 +388,7 @@ class Bookmark(db.Model):
         :param also_return_time:
         :return:
         """
-        sorted_exercise_log_by_latest = sorted(self.exercise_log,
-                                               key=lambda x: x.time,
-                                               reverse=True)
+        sorted_exercise_log_by_latest = self.sorted_exercise_log()
 
         if sorted_exercise_log_by_latest:
             last_exercise = sorted_exercise_log_by_latest[0]
@@ -420,11 +422,12 @@ class Bookmark(db.Model):
         is_learned, learned_time = self.is_learned_based_on_exercise_outcomes(True)
         if is_learned:
             print("bookmark learned!")
+            zeeguu.log(self.sorted_exercise_log())
             self.learned_time = learned_time
             session.add(self)
         else:
-            print("bookmark not learned yet...")
-
+            zeeguu.log("bookmark not learned yet...")
+            zeeguu.log(self.sorted_exercise_log())
 
     def events_indicate_its_learned(self):
         from zeeguu.model.smartwatch.watch_interaction_event import \
