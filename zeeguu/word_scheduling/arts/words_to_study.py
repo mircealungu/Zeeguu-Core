@@ -30,9 +30,10 @@ def bookmarks_to_study(user, desired_bookmarks_count=10):
         log ("zero bookmarks that match the filter")
         return []
 
+    log("bookmark groups: " + len(bookmark_groups))
     if len(bookmark_groups) == 0:
-        log ("bookmark groups: " + len(bookmark_groups))
         return []
+
 
     # Select bookmarks from the algorithm groups
     bookmarks_to_return = []
