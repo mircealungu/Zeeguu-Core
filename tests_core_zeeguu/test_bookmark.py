@@ -183,6 +183,9 @@ class BookmarkTest(ModelTestMixIn):
         result_bool, result_time = random_bookmarks[2].check_if_learned_based_on_exercise_outcomes()
         assert result_bool and result_time == random_bookmarks[2].exercise_log[-1].time
 
+
+        random_bookmarks[2].update_learned_status(self.db.session)
+
         # A bookmark with no TOO EASY outcome or less than 5 correct exercises in a row returns False, None
         wrong_exercise = ExerciseRule().exercise
         wrong_exercise.outcome = OutcomeRule().wrong
@@ -192,6 +195,7 @@ class BookmarkTest(ModelTestMixIn):
 
         # Same as before, but without a second return value
         assert not random_bookmarks[3].check_if_learned_based_on_exercise_outcomes()
+
 
     def test_has_been_learned(self):
         random_bookmarks = [BookmarkRule(self.user).bookmark for _ in range(0, 2)]
