@@ -421,13 +421,13 @@ class Bookmark(db.Model):
         """
         is_learned, learned_time = self.is_learned_based_on_exercise_outcomes(True)
         log = self.sorted_exercise_log()
-        exercise_log_summary = ''.join([exercise.outcome.outcome[0] for exercise in log])
+        exercise_log_summary = ' '.join([exercise.short_string_summary() for exercise in log])
         if is_learned:
-            zeeguu.log("Log: " + exercise_log_summary + ": bookmark learned!")
+            zeeguu.log(f"Log: {exercise_log_summary}: bookmark {self.id} learned!")
             self.learned_time = learned_time
             session.add(self)
         else:
-            zeeguu.log("Log: " + exercise_log_summary + ": bookmark not learned yet...")
+            zeeguu.log(f"Log: {exercise_log_summary}: bookmark {self.id} not learned yet.")
 
     def events_indicate_its_learned(self):
         from zeeguu.model.smartwatch.watch_interaction_event import \

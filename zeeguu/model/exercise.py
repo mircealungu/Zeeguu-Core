@@ -23,3 +23,6 @@ class Exercise(db.Model):
         self.source = source
         self.solving_speed = solving_speed
         self.time = time
+
+    def short_string_summary(self):
+        return str(self.source.id) + self.outcome.outcome[0]
