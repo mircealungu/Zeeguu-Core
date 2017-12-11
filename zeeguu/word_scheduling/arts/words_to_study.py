@@ -2,6 +2,7 @@ from zeeguu.model.bookmark import Bookmark
 from zeeguu.model.bookmark_priority_arts import BookmarkPriorityARTS
 from zeeguu.word_scheduling.arts.ab_testing import ABTesting
 from zeeguu import log
+from sqlalchemy import or_
 
 
 def bookmarks_to_study(user, desired_bookmarks_count=10):
@@ -21,6 +22,7 @@ def bookmarks_to_study(user, desired_bookmarks_count=10):
         filter_by(learned=False). \
         join(BookmarkPriorityARTS). \
         filter(BookmarkPriorityARTS.bookmark_id == Bookmark.id). \
+        filter(or_(Bookmark.fit_for_study == True, Bookmark.starred == True)). \
         order_by(BookmarkPriorityARTS.priority.desc()). \
         all()
 

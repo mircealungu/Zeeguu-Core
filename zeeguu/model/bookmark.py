@@ -443,7 +443,8 @@ class Bookmark(db.Model):
     def has_been_learned(self, also_return_time=False):
         # TODO: This must be stored in the DB together with the
         # bookmark... once a bookmark has been learned, we should
-        # not ever doubt it ...
+        # not need to doubt it ... or we could still test after
+        # one month or so... much later than normally we do.
 
         """
         :param also_return_time: should the function return also the time when
