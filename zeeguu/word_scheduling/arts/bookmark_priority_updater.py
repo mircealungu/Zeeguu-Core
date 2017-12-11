@@ -40,7 +40,6 @@ class BookmarkPriorityUpdater:
     algorithm_wrapper = AlgorithmWrapper(ArtsRT())
 
     @classmethod
-    @time_this
     def update_bookmark_priority(cls, db, user):
         """ Update all bookmark priorities of one user
 
