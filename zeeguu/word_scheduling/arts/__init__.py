@@ -16,9 +16,7 @@
                 it before every call to bookmarks_to_study by setting
                 the corresponding method argument in that method to True
 
-    The package assumes the presence of a config file the path to which
-    should be specified in WORD_SCHEDULING_ALGORITHM_CONFIG
-
+     Original Implementation by Timon Back and Peter Ullrich
 """
 from zeeguu.util.timer_logging_decorator import time_this
 from zeeguu.word_scheduling.arts.experiments.arts_diff_fast import ArtsDiffFast
