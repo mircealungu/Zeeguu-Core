@@ -26,6 +26,8 @@ from zeeguu.word_scheduling.arts.arts_rt import ArtsRT
 from zeeguu.word_scheduling.arts.bookmark_priority_updater import PriorityInfo, BookmarkPriorityUpdater
 
 
+#:nocov:
+
 def mean(numbers):
     return float(sum(numbers)) / max(len(numbers), 1)
 
@@ -469,3 +471,5 @@ if __name__ == "__main__":
 
         rows_zip = zip(*rows)
         wr.writerows(rows_zip)
+
+ #:nocov:
