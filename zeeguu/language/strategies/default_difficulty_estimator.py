@@ -14,4 +14,4 @@ class DefaultDifficultyEstimator(DifficultyEstimatorStrategy):
             normalized=0,
             discrete="EASY",
         )
-        return 0;
+        return difficulty_scores;
