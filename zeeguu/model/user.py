@@ -10,6 +10,7 @@ from sqlalchemy import Column, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.exc import NoResultFound
 from zeeguu import util
+from zeeguu.language.difficulty_estimator_factory import DifficultyEstimatorFactory
 from zeeguu.model.language import Language
 
 db = zeeguu.db
@@ -101,8 +102,10 @@ class User(db.Model):
         )
 
     def text_difficulty(self, text, language):
-        from zeeguu.language.text_difficulty import text_difficulty_for_user
-        return text_difficulty_for_user(self, text, language)
+        difficulty_estimator = DifficultyEstimatorFactory.get_difficulty_estimator("FrequencyDifficultyEstimator")
+        return difficulty_estimator.estimate_difficulty(text, language)
+        #from zeeguu.language.text_difficulty import text_difficulty_for_user
+        #return text_difficulty_for_user(self, text, language)
 
     def set_learned_language(self, code):
         self.learned_language = Language.find(code)
