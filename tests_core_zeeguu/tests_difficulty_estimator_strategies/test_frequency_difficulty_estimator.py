@@ -23,6 +23,7 @@ class FrequencyDifficultyEstimatorTest(ModelTestMixIn, TestCase):
         assert d1['score_average'] < 0.1
         assert d1['score_median'] < 0.1
 
+    #Todo: Use a really difficuly text
     def test_compute_complex_text_difficulty(self):
         d1 = FrequencyDifficultyEstimator.estimate_difficulty(COMPLEX_TEXT, self.lan)
 
