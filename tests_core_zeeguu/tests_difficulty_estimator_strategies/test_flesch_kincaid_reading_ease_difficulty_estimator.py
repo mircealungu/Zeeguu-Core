@@ -15,30 +15,51 @@ class FleschKincaidReadingEaseDifficultyEstimatorTest(ModelTestMixIn, TestCase):
     def setUp(self):
         super().setUp()
 
+    ## NORMALIZE TESTS
+    def test_normalized_above_100(self):
+        d = FleschKincaidReadingEaseDifficultyEstimator.normalize_difficulty(178)
+        self.assertEqual(d, 0)
+
+    def test_normalized_100(self):
+        d = FleschKincaidReadingEaseDifficultyEstimator.normalize_difficulty(100)
+        self.assertEqual(d, 0)
+
+    def test_normalized_between_100_and_0(self):
+        d = FleschKincaidReadingEaseDifficultyEstimator.normalize_difficulty(50)
+        self.assertEqual(d, 2.5)
+
+    def test_normalized_0(self):
+        d = FleschKincaidReadingEaseDifficultyEstimator.normalize_difficulty(0)
+        self.assertEqual(d, 5)
+
+    def test_normalized_below_0(self):
+        d = FleschKincaidReadingEaseDifficultyEstimator.normalize_difficulty(-10)
+        self.assertEqual(d, 5)
+
     ## DISCRETE TESTS
     def test_discrete_above_80(self):
         d = FleschKincaidReadingEaseDifficultyEstimator.discrete_difficulty(100)
-        self.assertEqual(d['discrete'], 'EASY')
+        self.assertEqual(d, 'EASY')
 
     def test_discrete_80(self):
         d = FleschKincaidReadingEaseDifficultyEstimator.discrete_difficulty(80)
-        self.assertEqual(d['discrete'], 'MEDIUM')
+        self.assertEqual(d, 'MEDIUM')
 
     def test_discrete_between_80_and_50(self):
         d = FleschKincaidReadingEaseDifficultyEstimator.discrete_difficulty(60)
-        self.assertEqual(d['discrete'], 'MEDIUM')
+        self.assertEqual(d, 'MEDIUM')
 
     def test_discrete_50(self):
         d = FleschKincaidReadingEaseDifficultyEstimator.discrete_difficulty(50)
-        self.assertEqual(d['discrete'], 'HARD')
+        self.assertEqual(d, 'HARD')
 
-    def test_below_50(self):
+    def test_discrete_below_50(self):
         d = FleschKincaidReadingEaseDifficultyEstimator.discrete_difficulty(30)
-        self.assertEqual(d['discrete'], 'HARD')
+        self.assertEqual(d, 'HARD')
 
-    def test_below_0(self):
+    def test_discrete_below_0(self):
         d = FleschKincaidReadingEaseDifficultyEstimator.discrete_difficulty(-10)
-        self.assertEqual(d['discrete'], 'HARD')
+        self.assertEqual(d, 'HARD')
 
     ## ENGLISH TESTS
     def test_english_easy(self):
@@ -55,6 +76,6 @@ class FleschKincaidReadingEaseDifficultyEstimatorTest(ModelTestMixIn, TestCase):
 
     def test_english_hard(self):
         lan = LanguageRule().en
-        d = FleschKincaidReadingEaseDifficultyEstimator.estimate_difficulty(E_MEDIUM_TEXT, lan)
+        d = FleschKincaidReadingEaseDifficultyEstimator.estimate_difficulty(E_HARD_TEXT, lan)
 
         self.assertEqual(d['discrete'], 'HARD')

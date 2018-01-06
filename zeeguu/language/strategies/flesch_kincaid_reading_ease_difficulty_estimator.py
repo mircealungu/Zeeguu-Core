@@ -1,0 +1,53 @@
+from zeeguu.language.difficulty_estimator_strategy import DifficultyEstimatorStrategy
+import nltk
+nltk.download('punkt')
+
+
+class FleschKincaidReadingEaseDifficultyEstimator(DifficultyEstimatorStrategy):
+    """
+    The Flesch-Kincaid readability index is a classic readability index.
+    Wikipedia : https://en.wikipedia.org/wiki/Flesch–Kincaid_readability_tests
+    """
+
+    AVERAGE_SYLLABLE_LENGTH = 3 # Simplifies the syllable counting
+
+    @classmethod
+    def estimate_difficulty(cls, text, language):
+        words = nltk.word_tokenize(text)
+
+        number_of_syllables = 0
+        number_of_words = 0
+        for word in words:
+            if word not in [',', '.', '?', '!']:  # Filter punctuation
+                syllables_in_word = round(len(word) / 3) # Decided to round instead of truncate, because of short words
+                number_of_syllables += syllables_in_word
+                number_of_words += 1
+
+        number_of_sentences = len(nltk.sent_tokenize(text))
+
+        index = 206.835 - 1.015 * (number_of_words / number_of_sentences) - 84.6 * (number_of_syllables / number_of_words)
+
+        difficulty_scores = dict(
+            normalized=cls.normalize_difficulty(index),
+            discrete=cls.discrete_difficulty(index)
+        )
+
+        return difficulty_scores
+
+    @classmethod
+    def normalize_difficulty(cls, score):
+        if score < 0:
+            return 5
+        elif score > 100:
+            return 0
+        else:
+            return 5 - (score * 0.05)
+
+    @classmethod
+    def discrete_difficulty(self, score):
+        if score > 80 :
+            return "EASY"
+        elif score > 50 :
+            return "MEDIUM"
+        else:
+            return "HARD"
