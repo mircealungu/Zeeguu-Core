@@ -5,7 +5,7 @@ class DefaultDifficultyEstimator(DifficultyEstimatorStrategy):
 
     # The default estimator always returns a difficulty of zero
     @classmethod
-    def estimate_difficulty(cls, text, language):
+    def estimate_difficulty(cls, text, language, user):
         difficulty_scores = dict(
             score_median=0,
             score_average=0,
@@ -14,4 +14,4 @@ class DefaultDifficultyEstimator(DifficultyEstimatorStrategy):
             normalized=0,
             discrete="EASY",
         )
-        return difficulty_scores;
+        return difficulty_scores

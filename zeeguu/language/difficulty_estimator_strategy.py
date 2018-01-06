@@ -2,7 +2,6 @@ from abc import abstractmethod
 
 
 class DifficultyEstimatorStrategy:
-
     @classmethod
     def is_type(cls, type):
         """
@@ -14,11 +13,15 @@ class DifficultyEstimatorStrategy:
 
     @classmethod
     @abstractmethod
-    def estimate_difficulty(cls, text, language):
+    def estimate_difficulty(cls, text, language, user):
         """
-        Estimates a scaled difficulty of a given text. The difficulty lies between 0 and 5.
+
+            Estimates a normalized difficulty of a given text.
+
         :param text:
         :param language:
-        :return:
+        :param user: the user for which the
+
+        :return: a value of difficulty between 0 (trivial) and 1 (the most difficult)
         """
         pass
