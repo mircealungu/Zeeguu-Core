@@ -1,11 +1,13 @@
 from zeeguu.language.strategies.default_difficulty_estimator import DefaultDifficultyEstimator
+from zeeguu.language.strategies.flesch_kincaid_reading_ease_difficulty_estimator import \
+    FleschKincaidReadingEaseDifficultyEstimator
 from zeeguu.language.strategies.frequency_difficulty_estimator import FrequencyDifficultyEstimator
 
 
 class DifficultyEstimatorFactory:
 
     # Todo: Discover Difficulty Estimators
-    _difficulty_estimators = [FrequencyDifficultyEstimator]
+    _difficulty_estimators = [FrequencyDifficultyEstimator, FleschKincaidReadingEaseDifficultyEstimator]
     _default_estimator = DefaultDifficultyEstimator
 
     @classmethod
