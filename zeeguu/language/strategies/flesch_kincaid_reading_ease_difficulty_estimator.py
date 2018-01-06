@@ -37,11 +37,11 @@ class FleschKincaidReadingEaseDifficultyEstimator(DifficultyEstimatorStrategy):
     @classmethod
     def normalize_difficulty(cls, score):
         if score < 0:
-            return 5
+            return 1
         elif score > 100:
             return 0
         else:
-            return 5 - (score * 0.05)
+            return 1 - (score * 0.01)
 
     @classmethod
     def discrete_difficulty(self, score):

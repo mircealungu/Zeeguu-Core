@@ -26,15 +26,15 @@ class FleschKincaidReadingEaseDifficultyEstimatorTest(ModelTestMixIn, TestCase):
 
     def test_normalized_between_100_and_0(self):
         d = FleschKincaidReadingEaseDifficultyEstimator.normalize_difficulty(50)
-        self.assertEqual(d, 2.5)
+        self.assertEqual(d, 0.5)
 
     def test_normalized_0(self):
         d = FleschKincaidReadingEaseDifficultyEstimator.normalize_difficulty(0)
-        self.assertEqual(d, 5)
+        self.assertEqual(d, 1)
 
     def test_normalized_below_0(self):
         d = FleschKincaidReadingEaseDifficultyEstimator.normalize_difficulty(-10)
-        self.assertEqual(d, 5)
+        self.assertEqual(d, 1)
 
     ## DISCRETE TESTS
     def test_discrete_above_80(self):
