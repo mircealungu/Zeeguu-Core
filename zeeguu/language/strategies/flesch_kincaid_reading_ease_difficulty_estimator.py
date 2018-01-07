@@ -12,7 +12,7 @@ class FleschKincaidReadingEaseDifficultyEstimator(DifficultyEstimatorStrategy):
     AVERAGE_SYLLABLE_LENGTH = 3 # Simplifies the syllable counting
 
     @classmethod
-    def estimate_difficulty(cls, text, language):
+    def estimate_difficulty(cls, text, language, user):
         words = nltk.word_tokenize(text)
 
         number_of_syllables = 0

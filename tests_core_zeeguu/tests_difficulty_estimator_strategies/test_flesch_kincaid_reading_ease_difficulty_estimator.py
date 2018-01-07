@@ -1,5 +1,7 @@
 from unittest import TestCase
 
+from tests_core_zeeguu.rules.user_rule import UserRule
+
 from tests_core_zeeguu.rules.language_rule import LanguageRule
 
 from tests_core_zeeguu.model_test_mixin import ModelTestMixIn
@@ -14,6 +16,7 @@ class FleschKincaidReadingEaseDifficultyEstimatorTest(ModelTestMixIn, TestCase):
 
     def setUp(self):
         super().setUp()
+        self.user = UserRule().user
 
     ## NORMALIZE TESTS
     def test_normalized_above_100(self):
@@ -64,18 +67,18 @@ class FleschKincaidReadingEaseDifficultyEstimatorTest(ModelTestMixIn, TestCase):
     ## ENGLISH TESTS
     def test_english_easy(self):
         lan = LanguageRule().en
-        d = FleschKincaidReadingEaseDifficultyEstimator.estimate_difficulty(E_EASY_TEXT, lan)
+        d = FleschKincaidReadingEaseDifficultyEstimator.estimate_difficulty(E_EASY_TEXT, lan, self.user)
 
         self.assertEqual(d['discrete'], 'EASY')
 
     def test_english_medium(self):
         lan = LanguageRule().en
-        d = FleschKincaidReadingEaseDifficultyEstimator.estimate_difficulty(E_MEDIUM_TEXT, lan)
+        d = FleschKincaidReadingEaseDifficultyEstimator.estimate_difficulty(E_MEDIUM_TEXT, lan, self.user)
 
         self.assertEqual(d['discrete'], 'MEDIUM')
 
     def test_english_hard(self):
         lan = LanguageRule().en
-        d = FleschKincaidReadingEaseDifficultyEstimator.estimate_difficulty(E_HARD_TEXT, lan)
+        d = FleschKincaidReadingEaseDifficultyEstimator.estimate_difficulty(E_HARD_TEXT, lan, self.user)
 
         self.assertEqual(d['discrete'], 'HARD')
