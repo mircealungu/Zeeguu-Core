@@ -14,11 +14,11 @@ class DifficultyEstimatorFactory:
     def get_difficulty_estimator(cls, type):
         """
         Returns the difficulty estimator based on the given type name
-        :param type:
+        :param type: String value name of the difficulty estimator class
         :return:
         """
         for estimator in cls._difficulty_estimators:
             if estimator.is_type(type):
                 return estimator
 
-        return cls._default_estimator # return default estimator
+        return cls._default_estimator

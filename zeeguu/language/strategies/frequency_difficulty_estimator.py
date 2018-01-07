@@ -6,7 +6,7 @@ from wordstats import Word
 class FrequencyDifficultyEstimator(DifficultyEstimatorStrategy):
 
     @classmethod
-    def estimate_difficulty(cls, text, language):
+    def estimate_difficulty(cls, text, language, user):
         # TODO: move frequency estimator
 
         word_difficulties = []
