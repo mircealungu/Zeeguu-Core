@@ -26,3 +26,6 @@ class Exercise(db.Model):
 
     def short_string_summary(self):
         return str(self.source.id) + self.outcome.outcome[0]
+
+    def __str__(self):
+        return f'{self.source.source} ' + str(self.time) + f' {self.outcome.outcome}'
