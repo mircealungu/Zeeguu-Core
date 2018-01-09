@@ -11,7 +11,7 @@ class FleschKincaidReadingEaseDifficultyEstimator(DifficultyEstimatorStrategy):
     Wikipedia : https://en.wikipedia.org/wiki/Flesch–Kincaid_readability_tests
     """
 
-    AVERAGE_SYLLABLE_LENGTH = 2.3  # Simplifies the syllable counting
+    AVERAGE_SYLLABLE_LENGTH = 2.5  # Simplifies the syllable counting
 
     @classmethod
     def estimate_difficulty(cls, text, language, user):
@@ -42,7 +42,7 @@ class FleschKincaidReadingEaseDifficultyEstimator(DifficultyEstimatorStrategy):
             syllables = 1  # Always at least 1 syllable
         else:
             syllables = len(word) / cls.AVERAGE_SYLLABLE_LENGTH
-        return int(syllables)  # Truncate the number of syllables
+        return int(math.floor(syllables))  # Truncate the number of syllables
 
     @classmethod
     def normalize_difficulty(cls, score):
