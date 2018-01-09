@@ -1,5 +1,7 @@
 from zeeguu.language.difficulty_estimator_strategy import DifficultyEstimatorStrategy
 import nltk
+import math
+
 nltk.download('punkt')
 
 
@@ -9,7 +11,7 @@ class FleschKincaidReadingEaseDifficultyEstimator(DifficultyEstimatorStrategy):
     Wikipedia : https://en.wikipedia.org/wiki/Flesch–Kincaid_readability_tests
     """
 
-    AVERAGE_SYLLABLE_LENGTH = 3  # Simplifies the syllable counting
+    AVERAGE_SYLLABLE_LENGTH = 2.3  # Simplifies the syllable counting
 
     @classmethod
     def estimate_difficulty(cls, text, language, user):
@@ -19,8 +21,7 @@ class FleschKincaidReadingEaseDifficultyEstimator(DifficultyEstimatorStrategy):
         number_of_words = 0
         for word in words:
             if word not in [',', '.', '?', '!']:  # Filter punctuation
-                syllables = len(word) / cls.AVERAGE_SYLLABLE_LENGTH
-                syllables_in_word = round(syllables)  # Round instead of truncate
+                syllables_in_word = cls.estimate_number_of_syllables_in_word(word, language)
                 number_of_syllables += syllables_in_word
                 number_of_words += 1
 
@@ -34,6 +35,14 @@ class FleschKincaidReadingEaseDifficultyEstimator(DifficultyEstimatorStrategy):
         )
 
         return difficulty_scores
+
+    @classmethod
+    def estimate_number_of_syllables_in_word(cls, word, language):
+        if len(word) < cls.AVERAGE_SYLLABLE_LENGTH:
+            syllables = 1  # Always at least 1 syllable
+        else:
+            syllables = len(word) / cls.AVERAGE_SYLLABLE_LENGTH
+        return int(syllables)  # Truncate the number of syllables
 
     @classmethod
     def normalize_difficulty(cls, score):
