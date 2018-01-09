@@ -9,7 +9,7 @@ class FleschKincaidReadingEaseDifficultyEstimator(DifficultyEstimatorStrategy):
     Wikipedia : https://en.wikipedia.org/wiki/Flesch–Kincaid_readability_tests
     """
 
-    AVERAGE_SYLLABLE_LENGTH = 3 # Simplifies the syllable counting
+    AVERAGE_SYLLABLE_LENGTH = 3  # Simplifies the syllable counting
 
     @classmethod
     def estimate_difficulty(cls, text, language, user):
@@ -19,7 +19,8 @@ class FleschKincaidReadingEaseDifficultyEstimator(DifficultyEstimatorStrategy):
         number_of_words = 0
         for word in words:
             if word not in [',', '.', '?', '!']:  # Filter punctuation
-                syllables_in_word = round(len(word) / AVERAGE_SYLLABLE_LENGTH) # Decided to round instead of truncate, because of short words
+                syllables = len(word) / cls.AVERAGE_SYLLABLE_LENGTH
+                syllables_in_word = round(syllables)  # Round instead of truncate
                 number_of_syllables += syllables_in_word
                 number_of_words += 1
 
@@ -44,10 +45,10 @@ class FleschKincaidReadingEaseDifficultyEstimator(DifficultyEstimatorStrategy):
             return 1 - (score * 0.01)
 
     @classmethod
-    def discrete_difficulty(self, score):
-        if score > 80 :
+    def discrete_difficulty(cls, score):
+        if score > 80:
             return "EASY"
-        elif score > 50 :
+        elif score > 50:
             return "MEDIUM"
         else:
             return "HARD"
