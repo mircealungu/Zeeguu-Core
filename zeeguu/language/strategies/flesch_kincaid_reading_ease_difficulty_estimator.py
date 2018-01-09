@@ -19,7 +19,7 @@ class FleschKincaidReadingEaseDifficultyEstimator(DifficultyEstimatorStrategy):
         number_of_words = 0
         for word in words:
             if word not in [',', '.', '?', '!']:  # Filter punctuation
-                syllables_in_word = round(len(word) / 3) # Decided to round instead of truncate, because of short words
+                syllables_in_word = round(len(word) / AVERAGE_SYLLABLE_LENGTH) # Decided to round instead of truncate, because of short words
                 number_of_syllables += syllables_in_word
                 number_of_words += 1
 
