@@ -1,8 +1,6 @@
 import random
-import string
-from tests_core_zeeguu.model_test_mixin import ModelTestMixIn
-from tests_core_zeeguu.rules.url_rule import UrlRule
 
+from tests_core_zeeguu.model_test_mixin import ModelTestMixIn
 
 from tests_core_zeeguu.rules.bookmark_rule import BookmarkRule
 from tests_core_zeeguu.rules.exercise_rule import ExerciseRule
@@ -100,9 +98,12 @@ class BookmarkTest(ModelTestMixIn):
     def test_find_or_create(self):
         bookmark_should_be = BookmarkRule(self.user).bookmark
         bookmark_to_check = Bookmark.find_or_create(self.db.session, self.user,
-                                                    bookmark_should_be.origin.word, bookmark_should_be.origin.language.code,
-                                                    bookmark_should_be.translation.word, bookmark_should_be.translation.language.code,
-                                                    bookmark_should_be.text.content, self.faker.uri(), self.faker.word())
+                                                    bookmark_should_be.origin.word,
+                                                    bookmark_should_be.origin.language.code,
+                                                    bookmark_should_be.translation.word,
+                                                    bookmark_should_be.translation.language.code,
+                                                    bookmark_should_be.text.content, self.faker.uri(),
+                                                    self.faker.word())
 
         assert bookmark_to_check == bookmark_should_be
 
@@ -140,7 +141,8 @@ class BookmarkTest(ModelTestMixIn):
 
     def test_find_by_user_word_and_text(self):
         bookmark_should_be = self.user.all_bookmarks()[0]
-        bookmark_to_check = Bookmark.find_by_user_word_and_text(self.user, bookmark_should_be.origin, bookmark_should_be.text)
+        bookmark_to_check = Bookmark.find_by_user_word_and_text(self.user, bookmark_should_be.origin,
+                                                                bookmark_should_be.text)
 
         assert bookmark_to_check == bookmark_should_be
 
@@ -168,7 +170,8 @@ class BookmarkTest(ModelTestMixIn):
         random_exercise = ExerciseRule().exercise
         random_exercise.outcome = OutcomeRule().too_easy
         random_bookmarks[1].add_new_exercise(random_exercise)
-        result_bool, result_time = random_bookmarks[1].check_if_learned_based_on_exercise_outcomes(add_to_result_time=True)
+        result_bool, result_time = random_bookmarks[1].check_if_learned_based_on_exercise_outcomes(
+            add_to_result_time=True)
         assert result_bool and result_time == random_exercise.time
 
         # Same test as above, but without a second return value
@@ -183,19 +186,18 @@ class BookmarkTest(ModelTestMixIn):
         result_bool, result_time = random_bookmarks[2].check_if_learned_based_on_exercise_outcomes()
         assert result_bool and result_time == random_bookmarks[2].exercise_log[-1].time
 
-
         random_bookmarks[2].update_learned_status(self.db.session)
 
         # A bookmark with no TOO EASY outcome or less than 5 correct exercises in a row returns False, None
         wrong_exercise = ExerciseRule().exercise
         wrong_exercise.outcome = OutcomeRule().wrong
         random_bookmarks[3].add_new_exercise(wrong_exercise)
-        result_bool, result_None = random_bookmarks[3].check_if_learned_based_on_exercise_outcomes(add_to_result_time=True)
+        result_bool, result_None = random_bookmarks[3].check_if_learned_based_on_exercise_outcomes(
+            add_to_result_time=True)
         assert not result_bool and result_None is None
 
         # Same as before, but without a second return value
         assert not random_bookmarks[3].check_if_learned_based_on_exercise_outcomes()
-
 
     def test_has_been_learned(self):
         random_bookmarks = [BookmarkRule(self.user).bookmark for _ in range(0, 2)]
@@ -210,4 +212,3 @@ class BookmarkTest(ModelTestMixIn):
 
         result_bool, result_None = random_bookmarks[1].has_been_learned(also_return_time=True)
         assert not result_bool and result_None is None
-
