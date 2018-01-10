@@ -1,7 +1,8 @@
 from unittest import TestCase
 
-import zeeguu
 from tests_core_zeeguu.model_test_mixin import ModelTestMixIn
+
+import zeeguu
 from tests_core_zeeguu.rules.cohort_rule import CohortRule
 from zeeguu.model.teacher import Teacher
 from zeeguu.model.teacher_cohort_map import TeacherCohortMap
