@@ -1,3 +1,5 @@
+import string
+
 from zeeguu import model
 from zeeguu.language.difficulty_estimator_strategy import DifficultyEstimatorStrategy
 import nltk
@@ -22,7 +24,7 @@ class FleschKincaidDifficultyEstimator(DifficultyEstimatorStrategy):
         number_of_syllables = 0
         number_of_words = 0
         for word in words:
-            if word not in [',', '.', '?', '!']:  # Filter punctuation
+            if word not in string.punctuation:  # Filter punctuation
                 syllables_in_word = cls.estimate_number_of_syllables_in_word(word, language)
                 number_of_syllables += syllables_in_word
                 number_of_words += 1
