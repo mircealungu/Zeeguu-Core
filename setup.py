@@ -12,7 +12,7 @@ class DevelopScript(develop):
         ntlk_install_packages()
 
 
-class InstalScript(install):
+class InstallScript(install):
     def run(self):
         install.run(self)
         ntlk_install_packages()
