@@ -3,14 +3,14 @@ from abc import abstractmethod
 
 class DifficultyEstimatorStrategy:
     @classmethod
-    def is_type(cls, type):
+    def is_type(cls, estimator_name : str):
         """
         Check if the given type corresponds to the name of the difficulty estimator
         :param type: string value of the class name, if this doesn't correspond with the actual implementing
             class name false is returned.
         :return:
         """
-        return type == cls.__name__
+        return estimator_name == cls.__name__
 
     @classmethod
     @abstractmethod
