@@ -1,7 +1,4 @@
 import random
-import string
-
-from tests_core_zeeguu.rules.url_rule import UrlRule
 
 from tests_core_zeeguu.model_test_mixin import ModelTestMixIn
 from tests_core_zeeguu.rules.bookmark_rule import BookmarkRule

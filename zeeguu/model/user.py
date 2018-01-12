@@ -101,9 +101,21 @@ class User(db.Model):
             native_language=self.native_language.code
         )
 
+    def preferred_difficulty_estimator(self):
+        """
+        :return: Difficulty estimator from preferences,
+        otherwise the default one which is FrequencyDifficultyEstimator
+        """
+
+        from zeeguu.model.user_preference import UserPreference
+        # Must have this import here to avoid circular dependency
+
+        return UserPreference.get_difficulty_estimator(self) or "FrequencyDifficultyEstimator"
+
     def text_difficulty(self, text, language):
-        difficulty_estimator = DifficultyEstimatorFactory.get_difficulty_estimator("FrequencyDifficultyEstimator")
-        return difficulty_estimator.estimate_difficulty(text, language, self)
+
+        estimator = DifficultyEstimatorFactory.get_difficulty_estimator(self.preferred_difficulty_estimator())
+        return estimator.estimate_difficulty(text, language, self)
 
     def set_learned_language(self, code):
         self.learned_language = Language.find(code)
