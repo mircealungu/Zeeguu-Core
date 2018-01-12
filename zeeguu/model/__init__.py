@@ -25,6 +25,7 @@ zeeguu.db = flask_sqlalchemy.SQLAlchemy(zeeguu.app)
 from .bookmark import Bookmark
 from .domain_name import DomainName
 from .user import User
+from .user_preference import UserPreference
 from .exercise import Exercise
 from .exercise_outcome import ExerciseOutcome
 from .exercise_source import ExerciseSource
