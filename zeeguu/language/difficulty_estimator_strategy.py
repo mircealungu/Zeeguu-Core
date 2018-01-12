@@ -1,12 +1,14 @@
 from abc import abstractmethod
 
+from zeeguu import model
+
 
 class DifficultyEstimatorStrategy:
     @classmethod
-    def is_type(cls, estimator_name : str):
+    def is_type(cls, estimator_name: str):
         """
         Check if the given type corresponds to the name of the difficulty estimator
-        :param type: string value of the class name, if this doesn't correspond with the actual implementing
+        :param estimator_name: string value of the class name, if this doesn't correspond with the actual implementing
             class name false is returned.
         :return:
         """
@@ -14,7 +16,7 @@ class DifficultyEstimatorStrategy:
 
     @classmethod
     @abstractmethod
-    def estimate_difficulty(cls, text, language, user):
+    def estimate_difficulty(cls, text: str, language: 'model.Language', user: 'model.User'):
         """
         Estimates a normalized difficulty of a given text.
 

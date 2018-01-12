@@ -1,3 +1,6 @@
+from typing import Type
+
+from zeeguu.language.difficulty_estimator_strategy import DifficultyEstimatorStrategy
 from zeeguu.language.strategies.default_difficulty_estimator import DefaultDifficultyEstimator
 from zeeguu.language.strategies.flesch_kincaid_reading_ease_difficulty_estimator import \
     FleschKincaidReadingEaseDifficultyEstimator
@@ -7,14 +10,14 @@ from zeeguu.language.strategies.frequency_difficulty_estimator import FrequencyD
 class DifficultyEstimatorFactory:
 
     # Todo: Discover Difficulty Estimators
-    _difficulty_estimators = [FrequencyDifficultyEstimator, FleschKincaidReadingEaseDifficultyEstimator]
+    _difficulty_estimators = {FrequencyDifficultyEstimator, FleschKincaidReadingEaseDifficultyEstimator}
     _default_estimator = DefaultDifficultyEstimator
 
     @classmethod
-    def get_difficulty_estimator(cls, estimator_name : str):
+    def get_difficulty_estimator(cls, estimator_name: str) -> Type[DifficultyEstimatorStrategy]:
         """
         Returns the difficulty estimator based on the given type name
-        :param type: String value name of the difficulty estimator class
+        :param estimator_name: String value name of the difficulty estimator class
         :return:
         """
         for estimator in cls._difficulty_estimators:
