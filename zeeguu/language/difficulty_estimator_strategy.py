@@ -8,7 +8,7 @@ class DifficultyEstimatorStrategy:
     CUSTOM_NAMES = []
 
     @classmethod
-    def in_custom_name(cls, estimator_name: str):
+    def has_custom_name(cls, estimator_name: str):
         """
         Check if the estimator name is in the custom name list
         :param estimator_name:

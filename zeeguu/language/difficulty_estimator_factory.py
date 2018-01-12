@@ -27,7 +27,7 @@ class DifficultyEstimatorFactory:
                 return estimator
 
         for estimator in cls._difficulty_estimators:
-            if estimator.in_custom_name(estimator_name):
+            if estimator.has_custom_name(estimator_name):
                 return estimator
 
         return cls._default_estimator
