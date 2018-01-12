@@ -4,15 +4,18 @@ from zeeguu import model
 
 
 class DifficultyEstimatorStrategy:
+
+    CUSTOM_NAMES = []
+
     @classmethod
-    def is_type(cls, estimator_name: str):
+    def in_custom_name(cls, estimator_name: str):
         """
-        Check if the given type corresponds to the name of the difficulty estimator
-        :param estimator_name: string value of the class name, if this doesn't correspond with the actual implementing
-            class name false is returned.
+        Check if the estimator name is in the custom name list
+        :param estimator_name:
         :return:
         """
-        return estimator_name == cls.__name__
+        in_custom_names = estimator_name.lower() in [name.lower() for name in cls.CUSTOM_NAMES]
+        return in_custom_names
 
     @classmethod
     @abstractmethod

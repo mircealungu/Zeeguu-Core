@@ -16,12 +16,18 @@ class DifficultyEstimatorFactory:
     @classmethod
     def get_difficulty_estimator(cls, estimator_name: str) -> Type[DifficultyEstimatorStrategy]:
         """
-        Returns the difficulty estimator based on the given type name
+        Returns the difficulty estimator based on the given estimator name. It first checks if
+        there are any estimators with the given class names. When nothing is found it checks the custom
+        names of the class.
         :param estimator_name: String value name of the difficulty estimator class
         :return:
         """
         for estimator in cls._difficulty_estimators:
-            if estimator.is_type(estimator_name):
+            if estimator.__name__ == estimator_name:
+                return estimator
+
+        for estimator in cls._difficulty_estimators:
+            if estimator.in_custom_name(estimator_name):
                 return estimator
 
         return cls._default_estimator

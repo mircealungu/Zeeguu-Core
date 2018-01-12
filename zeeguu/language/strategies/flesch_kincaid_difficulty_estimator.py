@@ -13,6 +13,7 @@ class FleschKincaidDifficultyEstimator(DifficultyEstimatorStrategy):
     """
 
     AVERAGE_SYLLABLE_LENGTH = 2.5  # Simplifies the syllable counting
+    CUSTOM_NAMES = ["fk", "fkindex", "flesch-kincaid"]
 
     @classmethod
     def estimate_difficulty(cls, text: str, language: 'model.Language', user: 'model.User'):

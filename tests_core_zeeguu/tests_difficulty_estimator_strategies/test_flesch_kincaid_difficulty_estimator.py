@@ -19,6 +19,19 @@ class FleschKincaidReadingEaseDifficultyEstimatorTest(ModelTestMixIn, TestCase):
         super().setUp()
         self.user = UserRule().user
 
+    # CUSTOM NAMES
+    def test_recognized_by_FKIndex(self):
+        name = "FKIndex"
+        self.assertTrue(FleschKincaidDifficultyEstimator.in_custom_name(name))
+
+    def test_recognized_by_FK(self):
+        name = "fk"
+        self.assertTrue(FleschKincaidDifficultyEstimator.in_custom_name(name))
+
+    def test_recognized_by_flesch_kincaid(self):
+        name = "flesch-kincaid"
+        self.assertTrue(FleschKincaidDifficultyEstimator.in_custom_name(name))
+
     # NORMALIZE TESTS
     def test_normalized_above_100(self):
         d = FleschKincaidDifficultyEstimator.normalize_difficulty(178)
