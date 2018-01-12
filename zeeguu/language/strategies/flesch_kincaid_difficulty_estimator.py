@@ -19,7 +19,17 @@ class FleschKincaidDifficultyEstimator(DifficultyEstimatorStrategy):
 
     @classmethod
     def estimate_difficulty(cls, text: str, language: 'model.Language', user: 'model.User'):
-        flesch_kincaid_index = cls.flesch_kincaid_readability_index(text, language);
+        '''
+        Estimates the difficulty based on the Flesch-Kincaid readability index.
+        :param text: See DifficultyEstimatorStrategy
+        :param language: See DifficultyEstimatorStrategy
+        :param user: See DifficultyEstimatorStrategy
+        :rtype: dict
+        :return: The dictionary contains the keys and return types
+                    normalized:float,
+                    discrete:str
+        '''
+        flesch_kincaid_index = cls.flesch_kincaid_readability_index(text, language)
 
         difficulty_scores = dict(
             normalized=cls.normalize_difficulty(flesch_kincaid_index),
