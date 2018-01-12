@@ -10,6 +10,19 @@ class FrequencyDifficultyEstimator(DifficultyEstimatorStrategy):
 
     @classmethod
     def estimate_difficulty(cls, text: str, language: 'model.Language', user: 'model.User'):
+        """
+        This estimator computes the difficulty based on how often words in the text are used in the given language
+        :param text: See DifficultyEstimatorStrategy
+        :param language: See DifficultyEstimatorStrategy
+        :param user: See DifficultyEstimatorStrategy
+        :rtype: dict
+        :return: The dictionary contains the keys and return types
+                    score_median:float,
+                    score_average:float,
+                    estimated_difficulty:str,
+                    normalized:float,
+                    discrete:str
+        """
         word_difficulties = []
 
         # Calculate difficulty for each word
@@ -25,7 +38,11 @@ class FrequencyDifficultyEstimator(DifficultyEstimatorStrategy):
                 dict(
                     score_median=1,
                     score_average=1,
-                    estimated_difficulty=1)
+                    estimated_difficulty=1,
+
+                    normalized=0.5,
+                    discrete="MEDIUM"
+                    )
 
         # Average difficulty for text
         difficulty_average = sum(word_difficulties) / float(len(word_difficulties))
