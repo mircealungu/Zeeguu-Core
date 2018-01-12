@@ -16,7 +16,6 @@ class FrequencyDifficultyEstimator(DifficultyEstimatorStrategy):
         words = split_words_from_text(text)
 
         for word in words:
-            var = Word.stats(word, language.code)
             difficulty = cls.word_difficulty({}, True, Word.stats(word, language.code), word)
             word_difficulties.append(difficulty)
 
