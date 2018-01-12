@@ -6,7 +6,7 @@ import math
 nltk.download('punkt')
 
 
-class FleschKincaidReadingEaseDifficultyEstimator(DifficultyEstimatorStrategy):
+class FleschKincaidDifficultyEstimator(DifficultyEstimatorStrategy):
     """
     The Flesch-Kincaid readability index is a classic readability index.
     Wikipedia : https://en.wikipedia.org/wiki/Flesch–Kincaid_readability_tests

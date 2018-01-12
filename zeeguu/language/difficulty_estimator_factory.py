@@ -2,15 +2,15 @@ from typing import Type
 
 from zeeguu.language.difficulty_estimator_strategy import DifficultyEstimatorStrategy
 from zeeguu.language.strategies.default_difficulty_estimator import DefaultDifficultyEstimator
-from zeeguu.language.strategies.flesch_kincaid_reading_ease_difficulty_estimator import \
-    FleschKincaidReadingEaseDifficultyEstimator
+from zeeguu.language.strategies.flesch_kincaid_difficulty_estimator import \
+    FleschKincaidDifficultyEstimator
 from zeeguu.language.strategies.frequency_difficulty_estimator import FrequencyDifficultyEstimator
 
 
 class DifficultyEstimatorFactory:
 
     # Todo: Discover Difficulty Estimators
-    _difficulty_estimators = {FrequencyDifficultyEstimator, FleschKincaidReadingEaseDifficultyEstimator}
+    _difficulty_estimators = {FrequencyDifficultyEstimator, FleschKincaidDifficultyEstimator}
     _default_estimator = DefaultDifficultyEstimator
 
     @classmethod
