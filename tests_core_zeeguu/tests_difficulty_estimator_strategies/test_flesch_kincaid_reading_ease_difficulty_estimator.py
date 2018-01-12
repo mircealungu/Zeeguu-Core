@@ -12,13 +12,14 @@ E_EASY_TEXT = "The cat sat on the mat."
 E_MEDIUM_TEXT = "This sentence, taken as a reading passage unto itself, is being used to prove a point."
 E_HARD_TEXT = "The Australian platypus is seemingly a hybrid of a mammal and reptilian creature."
 
+
 class FleschKincaidReadingEaseDifficultyEstimatorTest(ModelTestMixIn, TestCase):
 
     def setUp(self):
         super().setUp()
         self.user = UserRule().user
 
-    ## NORMALIZE TESTS
+    # NORMALIZE TESTS
     def test_normalized_above_100(self):
         d = FleschKincaidReadingEaseDifficultyEstimator.normalize_difficulty(178)
         self.assertEqual(d, 0)
@@ -39,7 +40,7 @@ class FleschKincaidReadingEaseDifficultyEstimatorTest(ModelTestMixIn, TestCase):
         d = FleschKincaidReadingEaseDifficultyEstimator.normalize_difficulty(-10)
         self.assertEqual(d, 1)
 
-    ## DISCRETE TESTS
+    # DISCRETE TESTS
     def test_discrete_above_80(self):
         d = FleschKincaidReadingEaseDifficultyEstimator.discrete_difficulty(100)
         self.assertEqual(d, 'EASY')
@@ -64,7 +65,7 @@ class FleschKincaidReadingEaseDifficultyEstimatorTest(ModelTestMixIn, TestCase):
         d = FleschKincaidReadingEaseDifficultyEstimator.discrete_difficulty(-10)
         self.assertEqual(d, 'HARD')
 
-    ## ENGLISH TESTS
+    # ENGLISH TESTS
     def test_english_easy(self):
         lan = LanguageRule().en
         d = FleschKincaidReadingEaseDifficultyEstimator.estimate_difficulty(E_EASY_TEXT, lan, self.user)

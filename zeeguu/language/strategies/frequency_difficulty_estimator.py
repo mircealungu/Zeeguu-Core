@@ -15,13 +15,12 @@ class FrequencyDifficultyEstimator(DifficultyEstimatorStrategy):
         # Calculate difficulty for each word
         words = split_words_from_text(text)
 
-
         for word in words:
             var = Word.stats(word, language.code)
             difficulty = cls.word_difficulty({}, True, Word.stats(word, language.code), word)
             word_difficulties.append(difficulty)
 
-         # If we can't compute the text difficulty, we estimate hard
+        # If we can't compute the text difficulty, we estimate hard
         if (len(word_difficulties)) == 0:
             return \
                 dict(
@@ -43,7 +42,7 @@ class FrequencyDifficultyEstimator(DifficultyEstimatorStrategy):
             score_median=difficulty_median,
             score_average=difficulty_average,
             estimated_difficulty=cls.discrete_text_difficulty(difficulty_average, difficulty_median),
-            # previous are for backwards compatibility reasonons
+            # previous are for backwards compatibility reasons
             # TODO: must be removed
 
             normalized=normalized_estimate,
@@ -61,9 +60,9 @@ class FrequencyDifficultyEstimator(DifficultyEstimatorStrategy):
         :return: a symbolic representation of the estimated difficulty
          the values are between "EASY", "MEDIUM", and "HARD"
         """
-        if (average_difficulty < 0.3):
+        if average_difficulty < 0.3:
             return "EASY"
-        if (average_difficulty < 0.4):
+        if average_difficulty < 0.4:
             return "MEDIUM"
         return "HARD"
 
