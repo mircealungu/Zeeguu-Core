@@ -34,7 +34,7 @@ setuptools.setup(
     keywords="second language acquisition api",
     cmdclass={
         'develop': DevelopScript,
-        'install': InstalScript,
+        'install': InstallScript,
     },
     dependency_links=[
         "git+https://github.com/mircealungu/python-wordstats.git#egg=wordstats",
