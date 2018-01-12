@@ -5,9 +5,6 @@ from zeeguu.language.difficulty_estimator_strategy import DifficultyEstimatorStr
 import nltk
 import math
 
-nltk.download('punkt')
-
-
 class FleschKincaidDifficultyEstimator(DifficultyEstimatorStrategy):
     """
     The Flesch-Kincaid readability index is a classic readability index.
