@@ -6,7 +6,8 @@ class DifficultyEstimatorStrategy:
     def is_type(cls, type):
         """
         Check if the given type corresponds to the name of the difficulty estimator
-        :param type:
+        :param type: string value of the class name, if this doesn't correspond with the actual implementing
+            class name false is returned.
         :return:
         """
         return type == cls.__name__
@@ -15,12 +16,11 @@ class DifficultyEstimatorStrategy:
     @abstractmethod
     def estimate_difficulty(cls, text, language, user):
         """
+        Estimates a normalized difficulty of a given text.
 
-            Estimates a normalized difficulty of a given text.
-
-        :param text:
-        :param language:
-        :param user: the user for which the
+        :param text: text for which the difficulty is estimated
+        :param language: language of the given text
+        :param user: the user for which the difficulty is estimated
 
         :return: a value of difficulty between 0 (trivial) and 1 (the most difficult)
         """
