@@ -1,20 +1,23 @@
+import wordstats
+
+from zeeguu import model
 from zeeguu.language.difficulty_estimator_strategy import DifficultyEstimatorStrategy
 from zeeguu.the_librarian.text import split_words_from_text
-from wordstats import Word
+from wordstats import Word, WordInfo
 
 
 class FrequencyDifficultyEstimator(DifficultyEstimatorStrategy):
 
     @classmethod
-    def estimate_difficulty(cls, text, language, user):
-        # TODO: move frequency estimator
-
+    def estimate_difficulty(cls, text: str, language: 'model.Language', user: 'model.User'):
         word_difficulties = []
 
         # Calculate difficulty for each word
         words = split_words_from_text(text)
 
+
         for word in words:
+            var = Word.stats(word, language.code)
             difficulty = cls.word_difficulty({}, True, Word.stats(word, language.code), word)
             word_difficulties.append(difficulty)
 
@@ -50,7 +53,7 @@ class FrequencyDifficultyEstimator(DifficultyEstimatorStrategy):
         return difficulty_scores
 
     @classmethod
-    def discrete_text_difficulty(cls, median_difficulty, average_difficulty):
+    def discrete_text_difficulty(cls, median_difficulty: float, average_difficulty: float):
         """
 
         :param median_difficulty:
@@ -66,13 +69,12 @@ class FrequencyDifficultyEstimator(DifficultyEstimatorStrategy):
 
     @classmethod
     # TODO: must test this thing
-    def word_difficulty(cls, known_probabilities, personalized, word_info, word):
+    def word_difficulty(cls, known_probabilities: dict, personalized: bool, word_info: WordInfo, word: Word):
         """
         # estimate the difficulty of a word, given:
+            :param word_info:
             :param known_probabilities:
             :param personalized:
-            :param rank_boundary:
-            :param ranked_word:
             :param word:
 
         :return: a normalized value where 0 is (easy) and 1 is (hard)

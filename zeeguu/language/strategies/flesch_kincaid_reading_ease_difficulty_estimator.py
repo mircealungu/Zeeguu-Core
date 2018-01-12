@@ -1,3 +1,4 @@
+from zeeguu import model
 from zeeguu.language.difficulty_estimator_strategy import DifficultyEstimatorStrategy
 import nltk
 import math
@@ -14,7 +15,7 @@ class FleschKincaidReadingEaseDifficultyEstimator(DifficultyEstimatorStrategy):
     AVERAGE_SYLLABLE_LENGTH = 2.5  # Simplifies the syllable counting
 
     @classmethod
-    def estimate_difficulty(cls, text, language, user):
+    def estimate_difficulty(cls, text: str, language: 'model.Language', user: 'model.User'):
         words = nltk.word_tokenize(text)
 
         number_of_syllables = 0
@@ -37,7 +38,7 @@ class FleschKincaidReadingEaseDifficultyEstimator(DifficultyEstimatorStrategy):
         return difficulty_scores
 
     @classmethod
-    def estimate_number_of_syllables_in_word(cls, word, language):
+    def estimate_number_of_syllables_in_word(cls, word: str, language: 'model.Language'):
         if len(word) < cls.AVERAGE_SYLLABLE_LENGTH:
             syllables = 1  # Always at least 1 syllable
         else:
@@ -45,7 +46,7 @@ class FleschKincaidReadingEaseDifficultyEstimator(DifficultyEstimatorStrategy):
         return int(math.floor(syllables))  # Truncate the number of syllables
 
     @classmethod
-    def normalize_difficulty(cls, score):
+    def normalize_difficulty(cls, score: int):
         if score < 0:
             return 1
         elif score > 100:
@@ -54,7 +55,7 @@ class FleschKincaidReadingEaseDifficultyEstimator(DifficultyEstimatorStrategy):
             return 1 - (score * 0.01)
 
     @classmethod
-    def discrete_difficulty(cls, score):
+    def discrete_difficulty(cls, score: int):
         if score > 80:
             return "EASY"
         elif score > 50:
