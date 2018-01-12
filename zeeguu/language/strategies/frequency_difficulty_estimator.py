@@ -1,14 +1,15 @@
+import wordstats
+
+from zeeguu import model
 from zeeguu.language.difficulty_estimator_strategy import DifficultyEstimatorStrategy
 from zeeguu.the_librarian.text import split_words_from_text
-from wordstats import Word
+from wordstats import Word, WordInfo
 
 
 class FrequencyDifficultyEstimator(DifficultyEstimatorStrategy):
 
     @classmethod
-    def estimate_difficulty(cls, text, language, user):
-        # TODO: move frequency estimator
-
+    def estimate_difficulty(cls, text: str, language: 'model.Language', user: 'model.User'):
         word_difficulties = []
 
         # Calculate difficulty for each word
@@ -18,7 +19,7 @@ class FrequencyDifficultyEstimator(DifficultyEstimatorStrategy):
             difficulty = cls.word_difficulty({}, True, Word.stats(word, language.code), word)
             word_difficulties.append(difficulty)
 
-         # If we can't compute the text difficulty, we estimate hard
+        # If we can't compute the text difficulty, we estimate hard
         if (len(word_difficulties)) == 0:
             return \
                 dict(
@@ -40,7 +41,7 @@ class FrequencyDifficultyEstimator(DifficultyEstimatorStrategy):
             score_median=difficulty_median,
             score_average=difficulty_average,
             estimated_difficulty=cls.discrete_text_difficulty(difficulty_average, difficulty_median),
-            # previous are for backwards compatibility reasonons
+            # previous are for backwards compatibility reasons
             # TODO: must be removed
 
             normalized=normalized_estimate,
@@ -50,7 +51,7 @@ class FrequencyDifficultyEstimator(DifficultyEstimatorStrategy):
         return difficulty_scores
 
     @classmethod
-    def discrete_text_difficulty(cls, median_difficulty, average_difficulty):
+    def discrete_text_difficulty(cls, median_difficulty: float, average_difficulty: float):
         """
 
         :param median_difficulty:
@@ -58,21 +59,20 @@ class FrequencyDifficultyEstimator(DifficultyEstimatorStrategy):
         :return: a symbolic representation of the estimated difficulty
          the values are between "EASY", "MEDIUM", and "HARD"
         """
-        if (average_difficulty < 0.3):
+        if average_difficulty < 0.3:
             return "EASY"
-        if (average_difficulty < 0.4):
+        if average_difficulty < 0.4:
             return "MEDIUM"
         return "HARD"
 
     @classmethod
     # TODO: must test this thing
-    def word_difficulty(cls, known_probabilities, personalized, word_info, word):
+    def word_difficulty(cls, known_probabilities: dict, personalized: bool, word_info: WordInfo, word: Word):
         """
         # estimate the difficulty of a word, given:
+            :param word_info:
             :param known_probabilities:
             :param personalized:
-            :param rank_boundary:
-            :param ranked_word:
             :param word:
 
         :return: a normalized value where 0 is (easy) and 1 is (hard)
