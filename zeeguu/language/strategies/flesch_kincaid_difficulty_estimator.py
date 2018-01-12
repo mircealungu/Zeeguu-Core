@@ -19,6 +19,17 @@ class FleschKincaidDifficultyEstimator(DifficultyEstimatorStrategy):
 
     @classmethod
     def estimate_difficulty(cls, text: str, language: 'model.Language', user: 'model.User'):
+        flesch_kincaid_index = cls.flesch_kincaid_readability_index(text, language);
+
+        difficulty_scores = dict(
+            normalized=cls.normalize_difficulty(flesch_kincaid_index),
+            discrete=cls.discrete_difficulty(flesch_kincaid_index)
+        )
+
+        return difficulty_scores
+
+    @classmethod
+    def flesch_kincaid_readability_index(cls, text: str, language: 'model.Language'):
         words = nltk.word_tokenize(text)
 
         number_of_syllables = 0
@@ -31,14 +42,9 @@ class FleschKincaidDifficultyEstimator(DifficultyEstimatorStrategy):
 
         number_of_sentences = len(nltk.sent_tokenize(text))
 
-        index = 206.835 - 1.015 * (number_of_words / number_of_sentences) - 84.6 * (number_of_syllables / number_of_words)
-
-        difficulty_scores = dict(
-            normalized=cls.normalize_difficulty(index),
-            discrete=cls.discrete_difficulty(index)
-        )
-
-        return difficulty_scores
+        index = 206.835 - 1.015 * (number_of_words / number_of_sentences) - 84.6 * (
+                number_of_syllables / number_of_words)
+        return index
 
     @classmethod
     def estimate_number_of_syllables_in_word(cls, word: str, language: 'model.Language'):
