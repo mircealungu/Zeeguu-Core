@@ -24,7 +24,6 @@ class FrequencyDifficultyEstimator(DifficultyEstimatorStrategy):
 
         # Calculate difficulty for each word
         words = split_words_from_text(text)
-
         for word in words:
             difficulty = cls.word_difficulty({}, True, Word.stats(word, language.code), word)
             word_difficulties.append(difficulty)
@@ -34,8 +33,13 @@ class FrequencyDifficultyEstimator(DifficultyEstimatorStrategy):
             normalized_estimate = 0.35
             discrete_difficulty = "MEDIUM"
         else:
+            # Median difficulty is used for discretization
+            word_difficulties.sort()
+            center = int(round(len(word_difficulties) / 2, 0))
+            difficulty_median = word_difficulties[center]
+
             normalized_estimate = sum(word_difficulties) / float(len(word_difficulties))
-            discrete_difficulty = cls.discrete_text_difficulty(normalized_estimate)
+            discrete_difficulty = cls.discrete_text_difficulty(difficulty_median)
 
         difficulty_scores = dict(
             normalized=normalized_estimate,             # Originally called 'score_average'
@@ -45,15 +49,15 @@ class FrequencyDifficultyEstimator(DifficultyEstimatorStrategy):
         return difficulty_scores
 
     @classmethod
-    def discrete_text_difficulty(cls, average_difficulty: float):
+    def discrete_text_difficulty(cls, median_difficulty: float):
         """
-        :param average_difficulty:
+        :param median_difficulty:
         :return: a symbolic representation of the estimated difficulty
          the values are between "EASY", "MEDIUM", and "HARD"
         """
-        if average_difficulty < 0.3:
+        if median_difficulty < 0.3:
             return "EASY"
-        if average_difficulty < 0.4:
+        if median_difficulty < 0.4:
             return "MEDIUM"
         return "HARD"
 
