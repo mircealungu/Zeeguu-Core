@@ -17,11 +17,8 @@ class FrequencyDifficultyEstimator(DifficultyEstimatorStrategy):
         :param user: See DifficultyEstimatorStrategy
         :rtype: dict
         :return: The dictionary contains the keys and return types
-                    score_median:float,
-                    score_average:float,
-                    estimated_difficulty:str,
-                    normalized:float,
-                    discrete:str
+                    normalized: float (0<=normalized<=1)
+                    discrete: string [EASY, MEDIUM, HARD]
         """
         word_difficulties = []
 
@@ -34,44 +31,22 @@ class FrequencyDifficultyEstimator(DifficultyEstimatorStrategy):
 
         # If we can't compute the text difficulty, we estimate hard
         if (len(word_difficulties)) == 0:
-            return \
-                dict(
-                    score_median=1,
-                    score_average=1,
-                    estimated_difficulty=1,
-
-                    normalized=0.5,
-                    discrete="MEDIUM"
-                    )
-
-        # Average difficulty for text
-        difficulty_average = sum(word_difficulties) / float(len(word_difficulties))
-
-        # Median difficulty
-        word_difficulties.sort()
-        center = int(round(len(word_difficulties) / 2, 0))
-        difficulty_median = word_difficulties[center]
-
-        normalized_estimate = difficulty_average
+            normalized_estimate = 0.35
+            discrete_difficulty = "MEDIUM"
+        else:
+            normalized_estimate = sum(word_difficulties) / float(len(word_difficulties))
+            discrete_difficulty = cls.discrete_text_difficulty(normalized_estimate)
 
         difficulty_scores = dict(
-            score_median=difficulty_median,
-            score_average=difficulty_average,
-            estimated_difficulty=cls.discrete_text_difficulty(difficulty_average, difficulty_median),
-            # previous are for backwards compatibility reasons
-            # TODO: must be removed
-
-            normalized=normalized_estimate,
-            discrete=cls.discrete_text_difficulty(difficulty_average, difficulty_median),
+            normalized=normalized_estimate,             # Originally called 'score_average'
+            discrete=discrete_difficulty                # Originally called 'estimated_difficulty'
         )
 
         return difficulty_scores
 
     @classmethod
-    def discrete_text_difficulty(cls, median_difficulty: float, average_difficulty: float):
+    def discrete_text_difficulty(cls, average_difficulty: float):
         """
-
-        :param median_difficulty:
         :param average_difficulty:
         :return: a symbolic representation of the estimated difficulty
          the values are between "EASY", "MEDIUM", and "HARD"
