@@ -14,17 +14,10 @@ class DefaultDifficultyEstimator(DifficultyEstimatorStrategy):
         :param user: See DifficultyEstimatorStrategy
         :rtype: dict
         :return: The dictionary contains the keys and return types
-                score_median:float,
-                score_average:float,
-                estimated_difficulty:str,
-                normalized:float,
-                and discrete:str
+                    normalized: float (0<=normalized<=1)
+                    discrete: string [EASY, MEDIUM, HARD]
         '''
         difficulty_scores = dict(
-            score_median=0.0,
-            score_average=0.0,
-            estimated_difficulty="EASY",
-
             normalized=0.0,
             discrete="EASY",
         )
