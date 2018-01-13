@@ -19,13 +19,11 @@ class DefaultDifficultyEstimatorTest(ModelTestMixIn, TestCase):
     def test_compute_simple_text_difficulty(self):
         d1 = DefaultDifficultyEstimator.estimate_difficulty(SIMPLE_TEXT, self.lan, self.user)
 
-        assert d1['estimated_difficulty'] == 'EASY'
-        assert d1['score_average'] == 0
-        assert d1['score_median'] == 0
+        assert d1['discrete'] == 'EASY'
+        assert d1['normalized'] == 0
 
     def test_compute_complex_text_difficulty(self):
         d1 = DefaultDifficultyEstimator.estimate_difficulty(COMPLEX_TEXT, self.lan, self.user)
 
-        assert d1['estimated_difficulty'] == 'EASY'
-        assert d1['score_average'] == 0
-        assert d1['score_median'] == 0
+        assert d1['discrete'] == 'EASY'
+        assert d1['normalized'] == 0

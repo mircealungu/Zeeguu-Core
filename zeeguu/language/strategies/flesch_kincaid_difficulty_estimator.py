@@ -23,8 +23,8 @@ class FleschKincaidDifficultyEstimator(DifficultyEstimatorStrategy):
         :param user: See DifficultyEstimatorStrategy
         :rtype: dict
         :return: The dictionary contains the keys and return types
-                    normalized:float,
-                    discrete:str
+                    normalized: float (0<=normalized<=1)
+                    discrete: string [EASY, MEDIUM, HARD]
         '''
         flesch_kincaid_index = cls.flesch_kincaid_readability_index(text, language)
 
