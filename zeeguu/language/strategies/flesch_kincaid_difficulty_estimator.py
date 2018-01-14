@@ -5,6 +5,7 @@ from zeeguu.language.difficulty_estimator_strategy import DifficultyEstimatorStr
 import nltk
 import math
 
+
 class FleschKincaidDifficultyEstimator(DifficultyEstimatorStrategy):
     """
     The Flesch-Kincaid readability index is a classic readability index.
@@ -50,7 +51,7 @@ class FleschKincaidDifficultyEstimator(DifficultyEstimatorStrategy):
         number_of_sentences = len(nltk.sent_tokenize(text))
 
         index = 206.835 - 1.015 * (number_of_words / number_of_sentences) - 84.6 * (
-                number_of_syllables / number_of_words)
+            number_of_syllables / number_of_words)
         return index
 
     @classmethod

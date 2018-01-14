@@ -8,6 +8,8 @@ from wordstats import Word, WordInfo
 
 class FrequencyDifficultyEstimator(DifficultyEstimatorStrategy):
 
+    CUSTOM_NAMES = ["frequency"]
+
     @classmethod
     def estimate_difficulty(cls, text: str, language: 'model.Language', user: 'model.User'):
         """
