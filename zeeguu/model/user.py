@@ -110,7 +110,7 @@ class User(db.Model):
         from zeeguu.model.user_preference import UserPreference
         # Must have this import here to avoid circular dependency
 
-        preference = UserPreference.get_difficulty_estimator(self) or "FrequencyDifficultyEstimator"
+        preference = UserPreference.get_difficulty_estimator(self) or "FleschKincaidDifficultyEstimator"
         zeeguu.log(f"Difficulty estimator for user {self.id}: {preference}")
         return preference
 
