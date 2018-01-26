@@ -52,6 +52,10 @@ class RSSFeed(db.Model):
         )
 
     def feed_items(self):
+
+        def publishing_date(item):
+            return item.updated_parsed
+
         feed_data = feedparser.parse(self.url.as_string())
         feed_items = [
             dict(
@@ -59,7 +63,7 @@ class RSSFeed(db.Model):
                     url=item.get("link", ""),
                     content=item.get("content", ""),
                     summary=item.get("summary", ""),
-                    published=time.strftime("%Y-%m-%dT%H:%M:%S%z", item.published_parsed)
+                    published=time.strftime("%Y-%m-%dT%H:%M:%S%z", publishing_date(item))
             )
             for item in feed_data.entries]
 
