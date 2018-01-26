@@ -37,6 +37,35 @@ class RSSFeed(db.Model):
         self.language = language
         self.description = description
 
+    @classmethod
+    def from_url(cls, url:str):
+        data = feedparser.parse(url)
+
+        try:
+            title = data.feed.title
+        except:
+            title = ""
+
+        try:
+            description = data.feed.subtitle
+        except:
+            description = None
+
+        try:
+            image_url_string = data.feed.image.href
+            print (f'Found image url at: {image_url_string}')
+            image_url = Url(image_url_string, title + " Icon")
+        except:
+            print ('Could not find any image url.')
+            image_url = None
+
+        feed_url = Url(url, title)
+
+        return RSSFeed(feed_url, title, description, image_url, None)
+
+
+        return RSSFeed()
+
     def as_dictionary(self):
         image_url = ""
         if self.image_url:
@@ -59,11 +88,11 @@ class RSSFeed(db.Model):
         feed_data = feedparser.parse(self.url.as_string())
         feed_items = [
             dict(
-                    title=item.get("title", ""),
-                    url=item.get("link", ""),
-                    content=item.get("content", ""),
-                    summary=item.get("summary", ""),
-                    published=time.strftime("%Y-%m-%dT%H:%M:%S%z", publishing_date(item))
+                title=item.get("title", ""),
+                url=item.get("link", ""),
+                content=item.get("content", ""),
+                summary=item.get("summary", ""),
+                published=time.strftime("%Y-%m-%dT%H:%M:%S%z", publishing_date(item))
             )
             for item in feed_data.entries]
 
@@ -127,4 +156,4 @@ class RSSFeed(db.Model):
     @classmethod
     def find_for_language_id(cls, language_code):
         language = Language.find(language_code)
-        return cls.query.filter(cls.language== language).group_by(cls.title).all()
+        return cls.query.filter(cls.language == language).group_by(cls.title).all()

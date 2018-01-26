@@ -34,12 +34,6 @@ class Url(db.Model):
         else:
             self.domain = DomainName.for_url_string(url)
 
-    def make_new(self, session, url: str, title: str):
-        self.domain = DomainName.for_url_string(url)
-        self.title = title
-        self.path = Url.get_path(url)
-        self.domain = DomainName.find_or_create(Url.get_domain(url))
-
     def title_if_available(self):
         if self.title != "":
             return self.title
@@ -71,7 +65,7 @@ class Url(db.Model):
         return domain[0] + domain[1]
 
     @classmethod
-    def get_path(cls, url):
+    def get_path(cls, url:str):
         protocol_re = '(.*://)?'
         domain_re = '([^/?]*)'
         path_re = '(.*)'
