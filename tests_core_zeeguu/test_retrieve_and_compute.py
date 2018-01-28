@@ -25,7 +25,7 @@ class TestRetrieveAndCompute(ModelTestMixIn):
         difficulty_for_easiest = difficulties[EASIEST_STORY_URL]['difficulty']
         difficulty_for_easy = difficulties[EASY_STORY_URL]['difficulty']
 
-        assert difficulty_for_easiest['average'] < difficulty_for_easy['average']
+        assert difficulty_for_easiest['normalized'] < difficulty_for_easy['normalized']
 
         # on the other hand, they're all EASY
         # assert difficulty_for_easiest['discrete'] == difficulty_for_very_easy['discrete']

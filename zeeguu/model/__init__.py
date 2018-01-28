@@ -25,6 +25,7 @@ zeeguu.db = flask_sqlalchemy.SQLAlchemy(zeeguu.app)
 from .bookmark import Bookmark
 from .domain_name import DomainName
 from .user import User
+from .user_preference import UserPreference
 from .exercise import Exercise
 from .exercise_outcome import ExerciseOutcome
 from .exercise_source import ExerciseSource
@@ -38,6 +39,7 @@ from .url import Url
 from .user import User
 from .user_activitiy_data import UserActivityData
 from .user_word import UserWord
+from .user_preference import UserPreference
 from .smartwatch.watch_event_type import WatchEventType
 from .smartwatch.watch_interaction_event import WatchInteractionEvent
 from .starred_article import StarredArticle
