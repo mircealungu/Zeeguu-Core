@@ -13,8 +13,6 @@ class UserPreferenceTest(ModelTestMixIn):
         self.user = self.user_rule.user
         self.db.session.add(self.user)
         self.db.session.commit()
-        print(self.user)
-        print(self.user.id)
 
         self.random_origin_word = self.faker.word()
         self.random_origin_language = LanguageRule().random
@@ -35,11 +33,11 @@ class UserPreferenceTest(ModelTestMixIn):
 
         # with the default estimator (Frequency) the difficulty is EASY
         difficulty = self.user.text_difficulty(self.text, self.english)
-        assert difficulty['discrete'] == 'EASY'
+        assert difficulty['discrete'] == 'MEDIUM'
 
         # setting a preference for this user
-        p = UserPreference.set_difficulty_estimator(self.db.session, self.user, "fk")
+        p = UserPreference.set_difficulty_estimator(self.db.session, self.user, "frequency")
 
         # with fk difficulty for the example text is MEDIUM
         difficulty = self.user.text_difficulty(self.text, self.english)
-        assert difficulty['discrete'] == 'MEDIUM'
+        assert difficulty['discrete'] == 'EASY'
