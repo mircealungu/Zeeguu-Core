@@ -9,6 +9,7 @@ def retrieve_urls_and_compute_metrics(urls, language, user, timeout=10):
     for each in content_and_urls:
         try:
 
+            word_count = len(each['content'].split())
             if len(each['content']) > 300:
                 # this 500 characters limit assumes that shorter
                 # articles are not actually "articles" but probably
@@ -19,7 +20,8 @@ def retrieve_urls_and_compute_metrics(urls, language, user, timeout=10):
                     'difficulty': {
                         'normalized': difficulty['normalized'],
                         'discrete': difficulty['discrete']
-                    }
+                    },
+                    'word_count': word_count
                 }
             else:
                 zeeguu.log("ATTN!: since size is only {0} will not return {1}".

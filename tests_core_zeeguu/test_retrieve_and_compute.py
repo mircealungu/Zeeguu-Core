@@ -20,12 +20,16 @@ class TestRetrieveAndCompute(ModelTestMixIn):
                 VERY_EASY_STORY_URL,
                 EASY_STORY_URL]
 
-        difficulties = retrieve_urls_and_compute_metrics(urls, self.lan, self.user)
+        urls_and_metrics = retrieve_urls_and_compute_metrics(urls, self.lan, self.user)
 
-        difficulty_for_easiest = difficulties[EASIEST_STORY_URL]['difficulty']
-        difficulty_for_easy = difficulties[EASY_STORY_URL]['difficulty']
+        difficulty_for_easiest = urls_and_metrics[EASIEST_STORY_URL]['difficulty']
+        difficulty_for_easy = urls_and_metrics[EASY_STORY_URL]['difficulty']
 
         assert difficulty_for_easiest['normalized'] < difficulty_for_easy['normalized']
+
+        word_count = urls_and_metrics[EASY_STORY_URL]['word_count']
+        assert word_count > 1400
+
 
         # on the other hand, they're all EASY
         # assert difficulty_for_easiest['discrete'] == difficulty_for_very_easy['discrete']
