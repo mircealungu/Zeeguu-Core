@@ -51,7 +51,7 @@ class FrequencyDifficultyEstimator(DifficultyEstimatorStrategy):
         return difficulty_scores
 
     @classmethod
-    def discrete_text_difficulty(cls, median_difficulty: float):
+    def __discrete_text_difficulty(cls, median_difficulty: float):
         """
         :param median_difficulty:
         :return: a symbolic representation of the estimated difficulty
@@ -65,7 +65,7 @@ class FrequencyDifficultyEstimator(DifficultyEstimatorStrategy):
 
     @classmethod
     # TODO: must test this thing
-    def word_difficulty(cls, known_probabilities: dict, personalized: bool, word_info: WordInfo, word: Word):
+    def __word_difficulty(cls, known_probabilities: dict, personalized: bool, word_info: WordInfo, word: Word):
         """
         # estimate the difficulty of a word, given:
             :param word_info:

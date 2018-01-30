@@ -37,7 +37,7 @@ class FleschKincaidDifficultyEstimator(DifficultyEstimatorStrategy):
         return difficulty_scores
 
     @classmethod
-    def flesch_kincaid_readability_index(cls, text: str, language: 'model.Language'):
+    def __flesch_kincaid_readability_index(cls, text: str, language: 'model.Language'):
         words = nltk.word_tokenize(text)
 
         number_of_syllables = 0
@@ -64,7 +64,7 @@ class FleschKincaidDifficultyEstimator(DifficultyEstimatorStrategy):
         return index
 
     @classmethod
-    def estimate_number_of_syllables_in_word(cls, word: str, language: 'model.Language'):
+    def __estimate_number_of_syllables_in_word(cls, word: str, language: 'model.Language'):
         if len(word) < cls.AVERAGE_SYLLABLE_LENGTH:
             syllables = 1  # Always at least 1 syllable
         else:
@@ -72,7 +72,7 @@ class FleschKincaidDifficultyEstimator(DifficultyEstimatorStrategy):
         return int(math.floor(syllables))  # Truncate the number of syllables
 
     @classmethod
-    def normalize_difficulty(cls, score: int):
+    def __normalize_difficulty(cls, score: int):
         if score < 0:
             return 1
         elif score > 100:
@@ -81,7 +81,7 @@ class FleschKincaidDifficultyEstimator(DifficultyEstimatorStrategy):
             return 1 - (score * 0.01)
 
     @classmethod
-    def discrete_difficulty(cls, score: int):
+    def __discrete_difficulty(cls, score: int):
         if score > 80:
             return "EASY"
         elif score > 50:
