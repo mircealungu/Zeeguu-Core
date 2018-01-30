@@ -81,6 +81,21 @@ class FleschKincaidReadingEaseDifficultyEstimatorTest(ModelTestMixIn, TestCase):
         d = FleschKincaidDifficultyEstimator.discrete_difficulty(-10)
         self.assertEqual(d, 'HARD')
 
+    # DIFFERENT CONSTANT VALUES
+    def test_english_constants(self):
+        lan = LanguageRule().en
+        constants = FleschKincaidDifficultyEstimator.get_constants_for_language(lan)
+        self.assertEqual(206.835, constants["start"])
+        self.assertEqual(1.015, constants["sentence"])
+        self.assertEqual(84.6, constants["word"])
+
+    def test_german_constants(self):
+        lan = LanguageRule().de
+        constants = FleschKincaidDifficultyEstimator.get_constants_for_language(lan)
+        self.assertEqual(180, constants["start"])
+        self.assertEqual(1, constants["sentence"])
+        self.assertEqual(58.5, constants["word"])
+
     # ENGLISH TESTS
     def test_english_easy(self):
         lan = LanguageRule().en
