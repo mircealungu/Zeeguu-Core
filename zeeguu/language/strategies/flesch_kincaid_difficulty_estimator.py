@@ -50,9 +50,18 @@ class FleschKincaidDifficultyEstimator(DifficultyEstimatorStrategy):
 
         number_of_sentences = len(nltk.sent_tokenize(text))
 
-        index = 206.835 - 1.015 * (number_of_words / number_of_sentences) - 84.6 * (
-            number_of_syllables / number_of_words)
+        constants = cls.get_constants_for_language(language);
+
+        index = constants["start"] - constants["sentence"] * (number_of_words / number_of_sentences) \
+                - constants["word"] * (number_of_syllables / number_of_words)
         return index
+
+    @classmethod
+    def get_constants_for_language(cls, language: 'model.language'):
+        if language.code == "de":
+            return {"start": 180, "sentence": 1, "word": 58.5}
+        else:
+            return {"start": 206.835, "sentence": 1.015, "word": 84.6}
 
     @classmethod
     def estimate_number_of_syllables_in_word(cls, word: str, language: 'model.Language'):
