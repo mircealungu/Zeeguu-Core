@@ -14,7 +14,7 @@ E_HARD_TEXT = "The Australian platypus is seemingly a hybrid of a mammal and rep
 
 DE_EASY_TEXT = "Ich bin ein Berliner."
 DE_MEDIUM_TEXT = "Ich bin ins Kino gegangen, um mir einen Film anzuschauen, den ich sehr spannend fand."
-DE_HARD_TEXT = "Wegen Wörtern wie Frühstücksfernsehen, Fußgängerübergang und Verkehrsüberwachung liebe ich die deutche Sprache."
+DE_HARD_TEXT = "Wegen Wörtern wie Frühstücksfernsehen, Fußgängerübergang und Verkehrsüberwachung liebe ich "
 
 class FleschKincaidReadingEaseDifficultyEstimatorTest(ModelTestMixIn, TestCase):
 

@@ -37,7 +37,7 @@ class FleschKincaidDifficultyEstimator(DifficultyEstimatorStrategy):
         return difficulty_scores
 
     @classmethod
-    def __flesch_kincaid_readability_index(cls, text: str, language: 'model.Language'):
+    def flesch_kincaid_readability_index(cls, text: str, language: 'model.Language'):
         words = nltk.word_tokenize(text)
 
         number_of_syllables = 0
@@ -50,21 +50,21 @@ class FleschKincaidDifficultyEstimator(DifficultyEstimatorStrategy):
 
         number_of_sentences = len(nltk.sent_tokenize(text))
 
-        if language.code == "de":
-            starting_constant = 180
-            sentence_length_factor = 1
-            word_length_factor = 58.5
-        else:
-            starting_constant = 206.835
-            sentence_length_factor = 1.015
-            word_length_factor = 84.6
+        constants = cls.__get_constants_for_language(language);
 
-        index = starting_constant - sentence_length_factor * (number_of_words / number_of_sentences) \
-                - word_length_factor * (number_of_syllables / number_of_words)
+        index = constants["start"] - constants["sentence"] * (number_of_words / number_of_sentences) \
+                - constants["word"] * (number_of_syllables / number_of_words)
         return index
 
     @classmethod
-    def __estimate_number_of_syllables_in_word(cls, word: str, language: 'model.Language'):
+    def __get_constants_for_language(cls, language: 'model.language'):
+        if language.code == "de":
+            return {"start": 180, "sentence": 1, "word": 58.5}
+        else:
+            return {"start": 206.835, "sentence": 1.015, "word": 84.6}
+
+    @classmethod
+    def estimate_number_of_syllables_in_word(cls, word: str, language: 'model.Language'):
         if len(word) < cls.AVERAGE_SYLLABLE_LENGTH:
             syllables = 1  # Always at least 1 syllable
         else:
@@ -72,7 +72,7 @@ class FleschKincaidDifficultyEstimator(DifficultyEstimatorStrategy):
         return int(math.floor(syllables))  # Truncate the number of syllables
 
     @classmethod
-    def __normalize_difficulty(cls, score: int):
+    def normalize_difficulty(cls, score: int):
         if score < 0:
             return 1
         elif score > 100:
@@ -81,7 +81,7 @@ class FleschKincaidDifficultyEstimator(DifficultyEstimatorStrategy):
             return 1 - (score * 0.01)
 
     @classmethod
-    def __discrete_difficulty(cls, score: int):
+    def discrete_difficulty(cls, score: int):
         if score > 80:
             return "EASY"
         elif score > 50:
