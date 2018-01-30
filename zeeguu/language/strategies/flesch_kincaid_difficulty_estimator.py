@@ -50,8 +50,17 @@ class FleschKincaidDifficultyEstimator(DifficultyEstimatorStrategy):
 
         number_of_sentences = len(nltk.sent_tokenize(text))
 
-        index = 206.835 - 1.015 * (number_of_words / number_of_sentences) - 84.6 * (
-            number_of_syllables / number_of_words)
+        if language.code == "de":
+            starting_constant = 80
+            sentence_length_factor = 1
+            word_length_factor = 58.5
+        else:
+            starting_constant = 206.835
+            sentence_length_factor = 1.015
+            word_length_factor = 84.6
+
+        index = starting_constant - sentence_length_factor * (number_of_words / number_of_sentences) \
+                - word_length_factor * (number_of_syllables / number_of_words)
         return index
 
     @classmethod
