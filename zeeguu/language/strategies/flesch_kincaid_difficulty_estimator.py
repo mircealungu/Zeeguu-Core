@@ -51,7 +51,7 @@ class FleschKincaidDifficultyEstimator(DifficultyEstimatorStrategy):
         number_of_sentences = len(nltk.sent_tokenize(text))
 
         if language.code == "de":
-            starting_constant = 80
+            starting_constant = 180
             sentence_length_factor = 1
             word_length_factor = 58.5
         else:

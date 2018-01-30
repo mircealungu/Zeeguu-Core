@@ -12,6 +12,9 @@ E_EASY_TEXT = "The cat sat on the mat."
 E_MEDIUM_TEXT = "This sentence, taken as a reading passage unto itself, is being used to prove a point."
 E_HARD_TEXT = "The Australian platypus is seemingly a hybrid of a mammal and reptilian creature."
 
+DE_EASY_TEXT = "Ich bin ein Berliner."
+DE_MEDIUM_TEXT = "Ich bin ins Kino gegangen, um mir einen Film anzuschauen, den ich sehr spannend fand."
+DE_HARD_TEXT = "Wegen Wörtern wie Frühstücksfernsehen, Fußgängerübergang und Verkehrsüberwachung liebe ich die deutche Sprache."
 
 class FleschKincaidReadingEaseDifficultyEstimatorTest(ModelTestMixIn, TestCase):
 
@@ -96,3 +99,23 @@ class FleschKincaidReadingEaseDifficultyEstimatorTest(ModelTestMixIn, TestCase):
         d = FleschKincaidDifficultyEstimator.estimate_difficulty(E_HARD_TEXT, lan, self.user)
 
         self.assertEqual(d['discrete'], 'HARD')
+
+        # GERMAN TESTS
+
+    def test_german_easy(self):
+        lan = LanguageRule().de
+        d = FleschKincaidDifficultyEstimator.estimate_difficulty(DE_EASY_TEXT, lan, self.user)
+
+        self.assertEqual('EASY', d['discrete'])
+
+    def test_german_medium(self):
+        lan = LanguageRule().de
+        d = FleschKincaidDifficultyEstimator.estimate_difficulty(DE_MEDIUM_TEXT, lan, self.user)
+
+        self.assertEqual('MEDIUM', d['discrete'])
+
+    def test_german_hard(self):
+        lan = LanguageRule().de
+        d = FleschKincaidDifficultyEstimator.estimate_difficulty(DE_HARD_TEXT, lan, self.user)
+
+        self.assertEqual('HARD', d['discrete'])
