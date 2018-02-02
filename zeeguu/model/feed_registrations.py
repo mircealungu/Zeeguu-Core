@@ -21,6 +21,12 @@ class RSSFeedRegistration(db.Model):
         self.user = user
         self.rss_feed = feed
 
+    def __str__(self):
+        return f'RSS Feed Registration ({self.user.name}, {self.rss_feed})'
+
+    def __repr__(self):
+        return f'RSS Feed Registration ({self.user.name}, {self.rss_feed})'
+
     @classmethod
     def find_or_create(cls, session, user, feed):
         try:
@@ -28,11 +34,10 @@ class RSSFeedRegistration(db.Model):
                     .filter(cls.rss_feed == feed)
                     .one())
         except sqlalchemy.orm.exc.NoResultFound:
-                new = cls(user, feed)
-                session.add(new)
-                session.commit()
-                return new
-
+            new = cls(user, feed)
+            session.add(new)
+            session.commit()
+            return new
 
     @classmethod
     def feeds_for_user(cls, user):
@@ -42,7 +47,7 @@ class RSSFeedRegistration(db.Model):
         :param user:
         :return:
         """
-        return cls.query.filter(cls.user == user)
+        return cls.query.filter(cls.user == user).all()
 
     @classmethod
     def with_id(cls, i):

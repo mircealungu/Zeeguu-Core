@@ -37,8 +37,14 @@ class RSSFeed(db.Model):
         self.language = language
         self.description = description
 
+    def __str__(self):
+        return f'{self.title, self.language.code}'
+
+    def __repr__(self):
+        return str(self)
+
     @classmethod
-    def from_url(cls, url:str):
+    def from_url(cls, url: str):
         data = feedparser.parse(url)
 
         try:
@@ -53,16 +59,15 @@ class RSSFeed(db.Model):
 
         try:
             image_url_string = data.feed.image.href
-            print (f'Found image url at: {image_url_string}')
+            print(f'Found image url at: {image_url_string}')
             image_url = Url(image_url_string, title + " Icon")
         except:
-            print ('Could not find any image url.')
+            print('Could not find any image url.')
             image_url = None
 
         feed_url = Url(url, title)
 
         return RSSFeed(feed_url, title, description, image_url, None)
-
 
         return RSSFeed()
 
