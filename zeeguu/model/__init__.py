@@ -11,10 +11,8 @@ if not hasattr(zeeguu, "app"):
     zeeguu.app = Flask("Zeeguu-Core")
     load_configuration_or_abort(zeeguu.app, 'ZEEGUU_CORE_CONFIG')
 
-
 # Either local, or injected our app config should have at least these
 assert_configs(zeeguu.app.config, ['SQLALCHEMY_DATABASE_URI', 'MAX_SESSION', 'SQLALCHEMY_TRACK_MODIFICATIONS'])
-
 
 # Create the zeeguu.db object, which will be the superclass
 # of all the model classes
@@ -22,6 +20,7 @@ zeeguu.db = flask_sqlalchemy.SQLAlchemy(zeeguu.app)
 # Note, that if we pass the app here, then we don't need later
 # to push the app context
 
+from .article import Article
 from .bookmark import Bookmark
 from .domain_name import DomainName
 from .user import User
