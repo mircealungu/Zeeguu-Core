@@ -78,7 +78,7 @@ class FleschKincaidDifficultyEstimator(DifficultyEstimatorStrategy):
         elif score > 100:
             return 0
         else:
-            return 1 - (score * 0.01)
+            return round(1 - (score * 0.01), 2)
 
     @classmethod
     def discrete_difficulty(cls, score: int):
