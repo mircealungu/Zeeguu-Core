@@ -86,6 +86,12 @@ class RSSFeed(db.Model):
         )
 
     def feed_items(self):
+        """
+
+        :return: a dictionary with info about that feed
+        extracted by feedparser
+        and including: title, url, content, summary, time
+        """
 
         def publishing_date(item):
             return item.updated_parsed
