@@ -13,5 +13,5 @@ def log(text):
     return text
 
 
-def lognprint(text):
+def log_n_print(text):
     print(log(text))
