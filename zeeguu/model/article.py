@@ -76,7 +76,7 @@ class Article(db.Model):
             published=self.published_time.strftime("%Y-%m-%dT%H:%M:%S%z"),
             summary=self.summary,
             metrics=dict(
-                difficulty=self.fk_difficulty,
+                difficulty=self.fk_difficulty/100,
                 word_count=self.word_count
             )
         )
