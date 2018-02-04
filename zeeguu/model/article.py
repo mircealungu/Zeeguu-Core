@@ -70,6 +70,7 @@ class Article(db.Model):
         :return:
         """
         return dict(
+            id=self.id,
             title=self.title,
             url=self.url.as_string(),
             published=self.published_time.strftime("%Y-%m-%dT%H:%M:%S%z"),
@@ -90,6 +91,7 @@ class Article(db.Model):
         :return:
         """
         return dict(
+            id=self.id,
             title=self.title,
             url=self.url.as_string(),
             published=self.published_time.strftime("%Y-%m-%dT%H:%M:%S%z"),
