@@ -20,6 +20,7 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
 
         title = feed_item['title']
         url = feed_item['url']
+        summary = feed_item['summary']
 
         art = model.Article.find(url)
 
@@ -43,6 +44,7 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
                         title,
                         ', '.join(art.authors),
                         art.text,
+                        summary,
                         datetime.now(),
                         feed,
                         feed.language

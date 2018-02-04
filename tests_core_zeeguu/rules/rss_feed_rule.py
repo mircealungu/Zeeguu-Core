@@ -6,6 +6,9 @@ from tests_core_zeeguu.rules.language_rule import LanguageRule
 from tests_core_zeeguu.rules.url_rule import UrlRule
 from zeeguu.model import RSSFeed, Language, Url
 
+SPIEGEL_URL = "http://www.spiegel.de/index.rss"
+TELEGRAAF_URL = "http://www.telegraaf.nl/rss"
+
 
 class RSSFeedRule(BaseRule):
     """
@@ -20,7 +23,23 @@ class RSSFeedRule(BaseRule):
         self.rss_feed = self._create_model_object()
         self.feed = self.rss_feed
 
+
+        german = Language.find_or_create("de")
+        url = Url.find_or_create(self.db.session, SPIEGEL_URL)
+        self.spiegel = RSSFeed.find_or_create(self.db.session, url, "", "", image_url=None,
+                               language=german)
+
+        dutch = Language.find_or_create("de")
+        url2 = Url.find_or_create(self.db.session, TELEGRAAF_URL)
+        self.telegraaf = RSSFeed.find_or_create(self.db.session,
+                                                url2, "", "", image_url=None, language=dutch)
+
         self.save(self.rss_feed)
+
+    @staticmethod
+    def _exists_in_db(obj):
+        return RSSFeed.exists(obj)
+
 
     def _create_model_object(self):
         title = " ".join(self.faker.text().split()[:(randint(1, 10))])
@@ -35,13 +54,3 @@ class RSSFeedRule(BaseRule):
             return self._create_model_object()
 
         return new_rss_feed
-
-    @classmethod
-    def der_spiegel_feed(self):
-        TEST_FEED_URL = "http://www.spiegel.de/index.rss"
-        TEST_FEED_LANG = "de"
-
-        url = Url.find_or_create(self.db.session, TEST_FEED_URL)
-        feed = RSSFeed(url, "", "", image_url=None,
-                       language=Language.find_or_create(TEST_FEED_LANG))
-        return feed

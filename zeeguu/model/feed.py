@@ -40,7 +40,11 @@ class RSSFeed(db.Model):
         self.description = description
 
     def __str__(self):
-        return f'{self.title, self.language.code}'
+        language = "unknown"
+        if self.language:
+            language = self.language.code
+
+        return f'{self.title, language}'
 
     def __repr__(self):
         return str(self)
@@ -78,12 +82,16 @@ class RSSFeed(db.Model):
         if self.image_url:
             image_url = self.image_url.as_string()
 
+        language = "unknown_lang"
+        if self.language:
+            language = self.language.code
+
         return dict(
             id=self.id,
             title=self.title,
             url=self.url.as_string(),
             description=self.description,
-            language=self.language.code,
+            language=language,
             image_url=image_url
         )
 
@@ -145,19 +153,22 @@ class RSSFeed(db.Model):
 
         Assumes that the language of the feed is correctly set
 
-        :return: dictionary with keys being urls and values being the corresponding metrics
+        :return: list of Article.article_info dictionaries
         """
 
-        from zeeguu.language.retrieve_and_compute import retrieve_urls_and_compute_metrics
+        articles = self.get_articles(limit=30)
+        return [each.article_info() for each in articles]
 
-        feed_items = self.feed_items()
-        urls = [each['url'] for each in feed_items]
-        urls_and_metrics = retrieve_urls_and_compute_metrics(urls, self.language, user, timeout)
-        filtered_feed_items = [dict(list(each.items()) + list({"metrics": urls_and_metrics.get(each['url'])}.items()))
-                               for each in feed_items
-                               if each["url"] in list(urls_and_metrics.keys())]
-
-        return filtered_feed_items
+        # from zeeguu.language.retrieve_and_compute import retrieve_urls_and_compute_metrics
+        #
+        # feed_items = self.feed_items()
+        # urls = [each['url'] for each in feed_items]
+        # urls_and_metrics = retrieve_urls_and_compute_metrics(urls, self.language, user, timeout)
+        # filtered_feed_items = [dict(list(each.items()) + list({"metrics": urls_and_metrics.get(each['url'])}.items()))
+        #                        for each in feed_items
+        #                        if each["url"] in list(urls_and_metrics.keys())]
+        #
+        # return filtered_feed_items
 
     @classmethod
     def find_or_create(cls, session, url, title, description, image_url: Url, language: Language):
@@ -201,6 +212,7 @@ class RSSFeed(db.Model):
         query = (Article.query.
                  filter(Article.rss_feed == self).
                  filter(Article.published_time >= after_date).
+                 order_by(Article.published_time).
                  order_by(Article.fk_difficulty).
                  limit(limit))
 
