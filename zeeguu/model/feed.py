@@ -4,6 +4,7 @@ import time
 
 import feedparser
 import sqlalchemy.orm.exc
+from sqlalchemy.orm.exc import NoResultFound
 
 import zeeguu
 from zeeguu.model.language import Language
@@ -110,6 +111,16 @@ class RSSFeed(db.Model):
         return feed_items
 
     @classmethod
+    def exists(cls, rss_feed):
+        try:
+            cls.query.filter(
+                cls.url==rss_feed.url
+            ).one()
+            return True
+        except NoResultFound:
+            return False
+
+    @classmethod
     def find_by_id(cls, i):
         try:
             result = cls.query.filter(cls.id == i).one()
@@ -168,3 +179,5 @@ class RSSFeed(db.Model):
     def find_for_language_id(cls, language_code):
         language = Language.find(language_code)
         return cls.query.filter(cls.language == language).group_by(cls.title).all()
+
+    
