@@ -1,4 +1,3 @@
-
 from datetime import datetime
 
 import watchmen
@@ -9,14 +8,15 @@ from zeeguu.model import Url, RSSFeed
 
 LOG_CONTEXT = "FEED RETRIEVAL"
 
-def download_from_feed(feed: RSSFeed, session):
+
+def download_from_feed(feed: RSSFeed, session, limit=1000):
     """
 
         Session is needed because this saves stuff to the DB.
 
 
     """
-    for feed_item in feed.feed_items():
+    for feed_item in feed.feed_items()[:limit]:
 
         title = feed_item['title']
         url = feed_item['url']
@@ -49,8 +49,7 @@ def download_from_feed(feed: RSSFeed, session):
                     )
                     session.add(new_article)
                     session.commit()
-                    zeeguu.log_n_print()
-                    print(f" {LOG_CONTEXT}: Added: {new_article}")
+                    zeeguu.log_n_print(f" {LOG_CONTEXT}: Added: {new_article}")
             except Exception as ex:
-                zeeguu.log_n_print(f" {LOG_CONTEXT}: Failed to create zeeguu.Article from {url}")
-                zeeguu.log(str(ex))
+                zeeguu.log_n_print(f" {LOG_CONTEXT}: Failed to create zeeguu.Article from {url}\n{str(ex)}")
+                raise (ex)
