@@ -15,4 +15,10 @@ def log(text):
 
 
 def log_n_print(text):
+    """
+
+        Print both to stdout and the logfile
+
+    :return: None
+    """
     print(log(text))
