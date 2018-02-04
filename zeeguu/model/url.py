@@ -25,7 +25,7 @@ class Url(db.Model):
         {'mysql_collate': 'utf8_bin'}
     )
 
-    def __init__(self, url: str, title: str, domain: DomainName = None):
+    def __init__(self, url: str, title: str = "", domain: DomainName = None):
 
         self.path = Url.get_path(url)
         self.title = title
