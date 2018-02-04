@@ -37,7 +37,7 @@ for feed in RSSFeed.query.all():
         art = model.Article.find(url)
 
         if art:
-            print(f"Already found in the DB: {art}")
+            print(f"Already in the DB: {art}")
         else:
             try:
                 art = watchmen.article_parser.get_article(url)
