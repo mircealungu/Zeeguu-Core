@@ -60,27 +60,6 @@ class Article(db.Model):
     def __repr__(self):
         return f'<Article {self.title} (w: {self.word_count}, d: {self.fk_difficulty}) ({self.url})>'
 
-    def article_info_NEW_VERSION(self):
-        """
-
-            This is the data that is sent over the API
-            to the Reader. Whatever the reader needs
-            must be here.
-
-        :return:
-        """
-        return dict(
-            id=self.id,
-            title=self.title,
-            url=self.url.as_string(),
-            published=self.published_time.strftime("%Y-%m-%dT%H:%M:%S%z"),
-            summary=self.summary,
-            metrics=dict(
-                difficulty_fk=self.fk_difficulty,
-                word_count=self.word_count
-            )
-        )
-
     def article_info(self):
         """
 
@@ -97,10 +76,7 @@ class Article(db.Model):
             published=self.published_time.strftime("%Y-%m-%dT%H:%M:%S%z"),
             summary=self.summary,
             metrics=dict(
-                difficulty=dict(
-                    discrete="HARD",
-                    normalized=str(self.fk_difficulty / 100)
-                ),
+                difficulty=self.fk_difficulty,
                 word_count=self.word_count
             )
         )
