@@ -16,10 +16,9 @@ class FeedTest(ModelTestMixIn, TestCase):
         download_from_feed(self.spiegel, self.db.session, 3)
 
     def test_feed_items(self):
-        assert len(Article.get_all_for_feed(self.spiegel)) == 3
-        assert len(Article.get_all_for_feed(self.spiegel, limit=2)) == 2
-
+        assert len(self.spiegel.get_articles()) == 3
+        assert len(self.spiegel.get_articles(limit=2)) == 2
 
     def test_after_date_works(self):
         tomorrow = datetime.now() + timedelta(days=1)
-        assert not Article.get_all_for_feed(self.spiegel,after_date=tomorrow)
+        assert not self.spiegel.get_articles(after_date=tomorrow)

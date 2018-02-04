@@ -1,6 +1,7 @@
 # -*- coding: utf8 -*-
 
 import time
+from datetime import datetime
 
 import feedparser
 import sqlalchemy.orm.exc
@@ -114,7 +115,7 @@ class RSSFeed(db.Model):
     def exists(cls, rss_feed):
         try:
             cls.query.filter(
-                cls.url==rss_feed.url
+                cls.url == rss_feed.url
             ).one()
             return True
         except NoResultFound:
@@ -146,6 +147,7 @@ class RSSFeed(db.Model):
 
         :return: dictionary with keys being urls and values being the corresponding metrics
         """
+
         from zeeguu.language.retrieve_and_compute import retrieve_urls_and_compute_metrics
 
         feed_items = self.feed_items()
@@ -180,4 +182,29 @@ class RSSFeed(db.Model):
         language = Language.find(language_code)
         return cls.query.filter(cls.language == language).group_by(cls.title).all()
 
-    
+    def get_articles(self, limit=None, after_date=None):
+        """
+
+            Articles for this feed from the article DB
+
+        :param feed:
+        :param limit:
+        :param order_by:
+        :return:
+        """
+
+        from zeeguu.model import Article
+
+        if not after_date:
+            after_date = datetime(2001, 1, 1)
+
+        query = (Article.query.
+                 filter(Article.rss_feed == self).
+                 filter(Article.published_time >= after_date).
+                 order_by(Article.fk_difficulty).
+                 limit(limit))
+
+        try:
+            return query.all()
+        except:
+            return None

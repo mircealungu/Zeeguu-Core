@@ -82,28 +82,3 @@ class Article(db.Model):
         except NoResultFound:
             return False
 
-    @classmethod
-    def get_all_for_feed(cls, feed: RSSFeed, limit=None, after_date=None):
-        """
-
-            Articles for feed.
-
-        :param feed:
-        :param limit:
-        :param order_by:
-        :return:
-        """
-
-        if not after_date:
-            after_date = datetime.datetime(2001, 1, 1)
-
-        query = (cls.query.
-                 filter(cls.rss_feed == feed).
-                 filter(cls.published_time >= after_date).
-                 order_by(cls.fk_difficulty).
-                 limit(limit))
-
-        try:
-            return query.all()
-        except:
-            return None
