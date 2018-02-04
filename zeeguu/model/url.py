@@ -34,6 +34,9 @@ class Url(db.Model):
         else:
             self.domain = DomainName.for_url_string(url)
 
+    def __str__(self):
+        return self.as_string()
+
     def title_if_available(self):
         if self.title != "":
             return self.title
@@ -42,7 +45,7 @@ class Url(db.Model):
     def as_string(self):
         return self.domain.domain_name + self.path
 
-    def render_link(self, link_text = None):
+    def render_link(self, link_text=None):
         if not link_text:
             _title = self.title
         else:
@@ -65,7 +68,7 @@ class Url(db.Model):
         return domain[0] + domain[1]
 
     @classmethod
-    def get_path(cls, url:str):
+    def get_path(cls, url: str):
         protocol_re = '(.*://)?'
         domain_re = '([^/?]*)'
         path_re = '(.*)'
