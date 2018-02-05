@@ -54,4 +54,3 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
                     zeeguu.log_n_print(f" {LOG_CONTEXT}: Added: {new_article}")
             except Exception as ex:
                 zeeguu.log_n_print(f" {LOG_CONTEXT}: Failed to create zeeguu.Article from {url}\n{str(ex)}")
-                raise (ex)
