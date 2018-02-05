@@ -199,14 +199,12 @@ class RSSFeed(db.Model):
         if not after_date:
             after_date = datetime(2001, 1, 1)
 
-        query = (Article.query.
-                 filter(Article.rss_feed == self).
-                 filter(Article.published_time >= after_date).
-                 order_by(Article.published_time.desc()).
-                 order_by(Article.fk_difficulty).
-                 limit(limit))
-
         try:
-            return query.all()
+            return (Article.query.
+                    filter(Article.rss_feed == self).
+                    filter(Article.published_time >= after_date).
+                    order_by(Article.published_time.desc()).
+                    order_by(Article.fk_difficulty).
+                    limit(limit).all())
         except:
             return None
