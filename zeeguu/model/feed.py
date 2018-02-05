@@ -146,29 +146,19 @@ class RSSFeed(db.Model):
         except sqlalchemy.orm.exc.NoResultFound:
             return None
 
-    def feed_items_with_metrics(self, user, timeout=10):
+    def feed_items_with_metrics(self, user, limit):
         """
-        Retrieves the feed items for this feed together with their metrics (difficulty,
+
+            Retrieves the feed items for this feed together with their metrics (difficulty,
         learnability, etc.).
 
-        Assumes that the language of the feed is correctly set
+            Assumes that the language of the feed is correctly set
 
         :return: list of Article.article_info dictionaries
         """
 
-        articles = self.get_articles(limit=30)
+        articles = self.get_articles(limit=limit)
         return [each.article_info() for each in articles]
-
-        # from zeeguu.language.retrieve_and_compute import retrieve_urls_and_compute_metrics
-        #
-        # feed_items = self.feed_items()
-        # urls = [each['url'] for each in feed_items]
-        # urls_and_metrics = retrieve_urls_and_compute_metrics(urls, self.language, user, timeout)
-        # filtered_feed_items = [dict(list(each.items()) + list({"metrics": urls_and_metrics.get(each['url'])}.items()))
-        #                        for each in feed_items
-        #                        if each["url"] in list(urls_and_metrics.keys())]
-        #
-        # return filtered_feed_items
 
     @classmethod
     def find_or_create(cls, session, url, title, description, image_url: Url, language: Language):

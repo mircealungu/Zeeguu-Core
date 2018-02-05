@@ -1,11 +1,12 @@
+import zeeguu
 from tests_core_zeeguu.model_test_mixin import ModelTestMixIn
 from tests_core_zeeguu.rules.language_rule import LanguageRule
+from tests_core_zeeguu.rules.rss_feed_rule import RSSFeedRule
 from tests_core_zeeguu.rules.user_rule import UserRule
 from tests_core_zeeguu.testing_data import *
+from zeeguu.content_retriever.article_downloader import download_from_feed
 from zeeguu.language.retrieve_and_compute import \
     retrieve_urls_and_compute_metrics
-from zeeguu.model.feed import RSSFeed
-from zeeguu.model.url import Url
 
 
 class TestRetrieveAndCompute(ModelTestMixIn):
@@ -35,13 +36,13 @@ class TestRetrieveAndCompute(ModelTestMixIn):
         # assert difficulty_for_easiest['discrete'] == difficulty_for_very_easy['discrete']
 
     def testDifficultyOfFeedItems(self):
-        url = Url(DE_SAMPLE_FEED_1_URL, DE_SAMPLE_FEED_1_URL)
-        feed = RSSFeed(url, DE_SAMPLE_FEED_1_TITLE, "blabla", image_url=None,
-                       language=self.lan)
+        feed = RSSFeedRule().spiegel
+        download_from_feed(feed, zeeguu.db.session, 3)
 
-        items_with_metrics = feed.feed_items_with_metrics(self.user, 20)
+        items_with_metrics = feed.feed_items_with_metrics(self.user, 2)
 
-        assert len(items_with_metrics) > 0
+        assert len(items_with_metrics) == 2
+
         assert items_with_metrics[0]["title"]
         assert items_with_metrics[0]["summary"]
         assert items_with_metrics[0]["published"]

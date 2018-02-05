@@ -26,12 +26,13 @@ class ArticleRule(BaseRule):
         title = " ".join(self.faker.text().split()[:4])
         authors = self.faker.name()
         content = self.faker.text()
+        summary = self.faker.text()
         published = datetime.now() - timedelta(minutes=randint(0, 7200))
         rss_feed = RSSFeedRule().feed
         language = LanguageRule().random
         url = UrlRule().url
 
-        article = Article(url, title, authors, content, published, rss_feed, language)
+        article = Article(url, title, authors, content, summary, published, rss_feed, language)
 
         if self._exists_in_db(article):
             return self._create_model_object()
