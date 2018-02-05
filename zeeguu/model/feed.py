@@ -212,7 +212,7 @@ class RSSFeed(db.Model):
         query = (Article.query.
                  filter(Article.rss_feed == self).
                  filter(Article.published_time >= after_date).
-                 order_by(Article.published_time).
+                 order_by(Article.published_time.desc()).
                  order_by(Article.fk_difficulty).
                  limit(limit))
 
