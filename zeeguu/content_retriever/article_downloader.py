@@ -4,7 +4,7 @@ import watchmen
 import zeeguu
 
 from zeeguu import model
-from zeeguu.model import Url, RSSFeed
+from zeeguu.model import Url, RSSFeed, Article
 
 LOG_CONTEXT = "FEED RETRIEVAL"
 
@@ -16,7 +16,11 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
 
 
     """
-    for feed_item in feed.feed_items()[:limit]:
+    downloaded = 0
+    for feed_item in feed.feed_items():
+
+        if downloaded >= limit:
+            break
 
         title = feed_item['title']
         url = feed_item['url']
@@ -34,7 +38,8 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
 
                 if word_count < 10:
                     zeeguu.log_n_print(f" {LOG_CONTEXT}: Can't find text for: {url}")
-
+                elif word_count < Article.MINIMUM_WORD_COUNT:
+                    zeeguu.log_n_print(f" {LOG_CONTEXT}: Skipped. Less than {Article.MINIMUM_WORD_COUNT} words of text. {url}")
                 else:
                     from zeeguu.language.difficulty_estimator_factory import DifficultyEstimatorFactory
 
@@ -52,5 +57,6 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
                     session.add(new_article)
                     session.commit()
                     zeeguu.log_n_print(f" {LOG_CONTEXT}: Added: {new_article}")
+                    downloaded += 1
             except Exception as ex:
                 zeeguu.log_n_print(f" {LOG_CONTEXT}: Failed to create zeeguu.Article from {url}\n{str(ex)}")

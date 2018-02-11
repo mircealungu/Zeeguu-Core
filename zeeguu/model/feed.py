@@ -203,7 +203,7 @@ class RSSFeed(db.Model):
             return (Article.query.
                     filter(Article.rss_feed == self).
                     filter(Article.published_time >= after_date).
-                    filter(Article.word_count > 200). # less than 200 words is not really an article...
+                    filter(Article.word_count > Article.MINIMUM_WORD_COUNT).
                     order_by(Article.published_time.desc()).
                     order_by(Article.fk_difficulty).
                     limit(limit).all())

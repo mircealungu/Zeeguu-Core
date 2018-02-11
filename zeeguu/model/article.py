@@ -39,6 +39,12 @@ class Article(db.Model):
     language_id = Column(Integer, ForeignKey(Language.id))
     language = relationship(Language)
 
+    # Less than 200 words is very often not an article
+    # but the caption for a video or a comic strip.
+    # Or maybe an article that's behind a paywall and
+    # has only the first paragraph available
+    MINIMUM_WORD_COUNT = 200
+
     def __init__(self, url, title, authors, content, summary, published_time, rss_feed, language):
         self.url = url
         self.title = title
