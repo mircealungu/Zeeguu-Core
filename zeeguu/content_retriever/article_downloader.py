@@ -58,5 +58,7 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
                     session.commit()
                     zeeguu.log_n_print(f" {LOG_CONTEXT}: Added: {new_article}")
                     downloaded += 1
-            except Exception as ex:
+            except:
+                import sys
+                ex = sys.exc_info()[0]
                 zeeguu.log_n_print(f" {LOG_CONTEXT}: Failed to create zeeguu.Article from {url}\n{str(ex)}")
