@@ -1,3 +1,10 @@
+"""
+
+    Goes through all the interesting sources that the server knows
+    about and downloads new articles saving them in the DB.  
+
+
+"""
 from datetime import datetime
 
 import watchmen
