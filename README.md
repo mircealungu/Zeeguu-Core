@@ -42,9 +42,10 @@ The tests overwrite the `ZEEGUU_CORE_CONFIG` by setting it to
    2. `cd` into the project folder
    3. Run `./run_tests.sh`
    4. Check that all tests return 'ok'
-9. Finally, lets populate the database
-   1. From inside the project folder, run `mkdir -p ~/.config/zeeguu/ && cp testing_default.cfg ~/.config/zeeguu/core.cfg`
-   2. Run `python zeeguu/populate.py`
+9. (Optional) You can populate the DB with the dataset that we used for the CHI paper
+   1. download the dump  https://github.com/zeeguu-ecosystem/CHI18-Paper/blob/master/data/chi18_dataset_anon_2018-01-15.sql.zip
+   2. unzip the file
+   1. mysql -u root -p zeeguu < chi18_dataset_anon_2018-01-15.sql
    3. The database *should* be populated by now.
 
 # MySQL
