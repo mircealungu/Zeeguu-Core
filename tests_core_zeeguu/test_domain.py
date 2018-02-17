@@ -9,13 +9,11 @@ from tests_core_zeeguu.rules.url_rule import UrlRule
 from tests_core_zeeguu.rules.user_rule import UserRule
 from zeeguu.model.domain_name import DomainName
 from zeeguu.model.url import Url
-from zeeguu.the_librarian.website_recommender import recent_domains_with_times
 
 db = zeeguu.db
 
 
 class DomainTest(ModelTestMixIn, TestCase):
-
     def setUp(self):
         super().setUp()
         self.user_rule = UserRule()
@@ -39,13 +37,6 @@ class DomainTest(ModelTestMixIn, TestCase):
             domain_should_be + " should be " + domain_to_check
         )
 
-    def test_user_recently_visited_domains(self):
-        assert len(recent_domains_with_times(self.user)) != 0
-
-    # TODO: Discuss the necessity of this test
-    def test_user_recently_visited_domains_does_not_include_android(self):
-        assert not(any("android" in dom[0] for dom in recent_domains_with_times(self.user)))
-
     def test_one_domain_multiple_urls(self):
         """
         Tests that if multiple URLs are added to the database that their
@@ -68,4 +59,3 @@ class DomainTest(ModelTestMixIn, TestCase):
             assert False, "No domains found in database"
         except MultipleResultsFound:
             assert False, "There were multiple DomainNames in the database"
-
