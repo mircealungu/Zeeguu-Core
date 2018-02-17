@@ -1,9 +1,7 @@
-import wordstats
-
+from wordstats import Word, WordInfo
 from zeeguu import model
 from zeeguu.language.difficulty_estimator_strategy import DifficultyEstimatorStrategy
-from zeeguu.the_librarian.text import split_words_from_text
-from wordstats import Word, WordInfo
+from zeeguu.util.text import split_words_from_text
 
 
 class FrequencyDifficultyEstimator(DifficultyEstimatorStrategy):
