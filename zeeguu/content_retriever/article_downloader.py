@@ -36,7 +36,7 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
         art = model.Article.find(url)
 
         if art:
-            print(f"Already in the DB: {art}")
+            zeeguu.log(f"Already in the DB: {art}")
         else:
             try:
                 art = watchmen.article_parser.get_article(url)
@@ -44,9 +44,9 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
                 word_count = len(art.text.split(" "))
 
                 if word_count < 10:
-                    zeeguu.log_n_print(f" {LOG_CONTEXT}: Can't find text for: {url}")
+                    zeeguu.log(f" {LOG_CONTEXT}: Can't find text for: {url}")
                 elif word_count < Article.MINIMUM_WORD_COUNT:
-                    zeeguu.log_n_print(f" {LOG_CONTEXT}: Skipped. Less than {Article.MINIMUM_WORD_COUNT} words of text. {url}")
+                    zeeguu.log(f" {LOG_CONTEXT}: Skipped. Less than {Article.MINIMUM_WORD_COUNT} words of text. {url}")
                 else:
                     from zeeguu.language.difficulty_estimator_factory import DifficultyEstimatorFactory
 
@@ -63,9 +63,9 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
                     )
                     session.add(new_article)
                     session.commit()
-                    zeeguu.log_n_print(f" {LOG_CONTEXT}: Added: {new_article}")
+                    zeeguu.log(f" {LOG_CONTEXT}: Added: {new_article}")
                     downloaded += 1
             except:
                 import sys
                 ex = sys.exc_info()[0]
-                zeeguu.log_n_print(f" {LOG_CONTEXT}: Failed to create zeeguu.Article from {url}\n{str(ex)}")
+                zeeguu.log(f" {LOG_CONTEXT}: Failed to create zeeguu.Article from {url}\n{str(ex)}")
