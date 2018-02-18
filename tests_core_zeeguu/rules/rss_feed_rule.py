@@ -6,8 +6,12 @@ from tests_core_zeeguu.rules.language_rule import LanguageRule
 from tests_core_zeeguu.rules.url_rule import UrlRule
 from zeeguu.model import RSSFeed, Language, Url
 
-SPIEGEL_URL = "http://www.spiegel.de/index.rss"
-TELEGRAAF_URL = "http://www.telegraaf.nl/rss"
+URL_OF_FEED_ONE = "http://www.spiegel.de/index.rss"
+IMG_URL_OF_FEED_ONE = "http://www.spiegel.de/spiegel.png"
+LANG_OF_FEED_ONE="de"
+URL_OF_FEED_TWO = "http://www.lefigaro.fr/rss/figaro_sante.xml"
+IMG_URL_OF_FEED_TWO = "http://www.lefigaro.fr/favicon.png"
+LANG_OF_FEED_TWO="fr"
 
 
 class RSSFeedRule(BaseRule):
@@ -23,23 +27,25 @@ class RSSFeedRule(BaseRule):
         self.rss_feed = self._create_model_object()
         self.feed = self.rss_feed
 
+        lang1 = Language.find_or_create(LANG_OF_FEED_ONE)
+        url = Url.find_or_create(self.db.session, URL_OF_FEED_ONE)
+        image_url = Url.find_or_create(self.db.session, IMG_URL_OF_FEED_ONE)
+        self.spiegel = RSSFeed.find_or_create(self.db.session, url, "", "", image_url=image_url,
+                                              language=lang1)
+        self.save(self.spiegel)
 
-        german = Language.find_or_create("de")
-        url = Url.find_or_create(self.db.session, SPIEGEL_URL)
-        self.spiegel = RSSFeed.find_or_create(self.db.session, url, "", "", image_url=None,
-                               language=german)
-
-        dutch = Language.find_or_create("de")
-        url2 = Url.find_or_create(self.db.session, TELEGRAAF_URL)
+        lang2 = Language.find_or_create(LANG_OF_FEED_TWO)
+        url2 = Url.find_or_create(self.db.session, URL_OF_FEED_TWO)
+        image_url2 = Url.find_or_create(self.db.session, IMG_URL_OF_FEED_TWO)
         self.telegraaf = RSSFeed.find_or_create(self.db.session,
-                                                url2, "", "", image_url=None, language=dutch)
+                                                url2, "", "", image_url=image_url2, language=lang2)
+        self.save(self.telegraaf)
 
         self.save(self.rss_feed)
 
     @staticmethod
     def _exists_in_db(obj):
         return RSSFeed.exists(obj)
-
 
     def _create_model_object(self):
         title = " ".join(self.faker.text().split()[:(randint(1, 10))])
