@@ -17,6 +17,8 @@ class TestRetrieveAndCompute(ModelTestMixIn):
         feed = RSSFeedRule().spiegel
         download_from_feed(feed, zeeguu.db.session, 3)
 
+        assert (feed.most_recent_article_time())
+
         articles = feed.get_articles(self.user, limit=2)
 
         assert len(articles) == 2

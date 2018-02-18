@@ -32,12 +32,15 @@ class RSSFeed(db.Model):
     image_url_id = db.Column(db.Integer, db.ForeignKey(Url.id))
     image_url = db.relationship(Url, foreign_keys=image_url_id)
 
+    last_crawled_time = db.Column(db.DateTime)
+
     def __init__(self, url, title, description, image_url=None, language=None):
         self.url = url
         self.image_url = image_url
         self.title = title
         self.language = language
         self.description = description
+        self.last_crawled_time = datetime(2001, 1, 2)
 
     def __str__(self):
         language = "unknown"

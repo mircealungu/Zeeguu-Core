@@ -22,15 +22,32 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
         Session is needed because this saves stuff to the DB.
 
 
+        last_crawled_time is useful because otherwise there would be a lot of time
+        wasted trying to retrieve the same articles, especially the ones which
+        can't be retrieved, so they won't be cached.
+
+
     """
     downloaded = 0
+
+    last_crawled_time = None
+    if feed.last_crawled_time:
+        last_crawled_time = datetime.strftime(feed.last_crawled_time, "%Y-%m-%dT%H:%M:%S")
+
     for feed_item in feed.feed_items():
 
         if downloaded >= limit:
             break
 
-        title = feed_item['title']
         url = feed_item['url']
+
+        if last_crawled_time:
+            time = feed_item['published']
+            if time < last_crawled_time:
+                zeeguu.log(f"Skipping {url} because of last_crawl_time...")
+                break
+
+        title = feed_item['title']
         summary = feed_item['summary']
 
         art = model.Article.find(url)
@@ -69,3 +86,7 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
                 import sys
                 ex = sys.exc_info()[0]
                 zeeguu.log(f" {LOG_CONTEXT}: Failed to create zeeguu.Article from {url}\n{str(ex)}")
+
+    feed.last_crawled_time = datetime.now()
+    session.add(feed)
+    session.commit()
