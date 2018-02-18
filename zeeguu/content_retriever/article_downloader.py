@@ -29,6 +29,7 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
 
     """
     downloaded = 0
+    skipped = 0
 
     last_crawled_time = None
     if feed.last_crawled_time:
@@ -44,8 +45,8 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
         if last_crawled_time:
             time = feed_item['published']
             if time < last_crawled_time:
-                zeeguu.log(f"Skipping {url} because of last_crawl_time...")
-                break
+                skipped += 1
+                continue
 
         title = feed_item['title']
         summary = feed_item['summary']
@@ -87,6 +88,7 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
                 ex = sys.exc_info()[0]
                 zeeguu.log(f" {LOG_CONTEXT}: Failed to create zeeguu.Article from {url}\n{str(ex)}")
 
+    zeeguu.log(f'Skipped {skipped} articles in {feed}')
     feed.last_crawled_time = datetime.now()
     session.add(feed)
     session.commit()
