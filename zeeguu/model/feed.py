@@ -146,20 +146,6 @@ class RSSFeed(db.Model):
         except sqlalchemy.orm.exc.NoResultFound:
             return None
 
-    def feed_items_with_metrics(self, user, limit):
-        """
-
-            Retrieves the feed items for this feed together with their metrics (difficulty,
-        learnability, etc.).
-
-            Assumes that the language of the feed is correctly set
-
-        :return: list of Article.article_info dictionaries
-        """
-
-        articles = self.get_articles(limit=limit)
-        return [each.article_info() for each in articles]
-
     @classmethod
     def find_or_create(cls, session, url, title, description, image_url: Url, language: Language):
 
@@ -183,14 +169,15 @@ class RSSFeed(db.Model):
         language = Language.find(language_code)
         return cls.query.filter(cls.language == language).group_by(cls.title).all()
 
-    def get_articles(self, limit=None, after_date=None):
+    def get_articles(self, user, limit=None, after_date=None, most_recent_first=False, easiest_first=False):
         """
 
             Articles for this feed from the article DB
 
-        :param feed:
         :param limit:
-        :param order_by:
+        :param after_date:
+        :param most_recent_first:
+        :param easiest_first:
         :return:
         """
 
@@ -200,12 +187,18 @@ class RSSFeed(db.Model):
             after_date = datetime(2001, 1, 1)
 
         try:
-            return (Article.query.
-                    filter(Article.rss_feed == self).
-                    filter(Article.published_time >= after_date).
-                    filter(Article.word_count > Article.MINIMUM_WORD_COUNT).
-                    order_by(Article.published_time.desc()).
-                    order_by(Article.fk_difficulty).
-                    limit(limit).all())
-        except:
+            q = (Article.query.
+                 filter(Article.rss_feed == self).
+                 filter(Article.published_time >= after_date).
+                 filter(Article.word_count > Article.MINIMUM_WORD_COUNT))
+
+            if most_recent_first:
+                q = q.order_by(Article.published_time.desc())
+            if easiest_first:
+                q = q.order_by(Article.fk_difficulty)
+
+            return q.limit(limit).all()
+
+        except Exception as e:
+            raise (e)
             return None

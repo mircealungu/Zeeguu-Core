@@ -17,11 +17,7 @@ class TestRetrieveAndCompute(ModelTestMixIn):
         feed = RSSFeedRule().spiegel
         download_from_feed(feed, zeeguu.db.session, 3)
 
-        items_with_metrics = feed.feed_items_with_metrics(self.user, 2)
+        articles = feed.get_articles(self.user, limit=2)
 
-        assert len(items_with_metrics) == 2
-
-        assert items_with_metrics[0]["title"]
-        assert items_with_metrics[0]["summary"]
-        assert items_with_metrics[0]["published"]
-        assert items_with_metrics[0]["metrics"]
+        assert len(articles) == 2
+        assert articles[0].fk_difficulty
