@@ -81,6 +81,9 @@ class Article(db.Model):
             url=self.url.as_string(),
             published=self.published_time.strftime("%Y-%m-%dT%H:%M:%S%z"),
             summary=self.summary,
+            feed_id=self.rss_feed.id,
+            language=self.language.code,
+            feed_image_url=self.rss_feed.image_url.as_string(),
             metrics=dict(
                 difficulty=self.fk_difficulty/100,
                 word_count=self.word_count

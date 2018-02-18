@@ -17,3 +17,6 @@ class ArticleTest(ModelTestMixIn, TestCase):
 
     def test_articles_are_different(self):
         assert (self.article1.title != self.article2.title)
+
+    def test_article_representation_does_not_error(self):
+        assert self.article1.article_info()
