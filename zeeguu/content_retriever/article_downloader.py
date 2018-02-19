@@ -1,3 +1,4 @@
+
 """
 
     Goes through all the interesting sources that the server knows
@@ -28,12 +29,19 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
 
 
     """
+    zeeguu.log(feed)
     downloaded = 0
     skipped = 0
+    skipped_no_words = 0
+    skipped_too_short = 0
+    skipped_already_in_db = 0
 
-    last_crawled_time = None
+    last_retrieval_time_from_DB = None
+    last_retrieval_time_seen_this_crawl = None
+    
     if feed.last_crawled_time:
-        last_crawled_time = datetime.strftime(feed.last_crawled_time, "%Y-%m-%dT%H:%M:%S")
+        last_retrieval_time_from_DB = feed.last_crawled_time
+        print(f"last retrieval time from DB = {last_retrieval_time_from_DB}")
 
     for feed_item in feed.feed_items():
 
@@ -42,9 +50,16 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
 
         url = feed_item['url']
 
-        if last_crawled_time:
-            time = feed_item['published']
-            if time < last_crawled_time:
+        try: 
+            this_article_time = datetime.strptime(feed_item['published'], "%Y-%m-%dT%H:%M:%S%z")
+            this_article_time = this_article_time.replace(tzinfo=None)
+        except: 
+            print (f"can't get time from {url}: {feed_item['published']}")
+            continue
+
+        if last_retrieval_time_from_DB:
+
+            if this_article_time < last_retrieval_time_from_DB:
                 skipped += 1
                 continue
 
@@ -53,18 +68,22 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
 
         art = model.Article.find(url)
 
+        if (not last_retrieval_time_seen_this_crawl) or (this_article_time > last_retrieval_time_seen_this_crawl):
+            last_retrieval_time_seen_this_crawl = this_article_time
+
         if art:
-            zeeguu.log(f"Already in the DB: {art}")
+            skipped_already_in_db += 1
         else:
             try:
                 art = watchmen.article_parser.get_article(url)
 
                 word_count = len(art.text.split(" "))
 
+
                 if word_count < 10:
-                    zeeguu.log(f" {LOG_CONTEXT}: Can't find text for: {url}")
+                    skipped_no_text +=1
                 elif word_count < Article.MINIMUM_WORD_COUNT:
-                    zeeguu.log(f" {LOG_CONTEXT}: Skipped. Less than {Article.MINIMUM_WORD_COUNT} words of text. {url}")
+                    skipped_too_short +=1
                 else:
                     from zeeguu.language.difficulty_estimator_factory import DifficultyEstimatorFactory
 
@@ -75,20 +94,25 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
                         ', '.join(art.authors),
                         art.text,
                         summary,
-                        datetime.now(),
+                        this_article_time,
                         feed,
                         feed.language
                     )
                     session.add(new_article)
                     session.commit()
-                    zeeguu.log(f" {LOG_CONTEXT}: Added: {new_article}")
                     downloaded += 1
             except:
                 import sys
                 ex = sys.exc_info()[0]
                 zeeguu.log(f" {LOG_CONTEXT}: Failed to create zeeguu.Article from {url}\n{str(ex)}")
 
-    zeeguu.log(f'Skipped {skipped} articles in {feed}')
-    feed.last_crawled_time = datetime.now()
+    zeeguu.log(f'  Skipped due to time: {skipped} ')
+    zeeguu.log(f'  Downloaded: {downloaded}') 
+    zeeguu.log(f'  No words: {skipped_no_words}')
+    zeeguu.log(f'  Too short: {skipped_too_short}') 
+    zeeguu.log(f'  Already in DB: {skipped_already_in_db}')
+
+    feed.last_crawled_time = last_retrieval_time_seen_this_crawl
     session.add(feed)
     session.commit()
+
