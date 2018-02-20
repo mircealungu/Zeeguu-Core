@@ -1,4 +1,3 @@
-
 """
 
     Goes through all the interesting sources that the server knows
@@ -32,13 +31,12 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
     zeeguu.log(feed)
     downloaded = 0
     skipped = 0
-    skipped_no_words = 0
     skipped_too_short = 0
     skipped_already_in_db = 0
 
     last_retrieval_time_from_DB = None
     last_retrieval_time_seen_this_crawl = None
-    
+
     if feed.last_crawled_time:
         last_retrieval_time_from_DB = feed.last_crawled_time
         print(f"last retrieval time from DB = {last_retrieval_time_from_DB}")
@@ -50,11 +48,11 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
 
         url = feed_item['url']
 
-        try: 
+        try:
             this_article_time = datetime.strptime(feed_item['published'], "%Y-%m-%dT%H:%M:%S%z")
             this_article_time = this_article_time.replace(tzinfo=None)
-        except: 
-            print (f"can't get time from {url}: {feed_item['published']}")
+        except:
+            print(f"can't get time from {url}: {feed_item['published']}")
             continue
 
         if last_retrieval_time_from_DB:
@@ -79,11 +77,8 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
 
                 word_count = len(art.text.split(" "))
 
-
-                if word_count < 10:
-                    skipped_no_text +=1
-                elif word_count < Article.MINIMUM_WORD_COUNT:
-                    skipped_too_short +=1
+                if word_count < Article.MINIMUM_WORD_COUNT:
+                    skipped_too_short += 1
                 else:
                     from zeeguu.language.difficulty_estimator_factory import DifficultyEstimatorFactory
 
@@ -107,12 +102,10 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
                 zeeguu.log(f" {LOG_CONTEXT}: Failed to create zeeguu.Article from {url}\n{str(ex)}")
 
     zeeguu.log(f'  Skipped due to time: {skipped} ')
-    zeeguu.log(f'  Downloaded: {downloaded}') 
-    zeeguu.log(f'  No words: {skipped_no_words}')
-    zeeguu.log(f'  Too short: {skipped_too_short}') 
+    zeeguu.log(f'  Downloaded: {downloaded}')
+    zeeguu.log(f'  Too short: {skipped_too_short}')
     zeeguu.log(f'  Already in DB: {skipped_already_in_db}')
 
     feed.last_crawled_time = last_retrieval_time_seen_this_crawl
     session.add(feed)
     session.commit()
-
