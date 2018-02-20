@@ -38,7 +38,7 @@ class Topic(db.Model):
         return f'<Topic {self.name} ({self.language})>'
 
     def matches_article(self, article):
-        for each_pattern in self.url_patterns:
+        for each_pattern in self.url_patterns.split(" "):
             if each_pattern in article.url.as_string():
                 return True
 
