@@ -11,7 +11,7 @@ import watchmen
 import zeeguu
 
 from zeeguu import model
-from zeeguu.model import Url, RSSFeed, Article
+from zeeguu.model import Url, RSSFeed, Article, Topic
 
 LOG_CONTEXT = "FEED RETRIEVAL"
 
@@ -96,6 +96,10 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
                     session.add(new_article)
                     session.commit()
                     downloaded += 1
+
+                    for each in Topic.query.all():
+                        if each.language == new_article.language and each.matches_article(new_article):
+                            new_article.add_topic(each)
             except:
                 import sys
                 ex = sys.exc_info()[0]

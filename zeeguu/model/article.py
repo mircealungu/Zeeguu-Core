@@ -1,14 +1,22 @@
 import datetime
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.exc import NoResultFound
 
 import zeeguu
 
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, UnicodeText
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, UnicodeText, Table
 
 from zeeguu.language.difficulty_estimator_factory import DifficultyEstimatorFactory
 
 db = zeeguu.db
+
+article_topic_mapping = Table('article_topic_mapping',
+                              db.Model.metadata,
+                              Column('article_id', Integer,
+                                     ForeignKey('article.id')),
+                              Column('topic_id', Integer,
+                                     ForeignKey('topic.id'))
+                              )
 
 
 class Article(db.Model):
@@ -38,6 +46,11 @@ class Article(db.Model):
 
     language_id = Column(Integer, ForeignKey(Language.id))
     language = relationship(Language)
+
+    from zeeguu.model.topic import Topic
+    topics = relationship(Topic,
+                          secondary=article_topic_mapping,
+                          backref=backref('articles'))
 
     # Few words in an article is very often not an
     # actul article but the caption for a video / comic.
@@ -85,10 +98,13 @@ class Article(db.Model):
             language=self.language.code,
             feed_image_url=self.rss_feed.image_url.as_string(),
             metrics=dict(
-                difficulty=self.fk_difficulty/100,
+                difficulty=self.fk_difficulty / 100,
                 word_count=self.word_count
             )
         )
+
+    def add_topic(self, topic):
+        self.topics.append(topic)
 
     @classmethod
     def find(cls, url: str):
