@@ -110,6 +110,7 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
     zeeguu.log(f'  Too short: {skipped_too_short}')
     zeeguu.log(f'  Already in DB: {skipped_already_in_db}')
 
-    feed.last_crawled_time = last_retrieval_time_seen_this_crawl
+    if last_retrieval_time_seen_this_crawl:
+        feed.last_crawled_time = last_retrieval_time_seen_this_crawl
     session.add(feed)
     session.commit()
