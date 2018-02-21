@@ -1,4 +1,3 @@
-import datetime
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -106,11 +105,48 @@ class Article(db.Model):
     def add_topic(self, topic):
         self.topics.append(topic)
 
-    def star_for_user(self, session, user, state = True):
+    def star_for_user(self, session, user, state=True):
         from zeeguu.model.user_article import UserArticle
         ua = UserArticle.find_or_create(session, user, self)
         ua.set_starred(state)
         session.add(ua)
+
+    @classmethod
+    def find_or_create(cls, session, url):
+        """
+
+            If not found, download and extract all
+            the required info for this article.
+
+        :param url:
+        :return:
+        """
+
+        from zeeguu.model import Url, Language
+        import newspaper
+
+        found = cls.find(url)
+        if found:
+            return found
+
+        art = newspaper.Article(url=url)
+        art.download()
+        art.parse()
+
+        # Create new article and save it to DB
+        new_article = Article(
+            Url.find_or_create(session, url),
+            art.title,
+            ', '.join(art.authors),
+            art.text,
+            art.summary,
+            None,
+            None,
+            Language.find_or_create(art.meta_lang)
+        )
+        session.add(new_article)
+        session.commit()
+        return new_article
 
     @classmethod
     def find(cls, url: str):

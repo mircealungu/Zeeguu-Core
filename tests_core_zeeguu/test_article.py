@@ -5,13 +5,14 @@ from tests_core_zeeguu.model_test_mixin import ModelTestMixIn
 import zeeguu
 from tests_core_zeeguu.rules.article_rule import ArticleRule
 from tests_core_zeeguu.rules.language_rule import LanguageRule
-from zeeguu.model import Topic
+from zeeguu.model import Topic, Article
 
 session = zeeguu.db.session
 
+SOME_ARTICLE_URL = 'http://www.lemonde.fr/idees/article/2018/02/21/formation-le-big-bang-attendra_5260297_3232.html'
+
 
 class ArticleTest(ModelTestMixIn, TestCase):
-
     def setUp(self):
         super().setUp()
         self.article1 = ArticleRule().article
@@ -29,4 +30,8 @@ class ArticleTest(ModelTestMixIn, TestCase):
         sports = Topic("sports", self.language)
         self.article1.add_topic(health)
         self.article1.add_topic(sports)
-        assert len (self.article1.topics) == 2
+        assert len(self.article1.topics) == 2
+
+    def test_find_or_create(self):
+        self.new_art = Article.find_or_create(session, SOME_ARTICLE_URL)
+        assert (self.new_art.fk_difficulty)
