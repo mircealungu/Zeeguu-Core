@@ -15,7 +15,7 @@ class TestRetrieveAndCompute(ModelTestMixIn):
         self.lan = LanguageRule().de
 
     def testDifficultyOfFeedItems(self):
-        feed = RSSFeedRule().spiegel
+        feed = RSSFeedRule().feed1
         download_from_feed(feed, zeeguu.db.session, 3)
 
         articles = feed.get_articles(self.user, limit=2)
@@ -24,7 +24,7 @@ class TestRetrieveAndCompute(ModelTestMixIn):
         assert articles[0].fk_difficulty
 
     def testDownloadWithTopic(self):
-        feed = RSSFeedRule().spiegel
+        feed = RSSFeedRule().feed1
         topic = Topic("#spiegel", feed.language, "www.spiegel")
         zeeguu.db.session.add(topic)
         zeeguu.db.session.commit()

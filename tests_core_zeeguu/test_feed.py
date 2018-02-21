@@ -11,10 +11,10 @@ class FeedTest(ModelTestMixIn, TestCase):
     def setUp(self):
         super().setUp()
 
-        self.spiegel = RSSFeedRule().spiegel
+        self.spiegel = RSSFeedRule().feed1
         download_from_feed(self.spiegel, self.db.session, 3)
 
-        self.telegraaf = RSSFeedRule().telegraaf
+        self.telegraaf = RSSFeedRule().feed2
         download_from_feed(self.telegraaf, self.db.session, 3)
 
     def test_feed_items(self):
