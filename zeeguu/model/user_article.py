@@ -5,7 +5,7 @@ from sqlalchemy.orm.exc import NoResultFound
 import zeeguu
 from sqlalchemy import Column, UniqueConstraint, Integer, ForeignKey, String, DateTime, Boolean
 from sqlalchemy.orm import relationship
-from zeeguu.model import User, Article
+from zeeguu.model import Article, User
 
 
 class UserArticle(zeeguu.db.Model):
@@ -23,6 +23,7 @@ class UserArticle(zeeguu.db.Model):
     __table_args__ = {'mysql_collate': 'utf8_bin'}
 
     id = Column(Integer, primary_key=True)
+
 
     user_id = Column(Integer, ForeignKey(User.id))
     user = relationship(User)
