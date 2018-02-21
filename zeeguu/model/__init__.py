@@ -21,6 +21,7 @@ zeeguu.db = flask_sqlalchemy.SQLAlchemy(zeeguu.app)
 # to push the app context
 
 from .article import Article
+from .user_article import UserArticle
 from .topic import Topic
 from .bookmark import Bookmark
 from .domain_name import DomainName
