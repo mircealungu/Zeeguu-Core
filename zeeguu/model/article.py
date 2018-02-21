@@ -106,6 +106,12 @@ class Article(db.Model):
     def add_topic(self, topic):
         self.topics.append(topic)
 
+    def star_for_user(self, session, user, state = True):
+        from zeeguu.model.user_article import UserArticle
+        ua = UserArticle.find_or_create(session, user, self)
+        ua.set_starred(state)
+        session.add(ua)
+
     @classmethod
     def find(cls, url: str):
         """
