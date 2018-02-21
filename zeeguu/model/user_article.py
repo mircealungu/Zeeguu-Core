@@ -83,7 +83,8 @@ class UserArticle(zeeguu.db.Model):
             ).one()
         except NoResultFound:
             try:
-                new = cls(user, article, opened, liked, starred)
+                new = cls(user, article, opened=opened, liked=liked, starred=starred)
+                print (f'starred: {starred}')
                 session.add(new)
                 session.commit()
                 return new
