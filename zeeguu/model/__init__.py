@@ -43,7 +43,6 @@ from .user_word import UserWord
 from .user_preference import UserPreference
 from .smartwatch.watch_event_type import WatchEventType
 from .smartwatch.watch_interaction_event import WatchInteractionEvent
-from .starred_article import StarredArticle
 from .cohort import Cohort
 from .teacher_cohort_map import TeacherCohortMap
 from .teacher import Teacher
