@@ -4,13 +4,13 @@ from zeeguu.model.starred_article import StarredArticle
 
 session = zeeguu.db.session
 
-for starart in StarredArticle.query.all():
+for sa in StarredArticle.query.all():
     try:
-        article = Article.find_or_create(session, starart.url.as_string())
-        ua = UserArticle.find_or_create(session, starart.user, article, starred=starart.starred_date)
+        article = Article.find_or_create(session, sa.url.as_string())
+        ua = UserArticle.find_or_create(session, sa.user, article, starred=sa.starred_date)
         session.add(ua)
         session.commit()
-        print(ua)
+        print(f'{sa.starred_date} x {ua.user.name} x {ua.article.title}')
     except Exception as ex:
-        print(f'could not import {starart.url.as_string()}')
+        print(f'could not import {sa.url.as_string()}')
         print(ex)
