@@ -24,7 +24,6 @@ class UserArticle(zeeguu.db.Model):
 
     id = Column(Integer, primary_key=True)
 
-
     user_id = Column(Integer, ForeignKey(User.id))
     user = relationship(User)
 
@@ -67,6 +66,22 @@ class UserArticle(zeeguu.db.Model):
             self.starred = datetime.now()
         else:
             self.starred = None
+
+    @classmethod
+    def find(cls, user: User, article: Article):
+        """
+
+            create a new object and add it to the db if it's not already there
+            otherwise retrieve the existing object and update
+
+        """
+        try:
+            return cls.query.filter_by(
+                user=user,
+                article=article
+            ).one()
+        except NoResultFound:
+            return None
 
     @classmethod
     def find_or_create(cls, session, user: User, article: Article, opened=None, liked=False, starred=None):
