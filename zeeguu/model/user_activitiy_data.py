@@ -1,3 +1,4 @@
+from datetime import datetime
 import zeeguu
 
 from zeeguu.model.user import User
@@ -29,11 +30,11 @@ class UserActivityData(db.Model):
 
     def data_as_dictionary(self):
         return dict(
-                user_id=self.user_id,
-                time=self.time.strftime("%Y-%m-%dT%H:%M:%S"),
-                event=self.event,
-                value=self.value,
-                extra_data=self.extra_data
+            user_id=self.user_id,
+            time=self.time.strftime("%Y-%m-%dT%H:%M:%S"),
+            event=self.event,
+            value=self.value,
+            extra_data=self.extra_data
         )
     
     def extradata_filter(self, attribute: str):
@@ -112,7 +113,19 @@ class UserActivityData(db.Model):
         except:
             return None
 
+    @classmethod
+    def create_from_post_data(cls, session, data, user):
+        time = data['time']
+        event = data['event']
+        value = data['value']
+        extra_data = data['extra_data']
 
+        zeeguu.log(f'{event} value[:42]: {value[:42]} extra_data[:42]: {extra_data[:42]}')
 
-
-
+        new_entry = UserActivityData(user,
+                                     datetime.strptime(time, "%Y-%m-%dT%H:%M:%S"),
+                                     event,
+                                     value,
+                                     extra_data)
+        session.add(new_entry)
+        session.commit()
