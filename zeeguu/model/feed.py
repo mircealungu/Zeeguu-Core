@@ -8,6 +8,7 @@ import sqlalchemy.orm.exc
 from sqlalchemy.orm.exc import NoResultFound
 
 import zeeguu
+from zeeguu.constants import JSON_TIME_FORMAT
 from zeeguu.model.language import Language
 from zeeguu.model.url import Url
 
@@ -116,7 +117,7 @@ class RSSFeed(db.Model):
                 url=item.get("link", ""),
                 content=item.get("content", ""),
                 summary=item.get("summary", ""),
-                published=time.strftime("%Y-%m-%dT%H:%M:%S%z", publishing_date(item))
+                published=time.strftime(JSON_TIME_FORMAT, publishing_date(item))
             )
             for item in feed_data.entries]
 

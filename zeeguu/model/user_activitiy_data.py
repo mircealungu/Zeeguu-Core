@@ -2,6 +2,7 @@ from datetime import datetime
 import zeeguu
 
 from zeeguu.model.user import User
+from zeeguu.constants import JSON_TIME_FORMAT
 
 db = zeeguu.db
 
@@ -28,15 +29,6 @@ class UserActivityData(db.Model):
         self.value = value
         self.extra_data = extra_data
 
-    def data_as_dictionary(self):
-        return dict(
-            user_id=self.user_id,
-            time=self.time.strftime("%Y-%m-%dT%H:%M:%S"),
-            event=self.event,
-            value=self.value,
-            extra_data=self.extra_data
-        )
-
     @classmethod
     def create_from_post_data(cls, session, data, user):
         time = data['time']
@@ -47,7 +39,7 @@ class UserActivityData(db.Model):
         zeeguu.log(f'{event} value[:42]: {value[:42]} extra_data[:42]: {extra_data[:42]}')
 
         new_entry = UserActivityData(user,
-                                     datetime.strptime(time, "%Y-%m-%dT%H:%M:%S"),
+                                     datetime.strptime(time, JSON_TIME_FORMAT),
                                      event,
                                      value,
                                      extra_data)

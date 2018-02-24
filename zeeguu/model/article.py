@@ -5,6 +5,7 @@ import zeeguu
 
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, UnicodeText, Table
 
+from zeeguu.constants import JSON_TIME_FORMAT
 from zeeguu.language.difficulty_estimator_factory import DifficultyEstimatorFactory
 
 db = zeeguu.db
@@ -91,7 +92,7 @@ class Article(db.Model):
             id=self.id,
             title=self.title,
             url=self.url.as_string(),
-            published=self.published_time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+            published=self.published_time.strftime(JSON_TIME_FORMAT),
             summary=self.summary,
             feed_id=self.rss_feed.id,
             language=self.language.code,

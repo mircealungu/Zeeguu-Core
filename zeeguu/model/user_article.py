@@ -5,6 +5,8 @@ from sqlalchemy.orm.exc import NoResultFound
 import zeeguu
 from sqlalchemy import Column, UniqueConstraint, Integer, ForeignKey, String, DateTime, Boolean
 from sqlalchemy.orm import relationship
+
+from zeeguu.constants import JSON_TIME_FORMAT
 from zeeguu.model import Article, User
 
 
@@ -132,7 +134,7 @@ class UserArticle(zeeguu.db.Model):
             url=each.article.url.as_string(),
             title=each.article.title,
             language=each.article.language.code,
-            starred_date=each.starred.strftime("%Y-%m-%dT%H:%M:%S%z")
+            starred_date=each.starred.strftime(JSON_TIME_FORMAT)
         ) for each in user_articles]
 
         return dicts
