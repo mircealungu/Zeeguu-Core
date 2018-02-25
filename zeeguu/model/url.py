@@ -83,10 +83,12 @@ class Url(db.Model):
         path = Url.get_path(_url)
 
         try:
+            print ("trying to find alreday exiting url")
             return cls.query.filter(cls.path == path).filter(cls.domain == domain).one()
         # except sqlalchemy.orm.exc.NoResultFound or sqlalchemy.exc.InterfaceError:
         except:
             try:
+                print ("trying to create new url")
                 new = cls(_url, title, domain)
                 session.add(new)
                 session.commit()

@@ -127,6 +127,7 @@ class Article(db.Model):
         from zeeguu.model import Url, Language
         import newspaper
 
+        print("trying to find article by url...")
         found = cls.find(url)
         if found:
             return found
@@ -137,6 +138,7 @@ class Article(db.Model):
 
         try:
         # Create new article and save it to DB
+            print("trying to create new article")
             new_article = Article(
                 Url.find_or_create(session, url),
                 art.title,
@@ -155,10 +157,10 @@ class Article(db.Model):
                 try:
                     session.rollback()
                     u = cls.find(url)
-                    print("found url after recovering from race")
+                    print("found article by url after recovering from race")
                     return u
                 except:
-                    print("exception of second degree in url..." + str(i))
+                    print("exception of second degree in article..." + str(i))
                     time.sleep(0.3)
                     continue
                 break
