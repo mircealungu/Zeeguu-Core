@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy.orm.exc import NoResultFound
 
 import zeeguu
-from sqlalchemy import Column, UniqueConstraint, Integer, ForeignKey, String, DateTime, Boolean
+from sqlalchemy import Column, UniqueConstraint, Integer, ForeignKey, String, DateTime, Boolean, or_
 from sqlalchemy.orm import relationship
 
 from zeeguu.constants import JSON_TIME_FORMAT
@@ -115,6 +115,10 @@ class UserArticle(zeeguu.db.Model):
     @classmethod
     def all_starred_articles_of_user(cls, user):
         return cls.query.filter_by(user=user).filter(UserArticle.starred.isnot(None)).all()
+
+    @classmethod
+    def all_starred_or_liked_articles_of_user(cls, user):
+        return cls.query.filter_by(user=user).filter(or_(UserArticle.starred.isnot(None),UserArticle.liked.isnot(None))).all()
 
     @classmethod
     def all_starred_articles_of_user_info(cls, user):
