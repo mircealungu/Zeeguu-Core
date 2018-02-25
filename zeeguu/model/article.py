@@ -89,11 +89,16 @@ class Article(db.Model):
 
         :return:
         """
+
+        time_if_possible = ""
+        if self.published_time:
+            time_if_possible = self.published_time.strftime(JSON_TIME_FORMAT)
+
         return dict(
             id=self.id,
             title=self.title,
             url=self.url.as_string(),
-            published=self.published_time.strftime(JSON_TIME_FORMAT),
+            published=time_if_possible,
             summary=self.summary,
             feed_id=self.rss_feed.id,
             language=self.language.code,
@@ -135,6 +140,7 @@ class Article(db.Model):
         art = newspaper.Article(url=url)
         art.download()
         art.parse()
+        print(art.publish_date)
 
         try:
         # Create new article and save it to DB
@@ -145,7 +151,7 @@ class Article(db.Model):
                 ', '.join(art.authors),
                 art.text,
                 art.summary,
-                None,
+                art.publish_date,
                 None,
                 Language.find_or_create(art.meta_lang)
             )
