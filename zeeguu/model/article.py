@@ -90,24 +90,25 @@ class Article(db.Model):
         :return:
         """
 
-        time_if_possible = ""
-        if self.published_time:
-            time_if_possible = self.published_time.strftime(JSON_TIME_FORMAT)
-
-        return dict(
+        result_dict = dict(
             id=self.id,
             title=self.title,
             url=self.url.as_string(),
-            published=time_if_possible,
             summary=self.summary,
-            feed_id=self.rss_feed.id,
             language=self.language.code,
-            feed_image_url=self.rss_feed.image_url.as_string(),
             metrics=dict(
                 difficulty=self.fk_difficulty / 100,
                 word_count=self.word_count
-            )
-        )
+            ))
+
+        if self.published_time:
+            result_dict['published'] = self.published_time.strftime(JSON_TIME_FORMAT)
+
+        if self.rss_feed:
+            result_dict['feed_id'] = self.rss_feed.id,
+            result_dict['feed_image_url'] = self.rss_feed.image_url.as_string(),
+
+        return result_dict
 
     def add_topic(self, topic):
         self.topics.append(topic)
@@ -143,7 +144,7 @@ class Article(db.Model):
         print(art.publish_date)
 
         try:
-        # Create new article and save it to DB
+            # Create new article and save it to DB
             print("trying to create new article")
             new_article = Article(
                 Url.find_or_create(session, url),
@@ -170,7 +171,6 @@ class Article(db.Model):
                     time.sleep(0.3)
                     continue
                 break
-
 
     @classmethod
     def find(cls, url: str):
