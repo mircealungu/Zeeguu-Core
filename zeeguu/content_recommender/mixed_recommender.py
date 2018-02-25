@@ -5,10 +5,10 @@
 
 """
 from zeeguu import log
-from zeeguu.model import RSSFeedRegistration, UserArticle
+from zeeguu.model import RSSFeedRegistration, UserArticle, Article, User
 
 
-def user_article_info(user, article):
+def user_article_info(user: User, article: Article):
     prior_info = UserArticle.find(user, article)
 
     ua_info = article.article_info()

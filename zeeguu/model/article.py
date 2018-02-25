@@ -1,3 +1,4 @@
+import time
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -134,20 +135,34 @@ class Article(db.Model):
         art.download()
         art.parse()
 
+        try:
         # Create new article and save it to DB
-        new_article = Article(
-            Url.find_or_create(session, url),
-            art.title,
-            ', '.join(art.authors),
-            art.text,
-            art.summary,
-            None,
-            None,
-            Language.find_or_create(art.meta_lang)
-        )
-        session.add(new_article)
-        session.commit()
-        return new_article
+            new_article = Article(
+                Url.find_or_create(session, url),
+                art.title,
+                ', '.join(art.authors),
+                art.text,
+                art.summary,
+                None,
+                None,
+                Language.find_or_create(art.meta_lang)
+            )
+            session.add(new_article)
+            session.commit()
+            return new_article
+        except:
+            for i in range(10):
+                try:
+                    session.rollback()
+                    u = cls.find(url)
+                    print("found url after recovering from race")
+                    return u
+                except:
+                    print("exception of second degree in url..." + str(i))
+                    time.sleep(0.3)
+                    continue
+                break
+
 
     @classmethod
     def find(cls, url: str):
