@@ -108,7 +108,9 @@ class RSSFeed(db.Model):
         """
 
         def publishing_date(item):
-            return item.updated_parsed
+            # this used to be updated_parsed but cf the deprecation
+            # warning we changed to published_parsed instead.
+            return item.published_parsed
 
         feed_data = feedparser.parse(self.url.as_string())
         feed_items = [

@@ -40,7 +40,7 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
 
     if feed.last_crawled_time:
         last_retrieval_time_from_DB = feed.last_crawled_time
-        print(f"last retrieval time from DB = {last_retrieval_time_from_DB}")
+        zeeguu.log(f"last retrieval time from DB = {last_retrieval_time_from_DB}")
 
     for feed_item in feed.feed_items():
 

@@ -2,18 +2,9 @@ from datetime import datetime
 import zeeguu
 
 from zeeguu.model.user import User
-from sqlalchemy import func
 from zeeguu.constants import JSON_TIME_FORMAT
 
 db = zeeguu.db
-
-
-def time_this(func):
-    import datetime
-    before = datetime.datetime.now()
-    func()
-    after = datetime.datetime.now()
-    print(f"{func} took: {after-before}")
 
 
 class UserActivityData(db.Model):
@@ -49,6 +40,7 @@ class UserActivityData(db.Model):
 
     def _extra_data_filter(self, attribute_name: str):
         """
+            required by .find()
             used to parse extra_data to find a specific attribute
 
             example of extra_data:
@@ -64,6 +56,15 @@ class UserActivityData(db.Model):
 
     @classmethod
     def _filter_by_extra_value(cls, events, extra_filter, extra_value):
+        """
+
+            required by .find()
+
+        :param events:
+        :param extra_filter:
+        :param extra_value:
+        :return:
+        """
         filtered_results = []
 
         for event in events:

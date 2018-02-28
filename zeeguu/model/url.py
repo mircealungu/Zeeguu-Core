@@ -83,12 +83,10 @@ class Url(db.Model):
         path = Url.get_path(_url)
 
         try:
-            print ("trying to find alreday exiting url")
             return cls.query.filter(cls.path == path).filter(cls.domain == domain).one()
         # except sqlalchemy.orm.exc.NoResultFound or sqlalchemy.exc.InterfaceError:
         except:
             try:
-                print ("trying to create new url")
                 new = cls(_url, title, domain)
                 session.add(new)
                 session.commit()
@@ -100,10 +98,10 @@ class Url(db.Model):
                     try:
                         session.rollback()
                         u = cls.find(cls.path == path).filter(cls.domain == domain).first()
-                        print("found url after recovering from race")
+                        print("Found url after recovering from race")
                         return u
                     except:
-                        print("exception of second degree in url..." + str(i))
+                        print("Exception of second degree in url..." + str(i))
                         time.sleep(0.3)
                         continue
                     break

@@ -9,8 +9,6 @@ from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, UnicodeTex
 from zeeguu.constants import JSON_TIME_FORMAT
 from zeeguu.language.difficulty_estimator_factory import DifficultyEstimatorFactory
 
-
-
 db = zeeguu.db
 
 article_topic_mapping = Table('article_topic_mapping',
@@ -136,42 +134,41 @@ class Article(db.Model):
         import newspaper
 
         try:
-          print("trying to find article by url...")
-          found = cls.find(url)
-          if found:
-              return found
+            found = cls.find(url)
+            if found:
+                return found
 
-          art = newspaper.Article(url=url)
-          art.download()
-          art.parse()
-          print(art.publish_date)
+            art = newspaper.Article(url=url)
+            art.download()
+            art.parse()
+            print(art.publish_date)
 
-          if not language:
-              language = Language.find_or_create(art.meta_lang)
+            if not language:
+                language = Language.find_or_create(art.meta_lang)
 
-          # Create new article and save it to DB
-          new_article = Article(
-              Url.find_or_create(session, url),
-              art.title,
-              ', '.join(art.authors),
-              art.text,
-              art.summary,
-              None,
-              None,
-              language
-          )
-          session.add(new_article)
-          session.commit()
-          return new_article
+            # Create new article and save it to DB
+            new_article = Article(
+                Url.find_or_create(session, url),
+                art.title,
+                ', '.join(art.authors),
+                art.text,
+                art.summary,
+                None,
+                None,
+                language
+            )
+            session.add(new_article)
+            session.commit()
+            return new_article
         except:
             for i in range(10):
                 try:
                     session.rollback()
                     u = cls.find(url)
-                    print("found article by url after recovering from race")
+                    print("Found article by url after recovering from race")
                     return u
                 except:
-                    print("exception of second degree in article..." + str(i))
+                    print("Exception of second degree in article..." + str(i))
                     time.sleep(0.3)
                     continue
                 break
