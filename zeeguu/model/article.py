@@ -7,6 +7,8 @@ from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, UnicodeTex
 
 from zeeguu.language.difficulty_estimator_factory import DifficultyEstimatorFactory
 
+
+
 db = zeeguu.db
 
 article_topic_mapping = Table('article_topic_mapping',
@@ -112,7 +114,7 @@ class Article(db.Model):
         session.add(ua)
 
     @classmethod
-    def find_or_create(cls, session, url):
+    def find_or_create(cls, session, url, language=None):
         """
 
             If not found, download and extract all
@@ -122,7 +124,7 @@ class Article(db.Model):
         :return:
         """
 
-        from zeeguu.model import Url, Language
+        from zeeguu.model import Url, Article, Language
         import newspaper
 
         found = cls.find(url)
@@ -133,6 +135,9 @@ class Article(db.Model):
         art.download()
         art.parse()
 
+        if not language:
+            language = Language.find_or_create(art.meta_lang)
+
         # Create new article and save it to DB
         new_article = Article(
             Url.find_or_create(session, url),
@@ -142,7 +147,7 @@ class Article(db.Model):
             art.summary,
             None,
             None,
-            Language.find_or_create(art.meta_lang)
+            language
         )
         session.add(new_article)
         session.commit()
