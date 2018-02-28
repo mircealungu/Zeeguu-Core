@@ -3,7 +3,16 @@ import zeeguu
 
 from zeeguu.model.user import User
 from sqlalchemy import func
+
 db = zeeguu.db
+
+
+def time_this(func):
+    import datetime
+    before = datetime.datetime.now()
+    func()
+    after = datetime.datetime.now()
+    print(f"{func} took: {after-before}")
 
 
 class UserActivityData(db.Model):
@@ -36,80 +45,65 @@ class UserActivityData(db.Model):
             value=self.value,
             extra_data=self.extra_data
         )
-    
-    def extradata_filter(self, attribute: str):
-        """
 
+    def _extra_data_filter(self, attribute_name: str):
+        """
             used to parse extra_data to find a specific attribute
 
+            example of extra_data:
+
+                 {"80":[{"title":"Tour de France - Pourquoi n'ont-ils pas attaqué Froome après son tout-droit","url":"https://www.lequipe.fr/Cyclisme-sur-route/Actualites/Pourquoi-n-ont-ils-pas-attaque-froome-apres-son-tout-droit/818035#xtor=RSS-1","content":"","summary"…
+
+        :param attribute_name -- e.g. "title" in the above exaxmple
         :return: value of attribute
         """
-        start = str(self.extra_data).find("\""+attribute+"\":") + len(attribute) + 4
+        start = str(self.extra_data).find("\"" + attribute_name + "\":") + len(attribute_name) + 4
         end = str(self.extra_data)[start:].find("\"")
-        return str(self.extra_data)[start:end+start]
+        return str(self.extra_data)[start:end + start]
 
     @classmethod
-    def find(cls, user: User=None, extra_filter=None, extra_value=None, event_filter: str=None):
+    def _filter_by_extra_value(cls, events, extra_filter, extra_value):
+        filtered_results = []
+
+        for event in events:
+            extradata_value = event._extra_data_filter(extra_filter)
+            if extradata_value == extra_value:
+                filtered_results.append(event)
+        return filtered_results
+
+    @classmethod
+    def find(cls,
+             user: User = None,
+             extra_filter: str = None,
+             extra_value: str = None,
+             event_filter: str = None,
+             only_latest=False):
         """
 
-            Find by userid
+            Find one or more user_activity_data by any of the above filters
 
         :return: object or None if not found
         """
-        qry = cls.query
+        query = cls.query
         if event_filter is not None:
-            qry = qry.filter(cls.event == event_filter)
+            query = query.filter(cls.event == event_filter)
         if user is not None:
-            qry = qry.filter(cls.user == user)
-        qry = qry.order_by('time')
+            query = query.filter(cls.user == user)
+        query = query.order_by('time')
 
         try:
-
-            events = qry.all()
+            events = query.all()
             if extra_filter is None or extra_value is None:
-                return events
+                if only_latest:
+                    return events[0]
+                else:
+                    return events
+
+            filtered = cls._filter_by_extra_value(events, extra_filter, extra_value)
+            if only_latest:
+                return filtered[0]
             else:
-                events_exf = []
-                #filter by extra_value
-
-                for event in events:
-                    extradata_value = event.extradata_filter(extra_filter)
-                    if extradata_value == extra_value:
-                        events_exf.append(event)
-
-                return events_exf
-        except:
-            return None
-
-    @classmethod
-    def find_latest(cls, user: User=None, extra_filter=None, extra_value=None, event_filter: str=None):
-        """
-
-            Find by userid
-
-        :return: object or None if not found
-        """
-        qry = cls.query
-        if event_filter is not None:
-            qry = qry.filter(cls.event == event_filter)
-        if user is not None:
-            qry = qry.filter(cls.user == user)
-        qry = qry.order_by('time')
-
-        try:
-
-            events = qry.all()
-            if extra_filter is None or extra_value is None:
-                return events[0]
-            else:
-                events_exf = None
-                #filter by extra_value
-                for event in events:
-                    extradata_value = event.extradata_filter(extra_filter)
-                    if extradata_value == extra_value:
-                        events_exf =  event
-                        break
-                return events_exf
+                return filtered
         except:
             return None
 
