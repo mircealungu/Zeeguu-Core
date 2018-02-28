@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
-import nltk
 import setuptools
 from setuptools.command.develop import develop
 from setuptools.command.install import install
@@ -19,6 +18,7 @@ class InstallScript(install):
 
 
 def ntlk_install_packages():
+    import nltk
     print("Downloading nltk packages...")
     nltk.download('punkt')
 
