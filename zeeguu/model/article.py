@@ -9,6 +9,8 @@ from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, UnicodeTex
 from zeeguu.constants import JSON_TIME_FORMAT
 from zeeguu.language.difficulty_estimator_factory import DifficultyEstimatorFactory
 
+
+
 db = zeeguu.db
 
 article_topic_mapping = Table('article_topic_mapping',
@@ -120,7 +122,7 @@ class Article(db.Model):
         session.add(ua)
 
     @classmethod
-    def find_or_create(cls, session, url):
+    def find_or_create(cls, session, url, language=None):
         """
 
             If not found, download and extract all
@@ -130,35 +132,37 @@ class Article(db.Model):
         :return:
         """
 
-        from zeeguu.model import Url, Language
+        from zeeguu.model import Url, Article, Language
         import newspaper
 
-        print("trying to find article by url...")
-        found = cls.find(url)
-        if found:
-            return found
-
-        art = newspaper.Article(url=url)
-        art.download()
-        art.parse()
-        print(art.publish_date)
-
         try:
-            # Create new article and save it to DB
-            print("trying to create new article")
-            new_article = Article(
-                Url.find_or_create(session, url),
-                art.title,
-                ', '.join(art.authors),
-                art.text,
-                art.summary,
-                art.publish_date,
-                None,
-                Language.find_or_create(art.meta_lang)
-            )
-            session.add(new_article)
-            session.commit()
-            return new_article
+          print("trying to find article by url...")
+          found = cls.find(url)
+          if found:
+              return found
+
+          art = newspaper.Article(url=url)
+          art.download()
+          art.parse()
+          print(art.publish_date)
+
+          if not language:
+              language = Language.find_or_create(art.meta_lang)
+
+          # Create new article and save it to DB
+          new_article = Article(
+              Url.find_or_create(session, url),
+              art.title,
+              ', '.join(art.authors),
+              art.text,
+              art.summary,
+              None,
+              None,
+              language
+          )
+          session.add(new_article)
+          session.commit()
+          return new_article
         except:
             for i in range(10):
                 try:
