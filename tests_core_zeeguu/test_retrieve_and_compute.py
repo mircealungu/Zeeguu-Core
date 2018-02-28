@@ -34,4 +34,4 @@ class TestRetrieveAndCompute(ModelTestMixIn):
         article = feed.get_articles(self.user, limit=2)[0]
 
         assert (topic in article.topics)
-        print (topic.all_articles())
+        # print (topic.all_articles())

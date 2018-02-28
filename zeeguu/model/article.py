@@ -141,7 +141,6 @@ class Article(db.Model):
             art = newspaper.Article(url=url)
             art.download()
             art.parse()
-            print(art.publish_date)
 
             if not language:
                 language = Language.find_or_create(art.meta_lang)
