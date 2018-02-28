@@ -5,6 +5,8 @@ from sqlalchemy.orm.exc import NoResultFound
 import zeeguu
 from sqlalchemy import Column, UniqueConstraint, Integer, ForeignKey, String, DateTime, Boolean
 from sqlalchemy.orm import relationship
+
+from zeeguu.constants import SIMPLE_TIME_FORMAT
 from zeeguu.model import Url, User
 from zeeguu.model.language import Language
 
@@ -52,7 +54,7 @@ class StarredArticle(zeeguu.db.Model):
             url=self.url.as_string(),
             title=self.title,
             language=self.language.code,
-            starred_date=self.starred_date.strftime("%Y-%m-%dT%H:%M:%S%z")
+            starred_date=self.starred_date.strftime(SIMPLE_TIME_FORMAT)
         )
 
     @classmethod

@@ -1,3 +1,4 @@
+import time
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -5,6 +6,7 @@ import zeeguu
 
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, UnicodeText, Table
 
+from zeeguu.constants import JSON_TIME_FORMAT
 from zeeguu.language.difficulty_estimator_factory import DifficultyEstimatorFactory
 
 
@@ -89,20 +91,26 @@ class Article(db.Model):
 
         :return:
         """
-        return dict(
+
+        result_dict = dict(
             id=self.id,
             title=self.title,
             url=self.url.as_string(),
-            published=self.published_time.strftime("%Y-%m-%dT%H:%M:%S%z"),
             summary=self.summary,
-            feed_id=self.rss_feed.id,
             language=self.language.code,
-            feed_image_url=self.rss_feed.image_url.as_string(),
             metrics=dict(
                 difficulty=self.fk_difficulty / 100,
                 word_count=self.word_count
-            )
-        )
+            ))
+
+        if self.published_time:
+            result_dict['published'] = self.published_time.strftime(JSON_TIME_FORMAT)
+
+        if self.rss_feed:
+            result_dict['feed_id'] = self.rss_feed.id,
+            result_dict['feed_image_url'] = self.rss_feed.image_url.as_string(),
+
+        return result_dict
 
     def add_topic(self, topic):
         self.topics.append(topic)
@@ -127,31 +135,46 @@ class Article(db.Model):
         from zeeguu.model import Url, Article, Language
         import newspaper
 
-        found = cls.find(url)
-        if found:
-            return found
+        try:
+          print("trying to find article by url...")
+          found = cls.find(url)
+          if found:
+              return found
 
-        art = newspaper.Article(url=url)
-        art.download()
-        art.parse()
+          art = newspaper.Article(url=url)
+          art.download()
+          art.parse()
+          print(art.publish_date)
 
-        if not language:
-            language = Language.find_or_create(art.meta_lang)
+          if not language:
+              language = Language.find_or_create(art.meta_lang)
 
-        # Create new article and save it to DB
-        new_article = Article(
-            Url.find_or_create(session, url),
-            art.title,
-            ', '.join(art.authors),
-            art.text,
-            art.summary,
-            None,
-            None,
-            language
-        )
-        session.add(new_article)
-        session.commit()
-        return new_article
+          # Create new article and save it to DB
+          new_article = Article(
+              Url.find_or_create(session, url),
+              art.title,
+              ', '.join(art.authors),
+              art.text,
+              art.summary,
+              None,
+              None,
+              language
+          )
+          session.add(new_article)
+          session.commit()
+          return new_article
+        except:
+            for i in range(10):
+                try:
+                    session.rollback()
+                    u = cls.find(url)
+                    print("found article by url after recovering from race")
+                    return u
+                except:
+                    print("exception of second degree in article..." + str(i))
+                    time.sleep(0.3)
+                    continue
+                break
 
     @classmethod
     def find(cls, url: str):

@@ -3,6 +3,7 @@ import zeeguu
 
 from zeeguu.model.user import User
 from sqlalchemy import func
+from zeeguu.constants import JSON_TIME_FORMAT
 
 db = zeeguu.db
 
@@ -117,7 +118,7 @@ class UserActivityData(db.Model):
         zeeguu.log(f'{event} value[:42]: {value[:42]} extra_data[:42]: {extra_data[:42]}')
 
         new_entry = UserActivityData(user,
-                                     datetime.strptime(time, "%Y-%m-%dT%H:%M:%S"),
+                                     datetime.strptime(time, JSON_TIME_FORMAT),
                                      event,
                                      value,
                                      extra_data)

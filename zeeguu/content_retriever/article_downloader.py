@@ -12,6 +12,7 @@ import zeeguu
 
 from zeeguu import model
 from zeeguu.model import Url, RSSFeed, Article, Topic
+from zeeguu.constants import SIMPLE_TIME_FORMAT
 
 LOG_CONTEXT = "FEED RETRIEVAL"
 
@@ -49,7 +50,7 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
         url = feed_item['url']
 
         try:
-            this_article_time = datetime.strptime(feed_item['published'], "%Y-%m-%dT%H:%M:%S%z")
+            this_article_time = datetime.strptime(feed_item['published'], SIMPLE_TIME_FORMAT)
             this_article_time = this_article_time.replace(tzinfo=None)
         except:
             print(f"can't get time from {url}: {feed_item['published']}")
