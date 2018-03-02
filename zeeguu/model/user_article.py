@@ -133,7 +133,7 @@ class UserArticle(zeeguu.db.Model):
     @classmethod
     def all_starred_or_liked_articles_of_user(cls, user):
         return cls.query.filter_by(user=user).filter(
-            or_(UserArticle.starred.isnot(None), UserArticle.liked.isnot(None))).all()
+            or_(UserArticle.starred.isnot(None), UserArticle.liked.isnot(False))).all()
 
     @classmethod
     def all_starred_articles_of_user_info(cls, user):
