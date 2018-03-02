@@ -179,7 +179,8 @@ class UserArticle(zeeguu.db.Model):
             title=each.article.title,
             language=each.article.language.code,
             starred_date=each.last_interaction().strftime(JSON_TIME_FORMAT)
-        ) for each in user_articles]
+        ) for each in user_articles
+        if each.last_interaction() is not None]
 
         return dicts
 
