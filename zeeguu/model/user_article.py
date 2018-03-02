@@ -69,6 +69,20 @@ class UserArticle(zeeguu.db.Model):
         else:
             self.starred = None
 
+    def last_interaction(self):
+        """
+
+            sometimes we want to order articles based
+            on this
+
+        :return:
+        """
+        if self.opened:
+            return self.opened
+        if self.starred:
+            return self.starred
+        return None
+
     @classmethod
     def find(cls, user: User, article: Article):
         """
@@ -118,7 +132,8 @@ class UserArticle(zeeguu.db.Model):
 
     @classmethod
     def all_starred_or_liked_articles_of_user(cls, user):
-        return cls.query.filter_by(user=user).filter(or_(UserArticle.starred.isnot(None),UserArticle.liked.isnot(None))).all()
+        return cls.query.filter_by(user=user).filter(
+            or_(UserArticle.starred.isnot(None), UserArticle.liked.isnot(None))).all()
 
     @classmethod
     def all_starred_articles_of_user_info(cls, user):
@@ -138,7 +153,32 @@ class UserArticle(zeeguu.db.Model):
             url=each.article.url.as_string(),
             title=each.article.title,
             language=each.article.language.code,
-            starred_date=each.starred.strftime(JSON_TIME_FORMAT)
+            starred_date=each.starred.strftime(JSON_TIME_FORMAT),
+            starred=(each.starred is not None),
+            liked=each.liked
+        ) for each in user_articles]
+
+        return dicts
+
+    @classmethod
+    def all_starred_and_liked_articles_of_user_info(cls, user):
+
+        """
+
+            prepares info as it is promised by /get_starred_articles
+
+        :param user:
+        :return:
+        """
+
+        user_articles = cls.all_starred_or_liked_articles_of_user(user)
+
+        dicts = [dict(
+            user_id=each.user.id,
+            url=each.article.url.as_string(),
+            title=each.article.title,
+            language=each.article.language.code,
+            starred_date=each.last_interaction().strftime(JSON_TIME_FORMAT)
         ) for each in user_articles]
 
         return dicts
