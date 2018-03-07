@@ -2,7 +2,7 @@
 from hashlib import sha1
 
 
-def text_hash(text:str) -> str:
+def text_hash(text: str) -> str:
     """
     :param text: str:
     :return: str
@@ -12,14 +12,13 @@ def text_hash(text:str) -> str:
     return sha1(text).hexdigest()
 
 
-def password_hash(password, salt):
+def password_hash(password: str, salt: bytes) -> bytes:
     """
     
-    :param password: str
-    :param salt: binary, utf-8 encoded
-    :return: str
+    :return: bytes
+
     """
-    password = password.encode("utf8")
+    hash_ = password.encode("utf8")
     for i in range(1000):
-        password = sha1(password + salt).digest()
-    return password
+        hash_ = sha1(hash_ + salt).digest()
+    return hash_
