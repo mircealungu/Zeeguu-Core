@@ -26,8 +26,8 @@ class User(db.Model):
     email = db.Column(db.String(255), unique=True)
     name = db.Column(db.String(255))
     invitation_code = db.Column(db.String(255))
-    password = db.Column(db.LargeBinary(255))
-    password_salt = db.Column(db.LargeBinary(255))
+    password = db.Column(db.String(255))
+    password_salt = db.Column(db.String(255))
     learned_language_id = db.Column(
         db.Integer,
         db.ForeignKey(Language.id)
@@ -164,16 +164,16 @@ class User(db.Model):
             raise ValueError("Invalid username")
         return name
 
-    def update_password(self, password):
+    def update_password(self, password:str):
         """
         
         :param password: str
         :return: 
         """
-        self.password_salt = "".join(chr(random.randint(0, 255)) for _ in range(32)).encode('utf-8')
+        salt_bytes = "".join(chr(random.randint(0, 255)) for _ in range(32)).encode('utf-8')
 
-        self.password = util.password_hash(password, self.password_salt)
-        self.password_salt = self.password_salt
+        self.password = util.password_hash(password, salt_bytes)
+        self.password_salt = salt_bytes.hex()
 
     def all_bookmarks(self, after_date=datetime.datetime(1970, 1, 1),
                       before_date=datetime.date.today() + datetime.timedelta(
@@ -350,7 +350,7 @@ class User(db.Model):
     def authorize(cls, email, password):
         try:
             user = cls.query.filter(cls.email == email).one()
-            if user.password == util.password_hash(password, user.password_salt):
+            if user.password == util.password_hash(password, bytes.fromhex(user.password_salt)):
                 return user
         except sqlalchemy.orm.exc.NoResultFound:
             return None
