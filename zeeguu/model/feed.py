@@ -111,7 +111,7 @@ class RSSFeed(db.Model):
             # this used to be updated_parsed but cf the deprecation
             # warning we changed to published_parsed instead.
             try:
-                item.published_parsed
+                return item.published_parsed
             except:
                 # March 8 -- added back in updated_parsed;
                 # curious if this fixes the problem in some
