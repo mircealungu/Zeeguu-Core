@@ -118,7 +118,7 @@ class RSSFeed(db.Model):
                 # cases; to find out, we log
 
                 result = item.updated_parsed
-                zeeguu.log(f'got updated_parsed where published_parsed failed for {item}')
+                zeeguu.log(f'got updated_parsed where published_parsed failed for {item.get("link", "")}')
                 return result
 
         feed_data = feedparser.parse(self.url.as_string())
