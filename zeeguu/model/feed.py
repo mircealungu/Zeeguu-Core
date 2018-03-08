@@ -110,18 +110,33 @@ class RSSFeed(db.Model):
         def publishing_date(item):
             # this used to be updated_parsed but cf the deprecation
             # warning we changed to published_parsed instead.
-            return item.published_parsed
+            try:
+                item.published_parsed
+            except:
+                # March 8 -- added back in updated_parsed;
+                # curious if this fixes the problem in some
+                # cases; to find out, we log
+
+                result = item.updated_parsed
+                zeeguu.log(f'got updated_parsed where published_parsed failed for {item}')
+                return result
 
         feed_data = feedparser.parse(self.url.as_string())
-        feed_items = [
-            dict(
-                title=item.get("title", ""),
-                url=item.get("link", ""),
-                content=item.get("content", ""),
-                summary=item.get("summary", ""),
-                published=time.strftime(SIMPLE_TIME_FORMAT, publishing_date(item))
-            )
-            for item in feed_data.entries]
+
+        feed_items = []
+        for item in feed_data.entries:
+            try:
+                new_item_data_dict = dict(
+                    title=item.get("title", ""),
+                    url=item.get("link", ""),
+                    content=item.get("content", ""),
+                    summary=item.get("summary", ""),
+                    published=time.strftime(SIMPLE_TIME_FORMAT, publishing_date(item))
+                )
+                feed_items.append(new_item_data_dict)
+
+            except AttributeError as e:
+                zeeguu.log(f'Exception {e} while trying to retrieve {item.get("link", "")}')
 
         return feed_items
 
@@ -154,7 +169,6 @@ class RSSFeed(db.Model):
 
     @classmethod
     def find_or_create(cls, session, url, title, description, image_url: Url, language: Language):
-
         try:
             result = (cls.query.filter(cls.url == url)
                       .filter(cls.title == title)
