@@ -8,10 +8,10 @@ from zeeguu import log
 from zeeguu.model import RSSFeedRegistration, UserArticle, Article, User
 
 
-def user_article_info(user: User, article: Article):
+def user_article_info(user: User, article: Article, with_content = False):
     prior_info = UserArticle.find(user, article)
 
-    ua_info = article.article_info()
+    ua_info = article.article_info(with_content=with_content)
 
     if not prior_info:
         ua_info['starred'] = False

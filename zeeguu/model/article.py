@@ -1,4 +1,6 @@
 import time
+
+import sqlalchemy
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -80,7 +82,7 @@ class Article(db.Model):
     def __repr__(self):
         return f'<Article {self.title} (w: {self.word_count}, d: {self.fk_difficulty}) ({self.url})>'
 
-    def article_info(self):
+    def article_info(self, with_content=False):
         """
 
             This is the data that is sent over the API
@@ -107,6 +109,9 @@ class Article(db.Model):
         if self.rss_feed:
             result_dict['feed_id'] = self.rss_feed.id,
             result_dict['feed_image_url'] = self.rss_feed.image_url.as_string(),
+
+        if with_content:
+            result_dict['content'] = self.content
 
         return result_dict
 
@@ -142,8 +147,10 @@ class Article(db.Model):
             art.download()
             art.parse()
 
-            if not language:
+            if not language and art.meta_lang != '':
                 language = Language.find_or_create(art.meta_lang)
+            else:
+                raise Exception(f"No language info for: {url}")
 
             # Create new article and save it to DB
             new_article = Article(
@@ -159,7 +166,7 @@ class Article(db.Model):
             session.add(new_article)
             session.commit()
             return new_article
-        except:
+        except sqlalchemy.exc.IntegrityError or sqlalchemy.exc.DatabaseError:
             for i in range(10):
                 try:
                     session.rollback()
@@ -171,6 +178,9 @@ class Article(db.Model):
                     time.sleep(0.3)
                     continue
                 break
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
 
     @classmethod
     def find(cls, url: str):
