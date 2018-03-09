@@ -19,7 +19,7 @@ class UserArticle(zeeguu.db.Model):
         Did she open it?
         Did she like it?
 
-        This is the kind of info that's in here.
+        The kind of info that's in here.
 
     """
     __table_args__ = {'mysql_collate': 'utf8_bin'}
