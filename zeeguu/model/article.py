@@ -98,6 +98,7 @@ class Article(db.Model):
             url=self.url.as_string(),
             summary=self.summary,
             language=self.language.code,
+            authors=self.authors,
             metrics=dict(
                 difficulty=self.fk_difficulty / 100,
                 word_count=self.word_count
