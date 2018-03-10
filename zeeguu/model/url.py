@@ -96,8 +96,10 @@ class Url(db.Model):
                     try:
                         print ("doing a rollback")
                         session.rollback()
-                        print ("after rollback trying to find again")
-                        u = cls.find(cls.path == path).filter(cls.domain == domain).first()
+                        domain = DomainName.find_or_create(session, _url)
+                        path = Url.get_path(_url)
+                        print (f"after rollback trying to find again: {domain} + {path}")
+                        u = cls.query.filter(cls.path == path).filter(cls.domain == domain).first()
                         print("Found url after recovering from race")
                         return u
                     except Exception as e:
