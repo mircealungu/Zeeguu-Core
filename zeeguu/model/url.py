@@ -5,6 +5,7 @@ from sqlalchemy import UniqueConstraint
 
 import zeeguu
 import time
+import random
 
 db = zeeguu.db
 
@@ -93,13 +94,15 @@ class Url(db.Model):
             except sqlalchemy.exc.IntegrityError or sqlalchemy.exc.DatabaseError:
                 for i in range(10):
                     try:
+                        print ("doing a rollback")
                         session.rollback()
+                        print ("after rollback trying to find again")
                         u = cls.find(cls.path == path).filter(cls.domain == domain).first()
                         print("Found url after recovering from race")
                         return u
-                    except:
-                        print("Exception of second degree in url..." + str(i))
-                        time.sleep(0.3)
+                    except Exception as e:
+                        print("Exception of second degree in url..." + str(i) + str(e))
+                        time.sleep(random.randrange(1, 10) * 0.1)
                         continue
                     break
 
