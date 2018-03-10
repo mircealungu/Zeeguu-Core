@@ -69,6 +69,9 @@ class UserArticle(zeeguu.db.Model):
         else:
             self.starred = None
 
+    def set_liked(self, new_state=True):
+        self.liked = new_state
+
     def last_interaction(self):
         """
 
@@ -180,7 +183,7 @@ class UserArticle(zeeguu.db.Model):
             language=each.article.language.code,
             starred_date=each.last_interaction().strftime(JSON_TIME_FORMAT)
         ) for each in user_articles
-        if each.last_interaction() is not None]
+            if each.last_interaction() is not None]
 
         return dicts
 

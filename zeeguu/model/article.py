@@ -195,7 +195,7 @@ class Article(db.Model):
         try:
             url_object = Url.find(url)
             return (cls.query.filter(cls.url == url_object)).one()
-        except:
+        except NoResultFound:
             return None
 
     @classmethod
