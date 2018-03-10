@@ -84,16 +84,13 @@ class Url(db.Model):
 
         try:
             return cls.query.filter(cls.path == path).filter(cls.domain == domain).one()
-        # except sqlalchemy.orm.exc.NoResultFound or sqlalchemy.exc.InterfaceError:
-        except:
+        except sqlalchemy.orm.exc.NoResultFound or sqlalchemy.exc.InterfaceError:
             try:
                 new = cls(_url, title, domain)
                 session.add(new)
                 session.commit()
                 return new
-            # except sqlalchemy.exc.IntegrityError or sqlalchemy.exc.DatabaseError:
-            except:
-
+            except sqlalchemy.exc.IntegrityError or sqlalchemy.exc.DatabaseError:
                 for i in range(10):
                     try:
                         session.rollback()
