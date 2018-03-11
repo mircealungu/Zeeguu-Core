@@ -81,7 +81,7 @@ class Bookmark(db.Model):
         return dict(
             origin=self.origin.word,
             translation=self.translation.word,
-            context=self.text
+            context=self.text.content
         )
 
     def add_new_exercise(self, exercise):
