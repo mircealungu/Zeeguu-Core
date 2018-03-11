@@ -5,7 +5,7 @@
 
 """
 from zeeguu import log
-from zeeguu.model import RSSFeedRegistration, UserArticle, Article, User
+from zeeguu.model import RSSFeedRegistration, UserArticle, Article, User, Bookmark
 
 
 def user_article_info(user: User, article: Article, with_content = False):
@@ -17,11 +17,15 @@ def user_article_info(user: User, article: Article, with_content = False):
         ua_info['starred'] = False
         ua_info['opened'] = False
         ua_info['liked'] = False
+        ua_info['translations'] = []
         return ua_info
 
     ua_info['starred'] = prior_info.starred is not None
     ua_info['opened'] = prior_info.opened is not None
     ua_info['liked'] = prior_info.liked
+
+    translations = Bookmark.find_all_for_user_and_url(user, article.url)
+    ua_info['translations'] = translations
 
     return ua_info
 
