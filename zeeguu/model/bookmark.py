@@ -312,6 +312,10 @@ class Bookmark(db.Model):
         return cls.query.filter_by(text=text, user=user).all()
 
     @classmethod
+    def find_all_for_user_and_url(cls, user, url):
+        return cls.query.join(Text).filter(Text.url==url).filter(Bookmark.user==user).all()
+
+    @classmethod
     def find(cls, b_id):
         return cls.query.filter_by(
             id=b_id
