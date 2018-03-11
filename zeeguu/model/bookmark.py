@@ -77,6 +77,13 @@ class Bookmark(db.Model):
             format(self.origin.word, self.translation.word,
                    self.text.content[0:10], self.id, self.user_id)
 
+    def serializable_dictionary(self):
+        return dict(
+            origin=self.origin.word,
+            translation=self.translation.word,
+            context=self.text
+        )
+
     def add_new_exercise(self, exercise):
         self.exercise_log.append(exercise)
 
@@ -135,27 +142,27 @@ class Bookmark(db.Model):
         bad_quality = (
 
             # translation is same as origin
-            self.origin_same_as_translation() or
+                self.origin_same_as_translation() or
 
-            # origin which is subset of a larger origin
-            (self.is_subset_of_larger_bookmark()) or
+                # origin which is subset of a larger origin
+                (self.is_subset_of_larger_bookmark()) or
 
-            # too long for our exercises
-            (self.origin_word_count() > 3) or
+                # too long for our exercises
+                (self.origin_word_count() > 3) or
 
-            # very short words are also not great quality
-            (len(self.origin.word) < 3)
+                # very short words are also not great quality
+                (len(self.origin.word) < 3)
 
-            or
-            # a too long context is not good either
-            self.context_word_count() > 20
+                or
+                # a too long context is not good either
+                self.context_word_count() > 20
 
-            or
-            # a superset of translation same as origin...
-            # happens in the case of some bugs in translation
-            # where the translation is inserted in the text
-            # till we fix it, we should not show this
-            self.translation_in_context()
+                or
+                # a superset of translation same as origin...
+                # happens in the case of some bugs in translation
+                # where the translation is inserted in the text
+                # till we fix it, we should not show this
+                self.translation_in_context()
 
         )
 
@@ -313,7 +320,7 @@ class Bookmark(db.Model):
 
     @classmethod
     def find_all_for_user_and_url(cls, user, url):
-        return cls.query.join(Text).filter(Text.url==url).filter(Bookmark.user==user).all()
+        return cls.query.join(Text).filter(Text.url == url).filter(Bookmark.user == user).all()
 
     @classmethod
     def find(cls, b_id):

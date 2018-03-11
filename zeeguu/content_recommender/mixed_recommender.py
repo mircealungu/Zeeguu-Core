@@ -8,7 +8,7 @@ from zeeguu import log
 from zeeguu.model import RSSFeedRegistration, UserArticle, Article, User, Bookmark
 
 
-def user_article_info(user: User, article: Article, with_content = False):
+def user_article_info(user: User, article: Article, with_content=False):
     prior_info = UserArticle.find(user, article)
 
     ua_info = article.article_info(with_content=with_content)
@@ -25,7 +25,7 @@ def user_article_info(user: User, article: Article, with_content = False):
     ua_info['liked'] = prior_info.liked
 
     translations = Bookmark.find_all_for_user_and_url(user, article.url)
-    ua_info['translations'] = translations
+    ua_info['translations'] = [each.serializable_dictionary() for each in translations]
 
     return ua_info
 
