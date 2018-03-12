@@ -54,7 +54,7 @@ pip install jieba3k lxml Pillow nltk
 
 echo "# 5. run setup to install the final prerequisites "
 
-python setup.py develop
+python3.6 setup.py develop
 
 
 echo "6. make sure that the installation is ok by running the tests"
