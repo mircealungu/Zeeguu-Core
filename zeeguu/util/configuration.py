@@ -10,6 +10,12 @@ def assert_configs(config, required_keys, config_file_name=None):
             exit(-1)
 
 
+def load_core_testing_configuration(app):
+    print ("Loading testing configuration...")
+    app.config['SQLALCHEMY_DATABASE_URI']= 'sqlite:///:memory:'
+    app.config['MAX_SESSION']= 99999999
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS']=False
+
 def load_configuration_or_abort(app, environ_variable, mandatory_config_keys=[]):
     """
     
