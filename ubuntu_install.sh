@@ -14,14 +14,13 @@ VIRTENVDIR=~/.venvs
 ZENV=zenv
 
 
-# 1. install all the prerequisite ubuntu packges
+echo "# 1. install all the prerequisite ubuntu packges"
 
 sudo apt-get update
 sudo apt-get install -y build-essential checkinstall libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev libmysqlclient-dev mysql-client-core-5.7 mysql-server libmysqlclient-dev python-mysqldb
 
 
-# 2. download and install Python from sources
-# if not present already
+echo "# 2. download and install Python from sources if not present already"
 
 if which python3.6 ; then
     echo "Python3.6 detected. Will continue without installing"
@@ -40,29 +39,27 @@ else
 
 fi
 
-#3. create new virtual enviroment
+echo "#3. create new virtual enviroment"
 
-mkdir $VIRTENVDIR 
-cd $VIRTENVDIR 
-python3.6 -m venv $ZENV
-source $ZENV/bin/activate
+mkdir $VIRTENVDIR
+python3.6 -m venv $VIRTENVDIR/$ZENV
+source $VIRTENVDIR/$ZENV/bin/activate
 
 
-# 4. install several of the prerequisites, the others will be installed
-# based on setup.py
+echo "4. install several of the prerequisites, the others will be installed based on setup.py"
 
 pip install jieba3k lxml Pillow nltk
 
 
 
-# 5. run setup to install the final prerequisites 
+echo "# 5. run setup to install the final prerequisites "
 
 python setup.py develop
 
 
-# 6. make sure that the installation is ok by running the tests
+echo "6. make sure that the installation is ok by running the tests"
 
-./run_tests
+./run_tests.sh
 
 
 echo "Always activate the zeeguu environment with the following line" 
