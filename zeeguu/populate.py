@@ -53,7 +53,7 @@ def add_bookmark(db, user, original_language, original_word, translation_languag
 
 
 #
-def create_minimal_test_db2(db):
+def create_minimal_test_db(db):
     drop_current_tables(db)
 
     # Some common test fixtures
