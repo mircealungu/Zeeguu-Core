@@ -35,6 +35,7 @@ from .knowledge_estimator import SimpleKnowledgeEstimator
 from .language import Language
 from .session import Session
 from .text import Text
+from .unique_code import UniqueCode
 from .url import Url
 from .user import User
 from .user_article import UserArticle
