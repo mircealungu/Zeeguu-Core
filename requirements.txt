@@ -7,11 +7,9 @@ flask
 Flask-SQLAlchemy 
 mysqlclient 
 regex 
-feedparser 
-wordstats
+feedparser
 requests
 newspaper3k
 Faker
-watchmen
 nltk
 langdetect
