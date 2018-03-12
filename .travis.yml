@@ -1,5 +1,5 @@
 before_install:
-  - pip3 install jieba3k coveralls langdetect
+  - pip3 install jieba3k coveralls langdetect nltk
 
 language: python
 python:
