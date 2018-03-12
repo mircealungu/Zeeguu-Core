@@ -50,9 +50,9 @@ python3.6 -m venv $VIRTENVDIR/$ZENV
 source $VIRTENVDIR/$ZENV/bin/activate
 
 
-echo "4. install several of the prerequisites, the others will be installed based on setup.py"
+echo "# 4. install several of the prerequisites, the others will be installed based on setup.py"
 
-pip install jieba3k lxml Pillow nltk pytest
+pip3.6 install -r requirements.txt
 
 
 
@@ -69,6 +69,7 @@ echo "6. make sure that the installation is ok by running the tests"
 echo "Always activate the zeeguu environment with the following line" 
 echo " "
 echo "    source $VIRTENVDIR/$ZENV/bin/activate"
+echo " "
 
 
 
