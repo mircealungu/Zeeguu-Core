@@ -10,6 +10,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, UnicodeTex
 
 from zeeguu.constants import JSON_TIME_FORMAT
 from zeeguu.language.difficulty_estimator_factory import DifficultyEstimatorFactory
+from langdetect import detect
 
 db = zeeguu.db
 
@@ -148,10 +149,10 @@ class Article(db.Model):
             art.download()
             art.parse()
 
-            if not language and art.meta_lang != '':
+            if not language:
+                if art.meta_lang == '':
+                    art.meta_lang = detect(art.text)
                 language = Language.find_or_create(art.meta_lang)
-            else:
-                raise Exception(f"No language info for: {url}")
 
             # Create new article and save it to DB
             new_article = Article(

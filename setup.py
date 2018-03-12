@@ -51,6 +51,7 @@ setuptools.setup(
                         "newspaper3k",
                         "Faker",
                         "watchmen",
-                        "nltk"
+                        "nltk",
+                        "langdetect"
                       )
 )
