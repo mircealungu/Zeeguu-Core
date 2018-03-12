@@ -3,7 +3,6 @@ import datetime
 import random
 import re
 
-import zeeguu
 from zeeguu.model.exercise import Exercise
 
 from zeeguu.model.url import Url
@@ -115,71 +114,3 @@ def create_minimal_test_db(db):
     global TEST_BOOKMARKS_COUNT
     TEST_BOOKMARKS_COUNT = 2
     db.session.commit()
-
-
-class WordCache(object):
-    def __init__(self):
-        self.cache = {}
-
-    def __getitem__(self, args):
-        word = self.cache.get(args, None)
-        if word is None:
-            word = UserWord(*args)
-            zeeguu.db.session.add(word)
-            self.cache[args] = word
-        return word
-
-
-def populate(from_, to, dict_file):
-    cache = WordCache()
-    with open(dict_file, "r") as f:
-        for line in f:
-            if line.startswith("#") or line.strip() == "":
-                continue
-            parts = line.split("\t")
-            if len(parts) < 2:
-                return
-            orig = cache[clean_word(parts[0]), from_]
-            trans = cache[clean_word(parts[1]), to]
-            if trans not in orig.translations:
-                orig.translations.append(trans)
-
-
-def filter_word_list(word_list):
-    filtered_word_list = []
-    lowercase_word_list = []
-    for word in word_list:
-        if word.lower() not in lowercase_word_list:
-            lowercase_word_list.append(word.lower())
-    for lc_word in lowercase_word_list:
-        for word in word_list:
-            if word.lower() == lc_word:
-                filtered_word_list.append(word)
-                break
-    return filtered_word_list
-
-
-def path_of_language_resources():
-    """
-    the easiest way to make sure that the langauge dictionary files
-    are found when running the test cases, either from IDE or from the
-    command line is to
-    - compute the path relative to this file
-    :return:
-    """
-    import os
-    path = os.path.dirname(__file__)
-    return path + "/language_data/"
-
-
-def test_word_list(lang_code):
-    words_file = open(path_of_language_resources() + lang_code + "-test.txt")
-    words_list = words_file.read().splitlines()
-    return words_list
-
-
-def clean_word(word):
-    match = re.match(WORD_PATTERN, word)
-    if match is None:
-        return word.decode("utf8")
-    return match.group(1).decode("utf8")
