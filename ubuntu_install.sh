@@ -48,7 +48,7 @@ source $VIRTENVDIR/$ZENV/bin/activate
 
 echo "4. install several of the prerequisites, the others will be installed based on setup.py"
 
-pip install jieba3k lxml Pillow nltk
+pip install jieba3k lxml Pillow nltk pytest
 
 
 
