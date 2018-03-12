@@ -25,7 +25,9 @@ echo "# 2. download and install Python from sources if not present already"
 if which python3.6 ; then
     echo "Python3.6 detected. Will continue without installing"
 else
-	echo "Installing Python3.6 from sources."
+	echo "Installing Python3.6 from sources"
+
+	CURDIR=`pwd`
 
 	wget https://www.python.org/ftp/python/3.6.3/Python-3.6.3.tar.xz
 
@@ -36,6 +38,8 @@ else
 	./configure
 
 	sudo make altinstall
+
+	cd $CURDIR
 
 fi
 
