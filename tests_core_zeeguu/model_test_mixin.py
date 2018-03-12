@@ -1,8 +1,3 @@
-import os
-
-# Before we load the zeeguu module
-# If the configuration file path is not set, try to load it from the default location
-
 import zeeguu.model
 
 from faker import Faker
