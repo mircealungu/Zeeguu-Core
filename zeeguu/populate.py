@@ -21,7 +21,6 @@ TEST_EMAIL = 'i@mir.lu'
 
 TEST_BOOKMARKS_COUNT = 2
 
-
 def drop_current_tables(db):
     # We have to do a commit() before the drop_all()
     # Otherwise the system just freezes sometimes!
@@ -54,7 +53,7 @@ def add_bookmark(db, user, original_language, original_word, translation_languag
 
 
 #
-def create_minimal_test_db(db):
+def create_minimal_test_db2(db):
     drop_current_tables(db)
 
     # Some common test fixtures
