@@ -35,3 +35,8 @@ class ArticleTest(ModelTestMixIn, TestCase):
     def test_find_or_create(self):
         self.new_art = Article.find_or_create(session, SOME_ARTICLE_URL)
         assert (self.new_art.fk_difficulty)
+
+    def test_load_article_without_language_information(self):
+        url = 'https://edition.cnn.com/2018/03/12/asia/kathmandu-plane-crash/index.html'
+        art = Article.find_or_create(session, url)
+        assert (art)
