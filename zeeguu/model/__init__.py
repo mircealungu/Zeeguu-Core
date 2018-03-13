@@ -11,7 +11,9 @@ from zeeguu.configuration.configuration import load_configuration_or_abort
 if not hasattr(zeeguu, "app"):
     zeeguu.app = Flask("Zeeguu-Core")
     load_configuration_or_abort(zeeguu.app, 'ZEEGUU_CORE_CONFIG',
-                                ['SQLALCHEMY_DATABASE_URI', 'MAX_SESSION', 'SQLALCHEMY_TRACK_MODIFICATIONS'])
+                                ['MAX_SESSION',
+                                 'SQLALCHEMY_DATABASE_URI',
+                                 'SQLALCHEMY_TRACK_MODIFICATIONS'])
 
 # Create the zeeguu.db object, which will be the superclass
 # of all the model classes
