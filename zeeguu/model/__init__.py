@@ -20,9 +20,10 @@ zeeguu.db = flask_sqlalchemy.SQLAlchemy(zeeguu.app)
 # to push the app context
 
 from .article import Article
+from .topic import Topic
 from .bookmark import Bookmark
-from .cohort import Cohort
 from .domain_name import DomainName
+from .user import User
 from .exercise import Exercise
 from .exercise_outcome import ExerciseOutcome
 from .exercise_source import ExerciseSource
@@ -31,20 +32,17 @@ from .feed_registrations import RSSFeedRegistration
 from .knowledge_estimator import SimpleKnowledgeEstimator
 from .language import Language
 from .session import Session
+from .text import Text
+from .url import Url
+from .user_article import UserArticle
+from .user_activitiy_data import UserActivityData
+from .user_word import UserWord
+from .user_preference import UserPreference
 from .smartwatch.watch_event_type import WatchEventType
 from .smartwatch.watch_interaction_event import WatchInteractionEvent
-from .teacher import Teacher
+from .cohort import Cohort
 from .teacher_cohort_map import TeacherCohortMap
-from .text import Text
-from .topic import Topic
-from .url import Url
-from .user import User
-from .user import User
-from .user_activitiy_data import UserActivityData
-from .user_article import UserArticle
-from .user_preference import UserPreference
-from .user_preference import UserPreference
-from .user_word import UserWord
+from .teacher import Teacher
 
 # Creating the DB tables if needed
 # Note that this must be called after all the model classes are loaded
