@@ -21,7 +21,8 @@ class Language(db.Model):
         "en": "English",
         "es": "Spanish",
         "fr": "French",
-        "nl": "Dutch"
+        "nl": "Dutch",
+        "zh-CN": "Chinese"
     }
 
     def __init__(self, code, name):
