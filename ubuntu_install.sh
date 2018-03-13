@@ -72,6 +72,12 @@ echo "Always activate the zeeguu environment with the following line"
 echo " "
 echo "    source $VIRTENVDIR/$ZENV/bin/activate"
 echo " "
+echo "Or simply call the following script from the current folder"
+echo " "
+echo "    ./zeeguu_activate.sh"
+echo " "
+echo "#!/bin/bash\nsource $VIRTENVDIR/$ZENV/bin/activate" > zeeguu_activate.sh
+chmod +x zeeguu_activate.sh
 
 
 
