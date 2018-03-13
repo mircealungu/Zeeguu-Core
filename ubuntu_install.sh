@@ -76,7 +76,9 @@ echo "Or simply call the following script from the current folder"
 echo " "
 echo "    ./zeeguu_activate.sh"
 echo " "
-echo "#!/bin/bash\nsource $VIRTENVDIR/$ZENV/bin/activate" > zeeguu_activate.sh
+
+SCRIPT=$'#!/bin/bash\nsource $VIRTENVDIR/$ZENV/bin/activate'
+echo $SCRIPT > zeeguu_activate.sh
 chmod +x zeeguu_activate.sh
 
 
