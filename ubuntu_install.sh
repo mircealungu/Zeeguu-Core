@@ -68,18 +68,19 @@ echo "# 6. Ensure that all went well by running the tests"
 ./run_tests.sh
 
 
-echo "Always activate the zeeguu environment with the following line" 
-echo " "
-echo "    source $VIRTENVDIR/$ZENV/bin/activate"
-echo " "
-echo "Or simply call the following script from the current folder"
-echo " "
-echo "    ./zeeguu_activate.sh"
-echo " "
+echo "echo  " > activate_zeeguu.sh
+echo "echo Always activate the zeeguu environment with the following line" >> activate_zeeguu.sh
+echo "echo  " >> activate_zeeguu.sh
+echo "echo '    source $VIRTENVDIR/$ZENV/bin/activate'" >> activate_zeeguu.sh
+echo "echo  " >> activate_zeeguu.sh
+echo "echo As a reminder call this script from the current folder" >> activate_zeeguu.sh
+echo "echo  " >> activate_zeeguu.sh
+echo "echo '   ./activate_zeeguu.sh'" >> activate_zeeguu.sh
+echo "echo " >> activate_zeeguu.sh
 
-SCRIPT=$'#!/bin/bash\nsource $VIRTENVDIR/$ZENV/bin/activate'
-echo $SCRIPT > zeeguu_activate.sh
-chmod +x zeeguu_activate.sh
+chmod +x activate_zeeguu.sh
+
+./activate_zeeguu.sh
 
 
 
