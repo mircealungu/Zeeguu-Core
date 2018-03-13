@@ -11,7 +11,7 @@ VIRTENVDIR=~/.venvs
 
 # name of the zeeguu virtual env
 # feel free to change
-ZENV=zenv
+ZENV=z_env
 
 
 echo "# 1. Install all the prerequisite ubuntu packges"
