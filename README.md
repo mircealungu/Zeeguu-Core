@@ -9,7 +9,7 @@ The main model behind the zeeguu infrastructure.
 
 Clone this repo
 
-For Ubuntu run the `./ubuntu_install.sh script`.
+For installing on a fresh Ubuntu (10.04) run the `./ubuntu_install.sh` script.
 For other OSs take inspiration from that file, but skipping step 1. 
 
 To be able to do anything meaningful with the Zeeguu-Core 
