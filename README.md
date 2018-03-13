@@ -15,9 +15,7 @@ For other OSs take inspiration from that file, but skipping step 1.
 To be able to do anything meaningful with the Zeeguu-Core 
 you must set the environment variable `ZEEGUU_CORE_CONFIG` 
 to the path of a file which contains the info that's 
-declared in `testing_default.cfg`. 
-
-Only if you have defined the previous envvar can you start
+declared in `testing_default.cfg`. Only then can you start
 working with zeeguu model elements by importing `zeeguu.model`. 
 
 
