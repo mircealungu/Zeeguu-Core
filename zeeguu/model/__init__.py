@@ -46,7 +46,6 @@ from .exercise_source import ExerciseSource
 
 # user logging
 from .user_activitiy_data import UserActivityData
-
 from .smartwatch.watch_event_type import WatchEventType
 from .smartwatch.watch_interaction_event import WatchInteractionEvent
 
@@ -56,7 +55,6 @@ from .teacher_cohort_map import TeacherCohortMap
 from .teacher import Teacher
 
 from .knowledge_estimator import SimpleKnowledgeEstimator
-
 
 # Creating the DB tables if needed
 # Note that this must be called after all the model classes are loaded
