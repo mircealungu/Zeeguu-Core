@@ -10,7 +10,7 @@ class Language(db.Model):
     __tablename__ = 'language'
 
     LANGUAGES_THAT_CAN_BE_LEARNED = ['de', 'es', 'fr', 'nl', 'en']
-    LANGUAGES_AVAILABLE_AS_NATIVE = ['en','nl','zh-CN']
+    LANGUAGES_AVAILABLE_AS_NATIVE = ['en', 'nl', 'zh-CN']
 
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(5))
@@ -21,7 +21,8 @@ class Language(db.Model):
         "en": "English",
         "es": "Spanish",
         "fr": "French",
-        "nl": "Dutch"
+        "nl": "Dutch",
+        "zh-CN": "Chinese"
     }
 
     def __init__(self, code, name):
@@ -44,7 +45,7 @@ class Language(db.Model):
 
     @classmethod
     def native_languages(cls):
-        return [Language.find(code) for code in cls.LANGUAGES_AVAILABLE_AS_NATIVE]
+        return [Language.find_or_create(code) for code in cls.LANGUAGES_AVAILABLE_AS_NATIVE]
 
     @classmethod
     def available_languages(cls):
