@@ -7,7 +7,7 @@ from zeeguu.configuration.configuration import load_configuration_or_abort
 
 # If zeeguu.app is already defined we use that object
 # as the app for the db_init that we do later. If not,
-# we create the app and load the corresponding configuration
+# we create the app here and load the corresponding configuration
 if not hasattr(zeeguu, "app"):
     zeeguu.app = Flask("Zeeguu-Core")
     load_configuration_or_abort(zeeguu.app, 'ZEEGUU_CORE_CONFIG',
