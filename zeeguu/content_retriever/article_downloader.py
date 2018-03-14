@@ -7,10 +7,12 @@
 """
 from datetime import datetime
 
-import watchmen
+import newspaper
+
 import zeeguu
 
 from zeeguu import model
+from zeeguu.content_retriever.article_quality_filter import sufficient_quality
 from zeeguu.model import Url, RSSFeed, Article, Topic
 from zeeguu.constants import SIMPLE_TIME_FORMAT
 
@@ -32,7 +34,7 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
     zeeguu.log(feed)
     downloaded = 0
     skipped = 0
-    skipped_too_short = 0
+    skipped_due_to_low_quality = dict()
     skipped_already_in_db = 0
 
     last_retrieval_time_from_DB = None
@@ -53,7 +55,7 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
             this_article_time = datetime.strptime(feed_item['published'], SIMPLE_TIME_FORMAT)
             this_article_time = this_article_time.replace(tzinfo=None)
         except:
-            print(f"can't get time from {url}: {feed_item['published']}")
+            zeeguu.log(f"can't get time from {url}: {feed_item['published']}")
             continue
 
         if last_retrieval_time_from_DB:
@@ -74,13 +76,13 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
             skipped_already_in_db += 1
         else:
             try:
-                art = watchmen.article_parser.get_article(url)
 
-                word_count = len(art.text.split(" "))
+                art = newspaper.Article(url)
+                art.download()
+                art.parse()
 
-                if word_count < Article.MINIMUM_WORD_COUNT:
-                    skipped_too_short += 1
-                else:
+                quality_article = sufficient_quality(art.text, skipped_due_to_low_quality)
+                if quality_article:
                     from zeeguu.language.difficulty_estimator_factory import DifficultyEstimatorFactory
 
                     # Create new article and save it to DB
@@ -101,14 +103,15 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
                     for each in Topic.query.all():
                         if each.language == new_article.language and each.matches_article(new_article):
                             new_article.add_topic(each)
-            except:
+            except Exception as e:
+                # raise e
                 import sys
                 ex = sys.exc_info()[0]
                 zeeguu.log(f" {LOG_CONTEXT}: Failed to create zeeguu.Article from {url}\n{str(ex)}")
 
     zeeguu.log(f'  Skipped due to time: {skipped} ')
     zeeguu.log(f'  Downloaded: {downloaded}')
-    zeeguu.log(f'  Too short: {skipped_too_short}')
+    zeeguu.log(f'  Low Quality: {skipped_due_to_low_quality}')
     zeeguu.log(f'  Already in DB: {skipped_already_in_db}')
 
     if last_retrieval_time_seen_this_crawl:
