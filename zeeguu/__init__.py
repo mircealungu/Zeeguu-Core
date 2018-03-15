@@ -1,5 +1,6 @@
 # -*- coding: utf8 -*-
 import os
+import sys
 
 import datetime
 
@@ -11,6 +12,8 @@ if not os.path.exists(log_dir):
     os.makedirs(log_dir)
 
 log_file = os.path.expanduser(f"{LOGS_FOLDER}/zeeguu.log")
+if 'unittest' in sys.modules:
+    log_file=os.path.expanduser("/dev/null")
 
 
 def log(text):

@@ -1,0 +1,15 @@
+jieba3k 
+lxml 
+Pillow 
+nltk 
+pytest 
+flask 
+Flask-SQLAlchemy 
+mysqlclient 
+regex 
+feedparser
+requests
+newspaper3k
+Faker
+nltk
+langdetect

@@ -37,8 +37,7 @@ setuptools.setup(
         'install': InstallScript,
     },
     dependency_links=[
-        "git+https://github.com/mircealungu/python-wordstats.git#egg=wordstats",
-        "git+https://github.com/mircealungu/watchmen.git#egg=watchmen"
+        "git+https://github.com/mircealungu/python-wordstats.git#egg=wordstats"
     ],
     install_requires=(
                         "flask>=0.10.1",
@@ -50,7 +49,6 @@ setuptools.setup(
                         "requests",
                         "newspaper3k",
                         "Faker",
-                        "watchmen",
                         "nltk",
                         "langdetect"
                       )
