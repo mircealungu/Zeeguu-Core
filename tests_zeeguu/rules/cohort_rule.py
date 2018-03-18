@@ -1,4 +1,5 @@
 from tests_zeeguu.rules.base_rule import BaseRule
+from tests_zeeguu.rules.language_rule import LanguageRule
 from tests_zeeguu.rules.user_rule import UserRule
 from zeeguu.model.cohort import Cohort
 from zeeguu.model.teacher_cohort_map import TeacherCohortMap
@@ -28,9 +29,15 @@ class CohortRule(BaseRule):
         student2.cohort = self.cohort
         self.save(student2)
 
+
+
+
     def _create_model_object(self, *args):
         name = self.faker.word()
-        cohort = Cohort(name)
+        inv_code = self.faker.word()
+        max_students = 10
+        language = LanguageRule().random
+        cohort = Cohort(inv_code,name, language, max_students)
 
         return cohort
 

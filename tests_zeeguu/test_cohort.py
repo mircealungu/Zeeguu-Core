@@ -35,3 +35,19 @@ class CohortTest(ModelTestMixIn, TestCase):
             students = c.get_students()
             for student in students:
                 self.assertTrue(student in self.cohort.get_students())
+
+    def test_request_join(self):
+        self.cohort.cur_students = 0
+        self.assertTrue(self.cohort.request_join())
+        self.assertTrue(self.cohort.cur_students==1)
+        self.cohort.cur_students =9
+        self.assertTrue(self.cohort.request_join())
+        self.assertFalse(self.cohort.request_join())
+
+    def test_undo_join(self):
+        self.cohort.cur_students = 0
+        self.cohort.undo_join()
+        self.assertTrue(self.cohort.cur_students==0)
+        self.cohort.cur_students = 5
+        self.cohort.undo_join()
+        self.assertTrue(self.cohort.cur_students==4)
