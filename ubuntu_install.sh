@@ -2,7 +2,7 @@
 
 
 # This script installs zeeguu on a freshly installed Ubuntu 
-# It has been tested on Ubuntu 10.04
+# It has been tested on Ubuntu 16.04
 
 
 # folder to install the virtual env. 
