@@ -7,7 +7,7 @@ The main model behind the zeeguu infrastructure.
 
 # Installation
 
-For installing on a fresh Ubuntu (10.04) run the `./ubuntu_install.sh` script.
+For installing on a fresh Ubuntu (16.04) run the `./ubuntu_install.sh` script.
 
 For other OSs take inspiration from the aforementioned file, but skipping step 1. 
 
