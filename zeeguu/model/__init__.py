@@ -31,6 +31,7 @@ from .user import User
 from .user_word import UserWord
 from .user_preference import UserPreference
 from .session import Session
+from .unique_code import UniqueCode
 
 from .article import Article
 from .topic import Topic
