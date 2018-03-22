@@ -251,7 +251,8 @@ class Bookmark(db.Model):
             title=self.text.url.title,
             url=self.text.url.as_string(),
             origin_importance=Word.stats(self.origin.word,
-                                         self.origin.language.code).importance
+                                         self.origin.language.code).importance,
+            starred=self.starred if self.starred is not None else False
         )
         result["from"] = self.origin.word
         if with_context:
