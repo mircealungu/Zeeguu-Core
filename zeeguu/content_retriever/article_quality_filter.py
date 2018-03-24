@@ -20,7 +20,7 @@ incomplete_suggesting_terminations = (
 def sufficient_quality(art: newspaper.Article, reason_dict):
     for each in html_read_more_patterns:
         if art.html.find(each) > 0:
-            zeeguu.log(f"Incomplete Article (based on HTML analysis): {art.url}")
+            zeeguu.log(f"Incomplete Article (based on HTML analysis): {art.url} contains: {each}")
             _update_reason_dict(reason_dict, f'Html contains incomplete pattern: {each}')
             return False
 
@@ -37,12 +37,12 @@ def sufficient_quality_of_text(text: str, url, reason_dict):
 
     for each in plain_text_read_more_patterns:
         if text.find(each) > 0:
-            zeeguu.log(f"Incomplete Article (based on text analysis): {url}")
+            zeeguu.log(f"Incomplete Article (based on text analysis): {url} contains: {each}")
             _update_reason_dict(reason_dict, f'Incomplete pattern in text: {each}"')
             return False
 
     if text.endswith(incomplete_suggesting_terminations):
-        zeeguu.log(f"Incomplete Article (ends with words): {url}")
+        zeeguu.log(f"Incomplete Article (ends with words): {url} ")
         _update_reason_dict(reason_dict, 'Ends with "Read More" or similar')
         return False
 
