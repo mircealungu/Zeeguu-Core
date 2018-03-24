@@ -51,11 +51,15 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
 
         url = feed_item['url']
 
-        # drop all the query params from the urls. they should not normally matter
+        # solve redirects and save the clean url
+        import requests
+        response = requests.get(url)
+        url = response.url
+
+        # drop all the query params from the urls and keep the canonical url
         from urllib.parse import urlparse
         o = urlparse(url)
         url = o.scheme + "://" + o.netloc + o.path
-
 
         try:
             this_article_time = datetime.strptime(feed_item['published'], SIMPLE_TIME_FORMAT)
