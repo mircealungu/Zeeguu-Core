@@ -35,6 +35,7 @@ class Article(db.Model):
     word_count = Column(Integer)
     published_time = Column(DateTime)
     fk_difficulty = Column(Integer)
+    broken = Column(Integer)
 
     from zeeguu.model.url import Url
 
@@ -62,7 +63,7 @@ class Article(db.Model):
     # has only the first paragraph available
     MINIMUM_WORD_COUNT = 90
 
-    def __init__(self, url, title, authors, content, summary, published_time, rss_feed, language):
+    def __init__(self, url, title, authors, content, summary, published_time, rss_feed, language, broken = 0):
         self.url = url
         self.title = title
         self.authors = authors
@@ -71,6 +72,7 @@ class Article(db.Model):
         self.published_time = published_time
         self.rss_feed = rss_feed
         self.language = language
+        self.broken = broken
 
         fk_estimator = DifficultyEstimatorFactory.get_difficulty_estimator("fk")
         fk_difficulty = fk_estimator.estimate_difficulty(self.content, self.language, None)['normalized']
@@ -82,6 +84,10 @@ class Article(db.Model):
 
     def __repr__(self):
         return f'<Article {self.title} (w: {self.word_count}, d: {self.fk_difficulty}) ({self.url})>'
+
+    def vote_broken(self):
+        # somebody could vote that this article is broken
+        self.broken += 1
 
     def article_info(self, with_content=False):
         """
