@@ -41,6 +41,10 @@ def article_recommendations_for_user(user, count):
     """
 
     all_user_registrations = RSSFeedRegistration.feeds_for_user(user)
+
+    if len(all_user_registrations) == 0:
+        return []
+
     per_feed_count = int(count / len(all_user_registrations)) + 1
 
     all_articles = []

@@ -81,7 +81,7 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
                 art.download()
                 art.parse()
 
-                quality_article = sufficient_quality(art.text, skipped_due_to_low_quality)
+                quality_article = sufficient_quality(art, skipped_due_to_low_quality)
                 if quality_article:
                     from zeeguu.language.difficulty_estimator_factory import DifficultyEstimatorFactory
 
