@@ -1,3 +1,4 @@
+import zeeguu
 from zeeguu.model import Article
 
 html_read_more_patterns = [
@@ -20,11 +21,13 @@ def sufficient_quality(art, reason_dict):
 
     for each in html_read_more_patterns:
         if art.html.find(each) > 0:
+            zeeguu.log(f"Incomplete Article: {art.url}")
             _update_reason_dict(reason_dict, 'Contains "Read More"')
             return False
 
-    for each in html_read_more_patterns:
-        if art.text.find(each):
+    for each in plain_text_read_more_patterns:
+        if art.text.find(each) > 0:
+            zeeguu.log(f"Incomplete Article: {art.url}")
             _update_reason_dict(reason_dict, 'Contains "Read More"')
             return False
 
