@@ -209,6 +209,7 @@ class RSSFeed(db.Model):
         try:
             q = (Article.query.
                  filter(Article.rss_feed == self).
+                 filter(Article.broken == 0).
                  filter(Article.published_time >= after_date).
                  filter(Article.word_count > Article.MINIMUM_WORD_COUNT))
 
