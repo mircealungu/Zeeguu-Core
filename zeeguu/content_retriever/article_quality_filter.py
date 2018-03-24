@@ -5,7 +5,8 @@ html_read_more_patterns = [
 ]
 
 plain_text_read_more_patterns = [
-    "Read More"
+    "Read More",
+    "Create an account for free access to:" # New Scientist
 ]
 
 
