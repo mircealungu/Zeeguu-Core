@@ -63,7 +63,7 @@ class Article(db.Model):
     # has only the first paragraph available
     MINIMUM_WORD_COUNT = 90
 
-    def __init__(self, url, title, authors, content, summary, published_time, rss_feed, language, broken = 0):
+    def __init__(self, url, title, authors, content, summary, published_time, rss_feed, language, broken=0):
         self.url = url
         self.title = title
         self.authors = authors
@@ -142,7 +142,6 @@ class Article(db.Model):
         :param url:
         :return:
         """
-
         from zeeguu.model import Url, Article, Language
         import newspaper
 
@@ -199,6 +198,11 @@ class Article(db.Model):
 
         :return: object or None if not found
         """
+
+        # make sure to we used a normalized url
+        from urllib.parse import urlparse
+        o = urlparse(url)
+        url = o.scheme + "://" + o.netloc + o.path
 
         from zeeguu.model import Url
         try:

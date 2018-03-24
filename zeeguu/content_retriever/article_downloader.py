@@ -51,6 +51,12 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
 
         url = feed_item['url']
 
+        # drop all the query params from the urls. they should not normally matter
+        from urllib.parse import urlparse
+        o = urlparse(url)
+        url = o.scheme + "://" + o.netloc + o.path
+
+
         try:
             this_article_time = datetime.strptime(feed_item['published'], SIMPLE_TIME_FORMAT)
             this_article_time = this_article_time.replace(tzinfo=None)
