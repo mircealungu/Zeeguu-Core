@@ -199,11 +199,6 @@ class Article(db.Model):
         :return: object or None if not found
         """
 
-        # make sure to we used a normalized url
-        from urllib.parse import urlparse
-        o = urlparse(url)
-        url = o.scheme + "://" + o.netloc + o.path
-
         from zeeguu.model import Url
         try:
             url_object = Url.find(url)
