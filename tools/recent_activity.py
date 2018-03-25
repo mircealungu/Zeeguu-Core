@@ -15,7 +15,7 @@ nicer = {
 prev_user = ''
 
 for each in all_events:
-    if each.user_id != 534:
+    if each.user_id != 1534:
         if prev_user != each.user.name:
             print (" ")
             print(each.user.name)
