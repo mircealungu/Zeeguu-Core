@@ -1,7 +1,7 @@
 import zeeguu
 from zeeguu.model import Article
 from zeeguu.model import RSSFeed
-from zeeguu.content_retriever.article_quality_filter import sufficient_quality_of_text, sufficient_quality
+from zeeguu.content_retriever.quality_filter import sufficient_quality_of_text, sufficient_quality
 import os
 from zeeguu import db
 

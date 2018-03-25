@@ -5,8 +5,9 @@ from tests_zeeguu.model_test_mixin import ModelTestMixIn
 from tests_zeeguu.rules.language_rule import LanguageRule
 from tests_zeeguu.rules.rss_feed_rule import RSSFeedRule
 from tests_zeeguu.rules.user_rule import UserRule
+from zeeguu.content_retriever.content_cleaner import cleanup_non_content_bits
 from zeeguu.content_retriever.article_downloader import download_from_feed
-from zeeguu.content_retriever.article_quality_filter import sufficient_quality
+from zeeguu.content_retriever.quality_filter import sufficient_quality
 from zeeguu.model import Topic
 
 
@@ -40,28 +41,40 @@ class TestRetrieveAndCompute(ModelTestMixIn):
         # print (topic.all_articles())
 
     def testSufficientQuality(self):
+        u = "https://www.propublica.org/article/" \
+            "warren-buffett-recommends-investing-in-index-funds-but-many-of-his-employees-do-not-have-that-option"
 
-        quality_urls = [
-            "https://www.propublica.org/article/warren-buffett-recommends-investing-in-index-funds-but-many-of-his-employees-do-not-have-that-option"
-        ]
+        art = newspaper.Article(u)
+        art.download()
+        art.parse()
 
-        non_quality_urls = [
-            "https://www.newscientist.com/article/2164774-in-30-years-asian-pacific-fish-will-be-gone-and-then-were-next/",
-            "https://edition.cnn.com/2018/03/14/us/students-who-did-not-walkout-trnd/index.html",
-            "http://www.lemonde.fr/ameriques/article/2018/03/24/quand-les-vols-americains-se-transforment-en-arche-de-noe_5275773_3222.html"
-        ]
+        assert (sufficient_quality(art, {}))
 
-        for each in quality_urls:
-            art = newspaper.Article(each)
-            art.download()
-            art.parse()
+    def testNewScientistOverlay(self):
+        u = "https://www.newscientist.com/" \
+            "article/2164774-in-30-years-asian-pacific-fish-will-be-gone-and-then-were-next/"
 
-            assert (sufficient_quality(art, {}))
+        art = newspaper.Article(u)
+        art.download()
+        art.parse()
 
-        for each in non_quality_urls:
-            art = newspaper.Article(each)
-            art.download()
-            art.parse()
+        assert (not sufficient_quality(art, {}))
 
-            assert (not sufficient_quality(art, {}))
+    def testLeMondeEditionAbonee(self):
+        u = "http://www.lemonde.fr/ameriques/article/" \
+            "2018/03/24/quand-les-vols-americains-se-transforment-en-arche-de-noe_5275773_3222.html"
 
+        art = newspaper.Article(u)
+        art.download()
+        art.parse()
+
+        assert (not sufficient_quality(art, {}))
+
+    def testFragmentRemoval(self):
+        url = 'https://www.theonion.com/u-s-military-announces-plan-to-consolidate-all-wars-in-1824018300'
+        art = newspaper.Article(url)
+        art.download()
+        art.parse()
+
+        cleaned_up_text = cleanup_non_content_bits(art.text)
+        assert (not "Advertisement" in cleaned_up_text)

@@ -3,8 +3,9 @@ import newspaper
 from zeeguu.model import Article
 
 html_read_more_patterns = [
-    "To continue reading this premium",  # New Scientist
-    "Cet article est réservé aux abonnés" #Le Figaro
+    "To continue reading this premium"  # New Scientist
+    ,"Cet article est réservé aux abonnés" #Le Figaro
+    ,"L’accès à la totalité de l’article est protégé" #Le Monde
 ]
 
 plain_text_read_more_patterns = [
@@ -36,7 +37,7 @@ def sufficient_quality_of_text(text: str, url, reason_dict):
         return False
 
     for each in plain_text_read_more_patterns:
-        if text.find(each) > 0:
+        if text.find(each) >= 0:
             zeeguu.log(f"Incomplete Article (based on text analysis): {url} contains: {each}")
             _update_reason_dict(reason_dict, f'Incomplete pattern in text: {each}"')
             return False

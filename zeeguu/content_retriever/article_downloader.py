@@ -12,8 +12,9 @@ import newspaper
 import zeeguu
 
 from zeeguu import model
-from zeeguu.content_retriever.article_quality_filter import sufficient_quality
-from zeeguu.model import Url, RSSFeed, Article, Topic
+from zeeguu.content_retriever.content_cleaner import cleanup_non_content_bits
+from zeeguu.content_retriever.quality_filter import sufficient_quality
+from zeeguu.model import Url, RSSFeed, Topic
 from zeeguu.constants import SIMPLE_TIME_FORMAT
 
 LOG_CONTEXT = "FEED RETRIEVAL"
@@ -91,6 +92,8 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
                 art.download()
                 art.parse()
 
+                cleaned_up_text = cleanup_non_content_bits(art.text)
+
                 quality_article = sufficient_quality(art, skipped_due_to_low_quality)
                 if quality_article:
                     from zeeguu.language.difficulty_estimator_factory import DifficultyEstimatorFactory
@@ -100,7 +103,7 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
                         Url.find_or_create(session, url),
                         title,
                         ', '.join(art.authors),
-                        art.text,
+                        cleaned_up_text,
                         summary,
                         this_article_time,
                         feed,
