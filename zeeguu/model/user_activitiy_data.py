@@ -1,8 +1,13 @@
+import json
 from datetime import datetime
+from urllib.parse import urlparse
+
 import zeeguu
+from zeeguu.model import Article
 
 from zeeguu.model.user import User
 from zeeguu.constants import JSON_TIME_FORMAT
+from zeeguu.model.user_working_session import UserWorkingSession
 
 db = zeeguu.db
 
@@ -111,6 +116,34 @@ class UserActivityData(db.Model):
 
     @classmethod
     def create_from_post_data(cls, session, data, user):
+
+        def _is_valid_url(a: str):
+            return urlparse(a).netloc is not ''
+
+        def _get_article_id(event):
+            if event.extra_data and event.extra_data != '{}' and event.extra_data != 'null':
+                try:
+                    extra_event_data = json.loads(event.extra_data)
+
+                    if 'articleURL' in extra_event_data:
+                        url = extra_event_data['articleURL']
+                    elif 'url' in extra_event_data:
+                        url = extra_event_data['url']
+                    elif _is_valid_url(event.value):
+                        url = event.value
+                    else:  # There is no url
+                        return None
+
+                    try:
+                        return Article.find(url).id
+                    except:  # When the article cannot be downloaded anymore, either because the article is no longer available or the newspaper.parser() fails
+                        return None
+
+                except ValueError:  # Some json strings are truncated, therefore cannot be parsed correctly and throw an exception
+                    return None
+            else:  # The extra_data field is empty
+                return None
+
         time = data['time']
         event = data['event']
         value = data['value']
@@ -125,3 +158,5 @@ class UserActivityData(db.Model):
                                      extra_data)
         session.add(new_entry)
         session.commit()
+
+        UserWorkingSession.update_working_session(session, user, _get_article_id(data), event, datetime.now())
