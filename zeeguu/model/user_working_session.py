@@ -37,8 +37,6 @@ class UserWorkingSession(db.Model):
     __table_args__ = dict(mysql_collate="utf8_bin")
     __tablename__ = 'user_working_session'
 
-    sys_time = datetime.now()
-
     id = db.Column(db.Integer, primary_key=True)
 
     user_id = db.Column(db.Integer, db.ForeignKey(User.id))
@@ -55,15 +53,18 @@ class UserWorkingSession(db.Model):
 
     session_type = db.Column(db.Integer)  # 1=reading / 2=exercise
 
-    def __init__(self, user_id, article_id, start_time, duration, last_action_time, is_active):
+    def __init__(self, user_id, article_id, start_time, duration, last_action_time, is_active, sys_time=None):
         self.user_id = user_id
         self.article_id = article_id
         self.start_time = start_time
         self.duration = duration
         self.last_action_time = last_action_time
         self.is_active = is_active
+        if sys_time is None:
+            self.sys_time = datetime.now()
 
-    def get_working_session_timeout():
+    @classmethod
+    def get_working_session_timeout(cls):
         return working_session_timeout
 
     def _get_active_working_session(self, db_session, user_id, article_id):
