@@ -114,36 +114,51 @@ class UserActivityData(db.Model):
         except:
             return None
 
-    @classmethod
-    def create_from_post_data(cls, session, data, user):
+    def find_url_in_extra_data(self):
+
+        """
+            DB structure is a mess!
+            There is no convention where the url associated with an event is.
+            Thus...
+
+        """
 
         def _is_valid_url(a: str):
             return urlparse(a).netloc is not ''
 
-        def _get_article_id(event):
-            if event.extra_data and event.extra_data != '{}' and event.extra_data != 'null':
-                try:
-                    extra_event_data = json.loads(event.extra_data)
+        if self.extra_data and self.extra_data != '{}' and self.extra_data != 'null':
+            try:
+                extra_event_data = json.loads(self.extra_data)
 
-                    if 'articleURL' in extra_event_data:
-                        url = extra_event_data['articleURL']
-                    elif 'url' in extra_event_data:
-                        url = extra_event_data['url']
-                    elif _is_valid_url(event.value):
-                        url = event.value
-                    else:  # There is no url
-                        return None
-
-                    try:
-                        return Article.find(url).id
-                    except:  # When the article cannot be downloaded anymore, either because the article is no longer available or the newspaper.parser() fails
-                        return None
-
-                except ValueError:  # Some json strings are truncated, therefore cannot be parsed correctly and throw an exception
+                if 'articleURL' in extra_event_data:
+                    url = extra_event_data['articleURL']
+                elif 'url' in extra_event_data:
+                    url = extra_event_data['url']
+                elif _is_valid_url(self.value):
+                    url = self.value
+                else:  # There is no url
                     return None
-            else:  # The extra_data field is empty
-                return None
 
+            except ValueError:  # Some json strings are truncated, therefore cannot be parsed correctly and throw an exception
+                return None
+        else:  # The extra_data field is empty
+            return None
+
+    def find_article_id(self):
+
+        """
+
+            :return: article ID or NONE!!!
+        """
+
+        try:
+            url = self.find_url_in_extra_data()
+            return Article.find(url).id
+        except:  # When the article cannot be downloaded anymore, either because the article is no longer available or the newspaper.parser() fails
+            return None
+
+    @classmethod
+    def create_from_post_data(cls, session, data, user):
         time = data['time']
         event = data['event']
         value = data['value']
@@ -159,4 +174,4 @@ class UserActivityData(db.Model):
         session.add(new_entry)
         session.commit()
 
-        UserWorkingSession.update_working_session(session, user, _get_article_id(data), event, datetime.now())
+        UserWorkingSession.update_working_session(session, user, new_entry.find_article_id(), event, datetime.now())
