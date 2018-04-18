@@ -15,8 +15,10 @@ class CohortTest(ModelTestMixIn, TestCase):
         super().setUp()
         self.cohort_rule = CohortRule()
         self.cohort = self.cohort_rule.cohort
+        self.cohort.inv_code = '123'
         self.user_t = self.cohort_rule.teacher
         self.student1 = self.cohort_rule.student1
+        self.student1.invitation_code = '123'
 
     def test_teacher_has_students(self):
 

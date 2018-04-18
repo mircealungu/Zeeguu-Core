@@ -52,9 +52,9 @@ class Cohort(zeeguu.db.Model):
 
         # compatibility reasons: if there is an associated invitation code
         # use it; otherwise fallback on the cohort that's associated with the User
-        if self.invitation_code and len(self.invitation_code) > 1:
+        if self.inv_code and len(self.inv_code) > 1:
             zeeguu.log("we have an invitation code...")
-            return User.query.filter_by(invitation_code=self.invitation_code).all()
+            return User.query.filter_by(invitation_code=self.inv_code).all()
 
         zeeguu.log("falling back on filtering based on cohort")
         return User.query.filter(User.cohort == self).all()
