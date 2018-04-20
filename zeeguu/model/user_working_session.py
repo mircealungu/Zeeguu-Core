@@ -26,7 +26,6 @@ closing_actions = ["UMR - LIKE ARTICLE",
                    "UMR - ARTICLE LOST FOCUS"
                    ]
 
-
 class UserWorkingSession(db.Model):
     """
     This class keeps track of the user's reading sessions.
@@ -53,29 +52,32 @@ class UserWorkingSession(db.Model):
 
     session_type = db.Column(db.Integer)  # 1=reading / 2=exercise
 
-    def __init__(self, user_id, article_id, start_time, duration, last_action_time, is_active, sys_time=None):
+    def __init__(self, user_id, article_id, sys_time=None):
         self.user_id = user_id
         self.article_id = article_id
-        self.start_time = start_time
-        self.duration = duration
-        self.last_action_time = last_action_time
-        self.is_active = is_active
-        if sys_time is None:
+        self.is_active = True
+        self.session_type = 1
+        if sys_time is None:# Instance variable to override the system datetime, instead of the current server datetime
             self.sys_time = datetime.now()
+        else:
+            self.sys_time = sys_time
+        self.start_time = self.sys_time
+        self.last_action_time = self.sys_time
+        self.duration = 0
 
     @classmethod
     def get_working_session_timeout(cls):
         return working_session_timeout
 
-    def _get_active_working_session(self, db_session, user_id, article_id):
+    def _get_active_working_session(self, db_session):
         """
             parameters: user_id and article_id
 
             returns: the active working_session record for the specific user and article or None if none is found
         """
         query = db_session.query(UserWorkingSession)
-        query = query.filter(UserWorkingSession.user_id == user_id)
-        query = query.filter(UserWorkingSession.article_id == article_id)
+        query = query.filter(UserWorkingSession.user_id == self.user_id)
+        query = query.filter(UserWorkingSession.article_id == self.article_id)
         query = query.filter(UserWorkingSession.is_active == True)
         query.order_by(UserWorkingSession.last_action_time)
         try:
@@ -85,59 +87,50 @@ class UserWorkingSession(db.Model):
             # Close all open sessions except last one
             open_sessions = query.all()
             for working_session in open_sessions[:-1]:
-                self._close_working_session(db_session, working_session)
-            return working_session
+                self._close_working_session(db_session, working_session.id)
+            return open_sessions[-1]
 
         except sqlalchemy.orm.exc.NoResultFound:
             return None
 
-    def _is_active_session(self, working_session):
+    def _is_same_working_session(self):
         """
             Validates if the working session is still valid (according to the working_session_timeout control variable)
 
             returns: True if the time between the working session's last action and the current time
                     is less or equal than the working_session_timeout
         """
-        time_difference = working_session.sys_time - working_session.last_action_time
+        time_difference = self.sys_time - self.last_action_time
         w_working_session_timeout = timedelta(minutes=working_session_timeout)
 
         return time_difference <= w_working_session_timeout
 
-    @classmethod
-    def _create_new_session(cls, db_session, user_id, article_id):
-        new_entry = UserWorkingSession(user_id,
-                                       article_id,
-                                       cls.sys_time,
-                                       0,
-                                       cls.sys_time,
-                                       True)
-        db_session.add(new_entry)
+    def _create_new_session(self, db_session):
+        db_session.add(self)
         db_session.commit()
-        return new_entry
+        return self
 
-    def _update_last_use(cls, db_session, user_id, article_id, add_grace_time=False):
+    def _update_last_use(self, db_session, add_grace_time=False):
         """
             Updates the last_action_time field. For sessions that were left open, since we cannot know exactly
             when the user stopped using it, we give an additional (working_session_timeout) time benefit
 
             Parameters:
             db_session = database session
-            user_id = user identifier
-            article_id = article identifier
             add_grace_time = True/False boolean value to add an extra working_session_timeout minutes after the last_action_datetime
 
-            returns: The working session or None if none is found
+            returns: The working session or None if none or multiple results are found
         """
-        query = cls.query
-        query = query.filter(cls.user_id == user_id)
-        query = query.filter(cls.article_id == article_id)
-        query = query.filter(cls.is_active == True)
+        query = self.query
+        query = query.filter(self.user_id == self.user_id)
+        query = query.filter(self.article_id == self.article_id)
+        query = query.filter(self.is_active == True)
         try:
             working_session = query.one()
             if add_grace_time:
                 working_session.last_action_time += timedelta(minutes=working_session_timeout)
             else:
-                working_session.last_action_time = working_session.sys_time
+                working_session.last_action_time = self.sys_time
             db_session.commit()
             return working_session
 
@@ -151,14 +144,15 @@ class UserWorkingSession(db.Model):
         except sqlalchemy.orm.exc.NoResultFound:
             return None
 
-    def _close_working_session(cls, db_session, working_session):
+    @classmethod
+    def _close_working_session(cls, db_session, working_session_id):
         """
             Computes the duration of the working session and sets the is_active field to False
 
             returns: The working session or None if none is found
         """
         query = cls.query
-        query = query.filter(UserWorkingSession.id == working_session.id)
+        query = query.filter(UserWorkingSession.id == working_session_id)
         try:
             working_session = query.one()
             working_session.is_active = False
@@ -177,10 +171,14 @@ class UserWorkingSession(db.Model):
     # NOTE:  Because not all opening session actions end with a closing action,
     # whenever we open a new session, we call this method to close all other active sessions,
     # and to avoid having active sessions forever (or until the user re-opens the same article)
-    def _close_user_working_sessions(cls, db_session, user_id):
-        query = cls.query
-        query = query.filter(cls.user_id == user_id)
-        query = query.filter(cls.is_active == True)
+    def _close_user_working_sessions(self, db_session):
+        """
+            Finds and closes all open sessions from a specific user
+
+        """
+        query = self.query
+        query = query.filter(self.user_id == self.user_id)
+        query = query.filter(self.is_active == True)
         try:
             working_sessions = query.all()
             for working_session in working_sessions:
@@ -189,13 +187,12 @@ class UserWorkingSession(db.Model):
                 working_session.duration = time_diff.total_seconds() * 1000  # Convert to miliseconds
                 db_session.add(working_session)
             db_session.commit()
-            return working_sessions
+            return None
 
         except sqlalchemy.orm.exc.NoResultFound:
             return None
 
-    @classmethod
-    def update_working_session(cls, db_session, user_id, article_id, event, event_time):
+    def update_working_session(self, db_session, event):
         """
             Main callable method that keeps track of the working sessions.
             Depending if the event belongs to the opening, interaction or closing list of events
@@ -203,44 +200,40 @@ class UserWorkingSession(db.Model):
 
             Parameters:
             db_session = database session
-            user = user id
-            article = article id
             event = event string (based on the user_activity_data events,
                                     check list at the beginning of this python file)
-            event_time = system overwriting datetime value
 
             returns: The working session  or None if none is found
         """
-        cls.sys_time = event_time  # Global variable to emulate the system datetime, instead of the current server datetime
-
-        current_working_session = cls._get_active_working_session(cls, db_session, user_id, article_id)
+        active_working_session = self._get_active_working_session(db_session)
 
         # If the event is an opening or interaction type
         if event in opening_actions or event in interaction_actions:
-            if not current_working_session:  # If there is no active working session
-                cls._close_user_working_sessions(cls, db_session, user_id)
-                new_session = cls._create_new_session(cls, db_session, user_id, article_id)
-                return new_session
-            else:  # Is there an open working session
-                if cls._is_active_session(db_session,
-                                          current_working_session):  # If the open working session is still valid (within the working_session_timeout window)
-                    active_session = cls._update_last_use(cls, db_session, user_id, article_id, add_grace_time=False)
+            if not active_working_session:  # If there is no active working session
+                self._close_user_working_sessions(db_session)
+                return self._create_new_session(db_session)
+                
+            else:  # Is there an active working session
+                if self._is_same_working_session():  # If the open working session is still valid (within the working_session_timeout window)
+                    return self._update_last_use(db_session, add_grace_time=False)
                 else:  # There is an open working session but the elapsed time is larger than the working_session_timeout
-                    cls._update_last_use(cls, db_session, user_id, article_id, add_grace_time=True)
-                    cls._close_working_session(cls, db_session, current_working_session)
-                    cls._close_user_working_sessions(cls, db_session, user_id)
-                    active_session = cls._create_new_session(cls, db_session, user_id, article_id)
-                return active_session
+                    self._update_last_use(db_session, add_grace_time=True)
+                    UserWorkingSession._close_working_session(db_session, active_working_session.id)
+                    self._close_user_working_sessions(db_session)
+                    return self._create_new_session(db_session)
 
         elif event in closing_actions:  # If the event is of a closing type
-            if current_working_session:  # If there is an open working session
-                if cls._is_active_session(db_session,
-                                          current_working_session):  # If the elapsed time is shorter than the timeout parameter
-                    active_session = cls._update_last_use(cls, db_session, user_id, article_id, add_grace_time=False)
+            if active_working_session:  # If there is an open working session
+                if self._is_same_working_session():  # If the elapsed time is shorter than the timeout parameter
+                    active_session = self._update_last_use(db_session, add_grace_time=False)
                 else:  # When the elapsed time is larger than the working_session_timeout, we add the grace time (which is n extra minutes where n=working_session_timeout)
-                    active_session = cls._update_last_use(cls, db_session, user_id, article_id, add_grace_time=True)
-                cls._close_working_session(cls, db_session, current_working_session)
+                    active_session = self._update_last_use(db_session, add_grace_time=True)
+                UserWorkingSession._close_working_session(db_session, active_working_session.id)
                 return active_session
+            else:
+                return None
+        else:
+            return None
 
     @classmethod
     def find_by_user(cls,

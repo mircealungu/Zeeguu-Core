@@ -114,7 +114,7 @@ class UserActivityData(db.Model):
         except:
             return None
 
-    def find_url_in_extra_data(self):
+    def _find_url_in_extra_data(self):
 
         """
             DB structure is a mess!
@@ -138,22 +138,25 @@ class UserActivityData(db.Model):
                     url = self.value
                 else:  # There is no url
                     return None
+                return url
 
             except ValueError:  # Some json strings are truncated, therefore cannot be parsed correctly and throw an exception
                 return None
         else:  # The extra_data field is empty
             return None
 
-    def find_article_id(self):
-
+    def find_article_id(self, db_session):
         """
+            Finds or creates an article_id
 
-            :return: article ID or NONE!!!
+            return: article ID or NONE
         """
-
         try:
-            url = self.find_url_in_extra_data()
-            return Article.find(url).id
+            url = self._find_url_in_extra_data()
+            if url: #If url exists
+                return Article.find_or_create(db_session, url).id
+            else:
+                return None
         except:  # When the article cannot be downloaded anymore, either because the article is no longer available or the newspaper.parser() fails
             return None
 
@@ -174,4 +177,5 @@ class UserActivityData(db.Model):
         session.add(new_entry)
         session.commit()
 
-        UserWorkingSession.update_working_session(session, user, new_entry.find_article_id(), event, datetime.now())
+        working_session = UserWorkingSession(user, new_entry.find_article_id(session))
+        working_session.update_working_session(session, event)

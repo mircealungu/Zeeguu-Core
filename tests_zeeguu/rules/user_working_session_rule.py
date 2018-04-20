@@ -25,10 +25,7 @@ class WorkingSessionRule(BaseRule):
         user = cohort.student1
         article = ArticleRule().article
         start_time = datetime.now() - timedelta(minutes=randint(0, 7200))
-        end_time = None
-        last_action_time = datetime.now()
-        is_active = True
 
-        w_session = UserWorkingSession(user.id, article.id, start_time, end_time, last_action_time, is_active)
+        w_session = UserWorkingSession(user.id, article.id, start_time)
 
         return w_session

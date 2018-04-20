@@ -15,90 +15,76 @@ class UserWorkingSessionTest(ModelTestMixIn, TestCase):
         self.session_rule = WorkingSessionRule().w_session
         self.working_session_timeout = UserWorkingSession.get_working_session_timeout()
 
-    def test__create_new_session(self):
-        assert UserWorkingSession._create_new_session(self.session_rule, db_session, self.session_rule.user_id,
-                                                      self.session_rule.article_id)
+    # def test_write_session_to_db(self):
+    #     assert self.session_rule._write_to_db(db_session)
 
     # One result scenario
     def test_get_working_session1(self):
-        assert UserWorkingSession._get_active_working_session(self.session_rule, db_session, self.session_rule.user_id,
-                                                              self.session_rule.article_id)
+        assert self.session_rule._get_active_working_session(db_session)
 
     # Many results scenario
     def test_get_working_session2(self):
-        UserWorkingSession._create_new_session(self.session_rule, db_session, self.session_rule.user_id,
-                                               self.session_rule.article_id)
-        assert UserWorkingSession._get_active_working_session(self.session_rule, db_session, self.session_rule.user_id,
-                                                              self.session_rule.article_id)
+        self.session_rule2 = WorkingSessionRule().w_session
+        self.session_rule2.user_id = self.session_rule.user_id
+        self.session_rule2.article_id = self.session_rule.article_id
+        assert self.session_rule._get_active_working_session(db_session)
 
     def test_is_same_working_session(self):
-        assert (True == UserWorkingSession._is_active_session(self.session_rule, self.session_rule))
+        assert (True == self._is_same_working_session())
 
     def test_is_not_same_working_session(self):
-        new_session = UserWorkingSession._create_new_session(self.session_rule, db_session, self.session_rule.user_id,
-                                                             self.session_rule.article_id)
+        new_session = UserWorkingSession(self.session_rule.user_id, self.session_rule.article_id)
         new_session.last_action_time = datetime.now() - timedelta(minutes=self.working_session_timeout * 2)
-        assert (False == UserWorkingSession._is_active_session(self.session_rule, new_session))
+        assert (False == self._is_same_working_session())
 
     # One result scenario (add grace time)
     def test__update_last_use1(self):
-        assert UserWorkingSession._update_last_use(self.session_rule, db_session, self.session_rule.user_id,
-                                                   self.session_rule.article_id, True)
+        assert self.session_rule._update_last_use(db_session, add_grace_time=True)
 
     # One result scenario (no grace time)
     def test__update_last_use2(self):
-        assert UserWorkingSession._update_last_use(self.session_rule, db_session, self.session_rule.user_id,
-                                                   self.session_rule.article_id, False)
+        assert self.session_rule._update_last_use(db_session, add_grace_time=False)
 
     # Many results scenario
     def test__update_last_use3(self):
-        UserWorkingSession._create_new_session(self.session_rule, db_session, self.session_rule.user_id,
-                                               self.session_rule.article_id)
-        assert (None == UserWorkingSession._update_last_use(self.session_rule, db_session, self.session_rule.user_id,
-                                                            self.session_rule.article_id, True))
+        self.session_rule2 = WorkingSessionRule().w_session
+        self.session_rule2.user_id = self.session_rule.user_id
+        self.session_rule2.article_id = self.session_rule.article_id
+        assert (None == self.session_rule._update_last_use(db_session, add_grace_time=True))
 
     def test__close_session(self):
-        new_session = UserWorkingSession._create_new_session(db_session, self.session_rule.user_id,
-                                                             self.session_rule.article_id)
-        assert UserWorkingSession._close_working_session(self.session_rule, db_session, self.session_rule)
+        assert self.session_rule._close_working_session(db_session, self.session_rule.id)
 
     def test__close_user_sessions(self):
-        UserWorkingSession._create_new_session(self.session_rule, db_session, self.session_rule.user_id,
-                                               self.session_rule.article_id)
-        assert UserWorkingSession._close_user_working_sessions(self.session_rule, db_session, self.session_rule.user_id)
+        assert (None == self.session_rule._close_user_working_sessions(db_session))
 
     # Open action / different session
     def test_update_working_session_scenario1(self):
         event = "UMR - OPEN ARTICLE"
         self.session_rule.is_active = False
-        assert UserWorkingSession.update_working_session(db_session, self.session_rule.user_id,
-                                                         self.session_rule.article_id, event, datetime.now())
+        assert self.session_rule.update_working_session(db_session, event)
 
     # Open action / open and same session
     def test_update_working_session_scenario2(self):
         event = "UMR - OPEN ARTICLE"
-        assert UserWorkingSession.update_working_session(db_session, self.session_rule.user_id,
-                                                         self.session_rule.article_id, event, datetime.now())
+        assert self.session_rule.update_working_session(db_session, event)
 
     # Open action / open but different/older session
     def test_update_working_session_scenario3(self):
         event = "UMR - OPEN ARTICLE"
         self.session_rule.last_action_time = datetime.now() - timedelta(minutes=self.working_session_timeout * 2)
-        assert UserWorkingSession.update_working_session(db_session, self.session_rule.user_id,
-                                                         self.session_rule.article_id, event, datetime.now())
+        assert self.session_rule.update_working_session(db_session, event)
 
     # Closing action / active and same working session
     def test_update_working_session_scenario4(self):
         event = "UMR - ARTICLE CLOSED"
-        assert UserWorkingSession.update_working_session(db_session, self.session_rule.user_id,
-                                                         self.session_rule.article_id, event, datetime.now())
+        assert self.session_rule.update_working_session(db_session, event)
 
     # Closing action / active but different working session
     def test_update_working_session_scenario5(self):
         event = "UMR - ARTICLE CLOSED"
         self.session_rule.last_action_time = datetime.now() - timedelta(minutes=self.working_session_timeout * 2)
-        assert UserWorkingSession.update_working_session(db_session, self.session_rule.user_id,
-                                                         self.session_rule.article_id, event, datetime.now())
+        assert self.session_rule.update_working_session(db_session, event)
 
     def test_find_by_user(self):
         user = self.session_rule.user
