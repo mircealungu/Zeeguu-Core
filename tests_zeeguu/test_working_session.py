@@ -15,9 +15,6 @@ class UserWorkingSessionTest(ModelTestMixIn, TestCase):
         self.session_rule = WorkingSessionRule().w_session
         self.working_session_timeout = UserWorkingSession.get_working_session_timeout()
 
-    # def test_write_session_to_db(self):
-    #     assert self.session_rule._write_to_db(db_session)
-
     # One result scenario
     def test_get_working_session1(self):
         assert self.session_rule._get_active_working_session(db_session)
@@ -28,14 +25,14 @@ class UserWorkingSessionTest(ModelTestMixIn, TestCase):
         self.session_rule2.user_id = self.session_rule.user_id
         self.session_rule2.article_id = self.session_rule.article_id
         assert self.session_rule._get_active_working_session(db_session)
-
+        
     def test_is_same_working_session(self):
-        assert (True == self._is_same_working_session())
+        assert (True == self.session_rule._is_same_working_session())
 
     def test_is_not_same_working_session(self):
         new_session = UserWorkingSession(self.session_rule.user_id, self.session_rule.article_id)
         new_session.last_action_time = datetime.now() - timedelta(minutes=self.working_session_timeout * 2)
-        assert (False == self._is_same_working_session())
+        assert (False == new_session._is_same_working_session())
 
     # One result scenario (add grace time)
     def test__update_last_use1(self):

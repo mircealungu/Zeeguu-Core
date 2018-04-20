@@ -11,7 +11,6 @@ db_session = zeeguu.db.session
 data = UserActivityData.find()
 
 for event in data:
-    # if event.id>1080 and event.id<1082:
     # NOTE: Not all scenarios include the url
     user = event.user_id
     time = event.time
