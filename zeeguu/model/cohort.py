@@ -33,10 +33,10 @@ class Cohort(zeeguu.db.Model):
 
     def get_current_student_count(self):
         from zeeguu.model.user import User
-        users_in_class = User.query.filter_by(cohort_id=self.id).all()
-        return len(users_in_class)
+        users_in_cohort = User.query.filter_by(cohort_id=self.id).all()
+        return len(users_in_cohort)
 
-    def class_still_has_capacity(self):
+    def cohort_still_has_capacity(self):
         if (self.get_current_student_count() < self.max_students):
             return True
         return False

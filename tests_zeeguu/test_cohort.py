@@ -37,10 +37,10 @@ class CohortTest(ModelTestMixIn, TestCase):
             for student in students:
                 self.assertTrue(student in self.cohort.get_students())
 
-    def test_class_still_has_capacity_true(self):
+    def test_cohort_still_has_capacity_true(self):
         self.cohort.max_students = 3
-        self.assertTrue(self.cohort.class_still_has_capacity())
+        self.assertTrue(self.cohort.cohort_still_has_capacity())
 
-    def test_class_still_has_capacity_false(self):
+    def test_cohort_still_has_capacity_false(self):
         self.cohort.max_students = 2
-        self.assertFalse(self.cohort.class_still_has_capacity())
+        self.assertFalse(self.cohort.cohort_still_has_capacity())
