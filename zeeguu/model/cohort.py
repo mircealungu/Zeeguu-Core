@@ -11,15 +11,15 @@ class Cohort(zeeguu.db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     inv_code = db.Column(db.String(255), unique=True)
-    class_name = db.Column(db.String(255))
-    class_language_id = db.Column(db.Integer, db.ForeignKey(Language.id))
+    name = db.Column(db.String(255))
+    language_id = db.Column(db.Integer, db.ForeignKey(Language.id))
     max_students = db.Column(db.Integer)
-    class_language = relationship(Language, foreign_keys=[class_language_id])
+    language = relationship(Language, foreign_keys=[language_id])
 
-    def __init__(self, inv_code, class_name, class_language, max_students):
+    def __init__(self, inv_code, name, language, max_students):
         self.inv_code = inv_code
-        self.class_name = class_name
-        self.class_language = class_language
+        self.name = name
+        self.language = language
         self.max_students = max_students
 
     @classmethod
