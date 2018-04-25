@@ -1,14 +1,14 @@
 # -*- coding: utf8 -*-
 
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import feedparser
 import sqlalchemy.orm.exc
 from sqlalchemy.orm.exc import NoResultFound
 
 import zeeguu
-from zeeguu.constants import JSON_TIME_FORMAT, SIMPLE_TIME_FORMAT
+from zeeguu.constants import SIMPLE_TIME_FORMAT
 from zeeguu.model.language import Language
 from zeeguu.model.url import Url
 
@@ -117,7 +117,8 @@ class RSSFeed(db.Model):
                 # curious if this fixes the problem in some
                 # cases; to find out, we log
 
-                zeeguu.log(f'trying updated_parsed where published_parsed failed for {item.get("link", "")} in the context of {self.url.as_string()}')
+                zeeguu.log(
+                    f'trying updated_parsed where published_parsed failed for {item.get("link", "")} in the context of {self.url.as_string()}')
                 result = item.updated_parsed
                 return result
 
@@ -216,6 +217,8 @@ class RSSFeed(db.Model):
             if most_recent_first:
                 q = q.order_by(Article.published_time.desc())
             if easiest_first:
+                age_limit = datetime.now() - timedelta(days=14)
+                q = q.filter(Article.published_time >= age_limit)
                 q = q.order_by(Article.fk_difficulty)
 
             return q.limit(limit).all()

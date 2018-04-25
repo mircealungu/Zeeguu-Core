@@ -5,7 +5,7 @@
 
 """
 from zeeguu import log
-from zeeguu.model import RSSFeedRegistration, UserArticle, Article, User, Bookmark
+from zeeguu.model import RSSFeedRegistration, UserArticle, Article, User, Bookmark, UserPreference
 
 
 def user_article_info(user: User, article: Article, with_content=False):
@@ -51,7 +51,13 @@ def article_recommendations_for_user(user, count):
     for registration in all_user_registrations:
         feed = registration.rss_feed
         log(f'Getting articles for {feed}')
-        new_articles = feed.get_articles(user, limit=per_feed_count, most_recent_first=True)
+
+        easiest_first, most_recent_first = False, True
+        if UserPreference.get(user, f"{self.language.code}_ordering") == "easiest_first":
+            easiest_first, most_recent_first = True, False
+
+        new_articles = feed.get_articles(user, limit=per_feed_count, most_recent_first=most_recent_first,
+                                         easiest_first=easiest_first)
         all_articles.extend(new_articles)
         log(f'Added articles for {feed}')
 
