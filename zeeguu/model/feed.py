@@ -187,7 +187,7 @@ class RSSFeed(db.Model):
     @classmethod
     def find_for_language_id(cls, language_code):
         language = Language.find(language_code)
-        return cls.query.filter(cls.language == language).group_by(cls.title).all()
+        return cls.query.filter(cls.language == language).all()
 
     def get_articles(self, user, limit=None, after_date=None, most_recent_first=False, easiest_first=False):
         """
