@@ -139,28 +139,15 @@ class UserWorkingSession(db.Model):
 
             returns: The working session or None if none or multiple results are found
         """
-        query = self.query
-        query = query.filter(self.user_id == self.user_id)
-        query = query.filter(self.article_id == self.article_id)
-        query = query.filter(self.is_active == True)
-        try:
-            working_session = query.one()
-            if add_grace_time:
-                working_session.last_action_time += timedelta(minutes=WORKING_SESSION_TIMEOUT)
-            else:
-                working_session.last_action_time = sys_time
-            db_session.commit()
-            return working_session
 
-        except sqlalchemy.orm.exc.MultipleResultsFound:
-            # If for some reason we get here, it means we have many open sessions for the same
-            # user and article, in this case we leave the last_action_time unchanged
-            import traceback
-            traceback.print_exc()
-            return None
+        if add_grace_time:
+            self.last_action_time += timedelta(minutes=WORKING_SESSION_TIMEOUT)
+        else:
+            self.last_action_time = sys_time
+        db_session.add(self)
+        db_session.commit()
+        return self
 
-        except sqlalchemy.orm.exc.NoResultFound:
-            return None
 
     def _close_working_session(self, db_session):
         """
@@ -233,8 +220,8 @@ class UserWorkingSession(db.Model):
                 
             else:  # Is there an active working session
                 # If the open working session is still valid (within the working_session_timeout window)
-                if active_working_session._is_same_working_session():  
-                    return active_working_session._update_last_use(db_session, add_grace_time=False)
+                if active_working_session._is_same_working_session(sys_time):  
+                    return active_working_session._update_last_use(db_session, add_grace_time=False, sys_time=sys_time)
                 # There is an open working session but the elapsed time is larger than the working_session_timeout
                 else:  
                     active_working_session._update_last_use(db_session, add_grace_time=True, sys_time=sys_time)
@@ -245,7 +232,7 @@ class UserWorkingSession(db.Model):
         elif event in CLOSING_ACTIONS:  # If the event is of a closing type
             if active_working_session:  # If there is an open working session
                 # If the elapsed time is shorter than the timeout parameter
-                if active_working_session._is_same_working_session():  
+                if active_working_session._is_same_working_session(sys_time):  
                     return active_working_session._update_last_use(db_session, add_grace_time=False, sys_time=sys_time)
                 # When the elapsed time is larger than the working_session_timeout, 
                 # we add the grace time (which is n extra minutes where n=working_session_timeout)
