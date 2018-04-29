@@ -119,8 +119,11 @@ class UserActivityData(db.Model):
         """
             DB structure is a mess!
             There is no convention where the url associated with an event is.
-            Thus...
+            Thu we need to look for it in different places
 
+            NOTE: This can be solved by creating a new column called url and write the url only there
+
+            returns: url if found or None otherwise
         """
 
         def _is_valid_url(a: str):
@@ -145,7 +148,7 @@ class UserActivityData(db.Model):
         else:  # The extra_data field is empty
             return None
 
-    def find_article_id(self, db_session):
+    def find_or_create_article_id(self, db_session):
         """
             Finds or creates an article_id
 
@@ -177,5 +180,9 @@ class UserActivityData(db.Model):
         session.add(new_entry)
         session.commit()
 
-        working_session = UserWorkingSession(user, new_entry.find_article_id(session))
-        working_session.update_working_session(session, event)
+        UserWorkingSession.update_working_session(session, 
+                                                    event, 
+                                                    user, 
+                                                    new_entry.find_or_create_article_id(session),
+                                                    sys_time=time
+                                                )
