@@ -1,38 +1,38 @@
 from unittest import TestCase
 from tests_zeeguu.model_test_mixin import ModelTestMixIn
 import zeeguu
-from tests_zeeguu.rules.user_working_session_rule import WorkingSessionRule
-from zeeguu.model.user_working_session import UserWorkingSession
+from tests_zeeguu.rules.user_reading_session_rule import ReadingSessionRule
+from zeeguu.model.user_reading_session import UserReadingSession
 from datetime import datetime, timedelta
 
 db_session = zeeguu.db.session
 
 
-class UserWorkingSessionTest(ModelTestMixIn, TestCase):
+class UserReadingSessionTest(ModelTestMixIn, TestCase):
 
     def setUp(self):
         super().setUp()
-        self.session_rule = WorkingSessionRule().w_session
-        self.working_session_timeout = UserWorkingSession.get_working_session_timeout()
+        self.session_rule = ReadingSessionRule().w_session
+        self.reading_session_timeout = UserReadingSession.get_reading_session_timeout()
 
     # One result scenario
-    def test_get_working_session1(self):
-        assert UserWorkingSession._find(self.session_rule.user_id, self.session_rule.article_id, db_session)
+    def test_get_reading_session1(self):
+        assert UserReadingSession._find(self.session_rule.user_id, self.session_rule.article_id, db_session)
 
     # Many results scenario
-    def test_get_working_session2(self):
-        self.session_rule2 = WorkingSessionRule().w_session
+    def test_get_reading_session2(self):
+        self.session_rule2 = ReadingSessionRule().w_session
         self.session_rule2.user_id = self.session_rule.user_id
         self.session_rule2.article_id = self.session_rule.article_id
-        assert UserWorkingSession._find(self.session_rule.user_id, self.session_rule.article_id, db_session)
+        assert UserReadingSession._find(self.session_rule.user_id, self.session_rule.article_id, db_session)
         
-    def test_is_same_working_session(self):
-        self.session_rule.last_action_time = datetime.now() - timedelta(minutes=self.working_session_timeout)
-        assert (True == self.session_rule._is_same_working_session())
+    def test_is_same_reading_session(self):
+        self.session_rule.last_action_time = datetime.now() - timedelta(minutes=self.reading_session_timeout)
+        assert (True == self.session_rule._is_same_reading_session())
 
-    def test_is_not_same_working_session(self):
-        self.session_rule.last_action_time = datetime.now() - timedelta(minutes=self.working_session_timeout * 2)
-        assert (False == self.session_rule._is_same_working_session())
+    def test_is_not_same_reading_session(self):
+        self.session_rule.last_action_time = datetime.now() - timedelta(minutes=self.reading_session_timeout * 2)
+        assert (False == self.session_rule._is_same_reading_session())
 
     # One result scenario (add grace time)
     def test__update_last_use1(self):
@@ -44,60 +44,60 @@ class UserWorkingSessionTest(ModelTestMixIn, TestCase):
 
     # Many results scenario
     def test__update_last_use3(self):
-        self.session_rule2 = WorkingSessionRule().w_session
+        self.session_rule2 = ReadingSessionRule().w_session
         self.session_rule2.user_id = self.session_rule.user_id
         self.session_rule2.article_id = self.session_rule.article_id
         assert self.session_rule._update_last_use(db_session, add_grace_time=True)
 
     def test__close_session(self):
-        assert self.session_rule._close_working_session(db_session)
+        assert self.session_rule._close_reading_session(db_session)
 
     def test__close_user_sessions(self):
-        assert (None == UserWorkingSession._close_user_working_sessions(db_session, self.session_rule.user_id))
+        assert (None == UserReadingSession._close_user_reading_sessions(db_session, self.session_rule.user_id))
 
     # Open action / different session
-    def test_update_working_session_scenario1(self):
+    def test_update_reading_session_scenario1(self):
         event = "UMR - OPEN ARTICLE"
         self.session_rule.is_active = False
-        assert UserWorkingSession.update_working_session(db_session, 
+        assert UserReadingSession.update_reading_session(db_session, 
                                                             event, 
                                                             self.session_rule.user_id, 
                                                             self.session_rule.article_id
                                                         )
 
     # Open action / open and same session
-    def test_update_working_session_scenario2(self):
+    def test_update_reading_session_scenario2(self):
         event = "UMR - OPEN ARTICLE"
-        assert UserWorkingSession.update_working_session(db_session, 
+        assert UserReadingSession.update_reading_session(db_session, 
                                                             event, 
                                                             self.session_rule.user_id, 
                                                             self.session_rule.article_id
                                                         )
 
     # Open action / open but different/older session
-    def test_update_working_session_scenario3(self):
+    def test_update_reading_session_scenario3(self):
         event = "UMR - OPEN ARTICLE"
-        self.session_rule.last_action_time = datetime.now() - timedelta(minutes=self.working_session_timeout * 2)
-        assert UserWorkingSession.update_working_session(db_session, 
+        self.session_rule.last_action_time = datetime.now() - timedelta(minutes=self.reading_session_timeout * 2)
+        assert UserReadingSession.update_reading_session(db_session, 
                                                             event, 
                                                             self.session_rule.user_id, 
                                                             self.session_rule.article_id
                                                         )
 
-    # Closing action / active and same working session
-    def test_update_working_session_scenario4(self):
+    # Closing action / active and same reading session
+    def test_update_reading_session_scenario4(self):
         event = "UMR - ARTICLE CLOSED"
-        assert UserWorkingSession.update_working_session(db_session, 
+        assert UserReadingSession.update_reading_session(db_session, 
                                                             event, 
                                                             self.session_rule.user_id, 
                                                             self.session_rule.article_id
                                                         )
 
-    # Closing action / active but different working session
-    def test_update_working_session_scenario5(self):
+    # Closing action / active but different reading session
+    def test_update_reading_session_scenario5(self):
         event = "UMR - ARTICLE CLOSED"
-        self.session_rule.last_action_time = datetime.now() - timedelta(minutes=self.working_session_timeout * 2)
-        assert UserWorkingSession.update_working_session(db_session, 
+        self.session_rule.last_action_time = datetime.now() - timedelta(minutes=self.reading_session_timeout * 2)
+        assert UserReadingSession.update_reading_session(db_session, 
                                                             event, 
                                                             self.session_rule.user_id, 
                                                             self.session_rule.article_id

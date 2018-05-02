@@ -7,7 +7,7 @@ from zeeguu.model import Article
 
 from zeeguu.model.user import User
 from zeeguu.constants import JSON_TIME_FORMAT
-from zeeguu.model.user_working_session import UserWorkingSession
+from zeeguu.model.user_reading_session import UserReadingSession
 
 db = zeeguu.db
 
@@ -180,9 +180,9 @@ class UserActivityData(db.Model):
         session.add(new_entry)
         session.commit()
 
-        UserWorkingSession.update_working_session(session, 
+        UserReadingSession.update_reading_session(session, 
                                                     event, 
                                                     user, 
                                                     new_entry.find_or_create_article_id(session),
-                                                    sys_time=time
+                                                    current_time=time
                                                 )

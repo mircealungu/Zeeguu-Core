@@ -56,7 +56,8 @@ from .teacher_cohort_map import TeacherCohortMap
 from .teacher import Teacher
 
 from .knowledge_estimator import SimpleKnowledgeEstimator
-from .user_working_session import UserWorkingSession
+from .user_reading_session import UserReadingSession
+from .user_exercise_session import UserExerciseSession
 
 # Creating the DB tables if needed
 # Note that this must be called after all the model classes are loaded
