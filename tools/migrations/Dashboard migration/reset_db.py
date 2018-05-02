@@ -2,8 +2,6 @@ import sys
 import MySQLdb
 
 
-# This file contains the scripts for migrating the old Zeeguu database to the new version for this project.
-
 def main():
     """
     for now fixed code for the below information of database
@@ -17,63 +15,51 @@ def main():
                                       user = user,
                                       passwd = password,
                                       db = database)
-
     except MySQLdb.Error as e:
         print("Error %d: %s" % (e.args[0], e.args[1]))
         sys.exit(1)
 
     cursor = connection.cursor()
 
-    update_cohort_db(cursor, database)
-
-    """this doesn't do anything but it is good to see if we update db correctly"""
+    reset_cohort_db(cursor, database)
     get_cohort(cursor)
 
     disconnect_db(cursor, connection)
 
 
-def update_cohort_db(cursor, database):
+def reset_cohort_db(cursor, database):
 
-    """rename invitation_code to inv_code column"""
-    cursor.execute("SELECT * FROM information_schema.COLUMNS "
-                   "WHERE TABLE_SCHEMA = '" + database +
-                   "' AND TABLE_NAME = 'cohort' "
-                   "AND COLUMN_NAME = 'inv_code'")
-    result = cursor.fetchall()
-    if not result:
-        cursor.execute("ALTER TABLE cohort "
-                       "Change invitation_code inv_code varchar(255) ")
-        cursor.execute("ALTER TABLE cohort "
-                       "ADD UNIQUE (inv_code) ")
-        cursor.execute("SELECT id, name, inv_code FROM cohort")
-        rows = cursor.fetchall()
-        for row in rows:
-            #if no the class has no inv_code, set the name as same as inv_code
-            if row[2] is None:
-                cursor.execute("UPDATE cohort SET inv_code = '" + row[1] +
-                               "' WHERE id = " + str(row[0]) + "")
-
-    """add column max_students"""
+    """drop max_students"""
     cursor.execute("SELECT * FROM information_schema.COLUMNS "
                    "WHERE TABLE_SCHEMA = '" + database +
                    "' AND TABLE_NAME = 'cohort' "
                    "AND COLUMN_NAME = 'max_students'")
-    result = cursor.fetchall()
-    if not result:
+    result = cursor.fetchone()
+    if result:
         cursor.execute("ALTER TABLE cohort "
-                       "ADD max_students int NOT NULL DEFAULT 30")
+                       "DROP COLUMN max_students")
 
-    """add class_language_id column"""
+    """drop language_id and remove foreign key"""
     cursor.execute("SELECT * FROM information_schema.COLUMNS "
                    "WHERE TABLE_SCHEMA = '" + database +
                    "' AND TABLE_NAME = 'cohort' "
                    "AND COLUMN_NAME = 'language_id'")
-    result = cursor.fetchall()
-    if not result:
+    result = cursor.fetchone()
+    if result:
+        cursor.execute("ALTER TABLE cohort DROP FOREIGN KEY cohort_ibfk_1")
         cursor.execute("ALTER TABLE cohort "
-                       "ADD language_id int NOT NULL DEFAULT 4")
-        cursor.execure("ALTER TABLE cohort "
-                       "ADD FOREIGN KEY (language_id) REFERENCES language (id)")
+                       "DROP COLUMN language_id")
+
+    """change inv_code back to invitation_code"""
+    cursor.execute("SELECT * FROM information_schema.COLUMNS "
+                   "WHERE TABLE_SCHEMA = '" + database +
+                   "' AND TABLE_NAME = 'cohort' "
+                   "AND COLUMN_NAME = 'inv_code'")
+    result = cursor.fetchone()
+    if result:
+        cursor.execute("ALTER TABLE cohort "
+                       "Change inv_code invitation_code char(50) NOT NULL")
+
 
 def get_cohort(cursor):
     query = "SELECT * FROM cohort "
