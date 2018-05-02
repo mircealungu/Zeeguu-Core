@@ -47,7 +47,7 @@ class UserWorkingSessionTest(ModelTestMixIn, TestCase):
         self.session_rule2 = WorkingSessionRule().w_session
         self.session_rule2.user_id = self.session_rule.user_id
         self.session_rule2.article_id = self.session_rule.article_id
-        assert (None == self.session_rule._update_last_use(db_session, add_grace_time=True))
+        assert self.session_rule._update_last_use(db_session, add_grace_time=True)
 
     def test__close_session(self):
         assert self.session_rule._close_working_session(db_session)

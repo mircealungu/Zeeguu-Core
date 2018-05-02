@@ -49,14 +49,14 @@ class UserWorkingSession(db.Model):
 
     is_active = db.Column(db.Boolean)
 
-    def __init__(self, user_id, article_id, sys_time=None):
+    def __init__(self, user_id, article_id, start_time=None):
         self.user_id = user_id
         self.article_id = article_id
         self.is_active = True
-        if sys_time is None:# Instance variable to override the system datetime, instead of the current server datetime
-            sys_time = datetime.now()
-        self.start_time = sys_time
-        self.last_action_time = sys_time
+        if start_time is None:# Instance variable to override the system datetime, instead of the current server datetime
+            start_time = datetime.now()
+        self.start_time = start_time
+        self.last_action_time = start_time
         self.duration = 0
 
     @staticmethod
@@ -94,39 +94,39 @@ class UserWorkingSession(db.Model):
         except sqlalchemy.orm.exc.NoResultFound:
             return None
 
-    def _is_same_working_session(self, sys_time=datetime.now()):
+    def _is_same_working_session(self, current_time=datetime.now()):
         """
             Validates if the working session is still valid (according to the working_session_timeout control variable)
 
             Parameters:
-            sys_time = when this parameter is sent, instead of using the datetime.now() value for the current time
+            current_time = when this parameter is sent, instead of using the datetime.now() value for the current time
                         we use the provided value as the system time (only used for filling in historical data)
 
             returns: True if the time between the working session's last action and the current time
                     is less or equal than the working_session_timeout
         """
-        time_difference = sys_time - self.last_action_time
+        time_difference = current_time - self.last_action_time
         w_working_session_timeout = timedelta(minutes=WORKING_SESSION_TIMEOUT)
 
         return time_difference <= w_working_session_timeout
 
     @staticmethod
-    def _create_new_session(db_session, user_id, article_id, sys_time=None):
+    def _create_new_session(db_session, user_id, article_id, current_time=datetime.now()):
         """
             Creates a new working session
 
             Parameters:
             user_id = user identifier
             article_id = article identifier
-            sys_time = when this parameter is sent, instead of using the datetime.now() value for the current time
+            current_time = when this parameter is sent, instead of using the datetime.now() value for the current time
                         we use the provided value as the system time (only used for filling in historical data)
         """
-        working_session = UserWorkingSession(user_id, article_id, sys_time)
+        working_session = UserWorkingSession(user_id, article_id, current_time)
         db_session.add(working_session)
         db_session.commit()
         return working_session
 
-    def _update_last_use(self, db_session, add_grace_time=False, sys_time=datetime.now()):
+    def _update_last_use(self, db_session, add_grace_time=False, current_time=datetime.now()):
         """
             Updates the last_action_time field. For sessions that were left open, since we cannot know exactly
             when the user stopped using it, we give an additional (working_session_timeout) time benefit
@@ -134,7 +134,7 @@ class UserWorkingSession(db.Model):
             Parameters:
             db_session = database session
             add_grace_time = True/False boolean value to add an extra working_session_timeout minutes after the last_action_datetime
-            sys_time = when this parameter is sent, instead of using the datetime.now() value for the current time
+            current_time = when this parameter is sent, instead of using the datetime.now() value for the current time
                         we use the provided value as the system time (only used for filling in historical data)
 
             returns: The working session or None if none or multiple results are found
@@ -143,7 +143,7 @@ class UserWorkingSession(db.Model):
         if add_grace_time:
             self.last_action_time += timedelta(minutes=WORKING_SESSION_TIMEOUT)
         else:
-            self.last_action_time = sys_time
+            self.last_action_time = current_time
         db_session.add(self)
         db_session.commit()
         return self
@@ -193,7 +193,7 @@ class UserWorkingSession(db.Model):
         return None
 
     @classmethod
-    def update_working_session(cls, db_session, event, user_id, article_id, sys_time=None):
+    def update_working_session(cls, db_session, event, user_id, article_id, current_time=datetime.now()):
         """
             Main callable method that keeps track of the working sessions.
             Depending if the event belongs to the opening, interaction or closing list of events
@@ -205,7 +205,7 @@ class UserWorkingSession(db.Model):
                                     check list at the beginning of this python file)
             user_id = user identifier
             article_id = article identifier
-            sys_time = when this parameter is sent, instead of using the datetime.now() value for the current time
+            current_time = when this parameter is sent, instead of using the datetime.now() value for the current time
                         we use the provided value as the system time (only used for filling in historical data)
 
             returns: The working session  or None if none is found
@@ -216,28 +216,28 @@ class UserWorkingSession(db.Model):
         if event in OPENING_ACTIONS or event in INTERACTION_ACTIONS:
             if not active_working_session:  # If there is no active working session
                 UserWorkingSession._close_user_working_sessions(db_session, user_id)
-                return cls._create_new_session(db_session, user_id, article_id, sys_time)
+                return cls._create_new_session(db_session, user_id, article_id, current_time)
                 
             else:  # Is there an active working session
                 # If the open working session is still valid (within the working_session_timeout window)
-                if active_working_session._is_same_working_session(sys_time):  
-                    return active_working_session._update_last_use(db_session, add_grace_time=False, sys_time=sys_time)
+                if active_working_session._is_same_working_session(current_time):  
+                    return active_working_session._update_last_use(db_session, add_grace_time=False, current_time=current_time)
                 # There is an open working session but the elapsed time is larger than the working_session_timeout
                 else:  
-                    active_working_session._update_last_use(db_session, add_grace_time=True, sys_time=sys_time)
+                    active_working_session._update_last_use(db_session, add_grace_time=True, current_time=current_time)
                     active_working_session._close_working_session(db_session)
                     UserWorkingSession._close_user_working_sessions(db_session, user_id)
-                    return cls._create_new_session(db_session, user_id, article_id, sys_time)
+                    return cls._create_new_session(db_session, user_id, article_id, current_time)
 
         elif event in CLOSING_ACTIONS:  # If the event is of a closing type
             if active_working_session:  # If there is an open working session
                 # If the elapsed time is shorter than the timeout parameter
-                if active_working_session._is_same_working_session(sys_time):  
-                    return active_working_session._update_last_use(db_session, add_grace_time=False, sys_time=sys_time)
+                if active_working_session._is_same_working_session(current_time):  
+                    return active_working_session._update_last_use(db_session, add_grace_time=False, current_time=current_time)
                 # When the elapsed time is larger than the working_session_timeout, 
                 # we add the grace time (which is n extra minutes where n=working_session_timeout)
                 else: 
-                    active_working_session._update_last_use(db_session, add_grace_time=True, sys_time=sys_time)
+                    active_working_session._update_last_use(db_session, add_grace_time=True, current_time=current_time)
                     return active_working_session._close_working_session(db_session)
             else:
                 return None
