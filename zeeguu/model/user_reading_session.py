@@ -64,7 +64,7 @@ class UserReadingSession(db.Model):
         return READING_SESSION_TIMEOUT
 
     @classmethod
-    def _find(cls, user_id, article_id, db_session):
+    def _find_active_session(cls, user_id, article_id, db_session):
         """
             Queries and returns if there is an open reading session for that user and article
 
@@ -210,7 +210,7 @@ class UserReadingSession(db.Model):
 
             returns: The reading session  or None if none is found
         """
-        active_reading_session = cls._find(user_id, article_id,db_session)
+        active_reading_session = cls._find_active_session(user_id, article_id, db_session)
 
         # If the event is an opening or interaction type
         if event in OPENING_ACTIONS or event in INTERACTION_ACTIONS:

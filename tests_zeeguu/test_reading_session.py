@@ -18,14 +18,14 @@ class UserReadingSessionTest(ModelTestMixIn, TestCase):
     # One result scenario
     def test_get_reading_session1(self):
         #Since the read_session1 rule saves the exercise_session in the DB, we expect to find it there
-        assert UserReadingSession._find(self.read_session.user_id, self.read_session.article_id, db_session)
+        assert UserReadingSession._find_active_session(self.read_session.user_id, self.read_session.article_id, db_session)
 
     # Many results scenario
     def test_get_reading_session2(self):
         self.read_session2 = ReadingSessionRule().w_session
         self.read_session2.user_id = self.read_session.user_id
         self.read_session2.article_id = self.read_session.article_id
-        assert UserReadingSession._find(self.read_session.user_id, self.read_session.article_id, db_session)
+        assert UserReadingSession._find_active_session(self.read_session.user_id, self.read_session.article_id, db_session)
         
     def test_is_same_reading_session(self):
         self.read_session.last_action_time = datetime.now() - timedelta(minutes=self.reading_session_timeout)
