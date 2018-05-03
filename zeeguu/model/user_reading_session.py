@@ -4,6 +4,8 @@ import zeeguu
 from datetime import datetime, timedelta
 from zeeguu.model.user import User
 from zeeguu.model.article import Article
+from zeeguu.constants import UMR_OPEN_ARTICLE_ACTION, UMR_OPEN_STARRED_ARTICLE_ACTION, \
+    UMR_ARTICLE_FOCUSED_ACTION
 
 db = zeeguu.db
 
@@ -11,10 +13,11 @@ db = zeeguu.db
 READING_SESSION_TIMEOUT = 5
 
 OPENING_ACTIONS = [
-    "UMR - OPEN ARTICLE",
-    "UMR - OPEN STARRED ARTICLE",
-    "UMR - ARTICLE FOCUSED"
+    UMR_OPEN_ARTICLE_ACTION,
+    UMR_OPEN_STARRED_ARTICLE_ACTION,
+    UMR_ARTICLE_FOCUSED_ACTION
 ]
+
 INTERACTION_ACTIONS = ["UMR - TRANSLATE TEXT",
                        "UMR - SPEAK TEXT",
                        "UMR - OPEN ALTERMENU",
@@ -25,6 +28,7 @@ CLOSING_ACTIONS = ["UMR - LIKE ARTICLE",
                    "UMR - ARTICLE CLOSED",
                    "UMR - ARTICLE LOST FOCUS"
                    ]
+
 
 class UserReadingSession(db.Model):
     """
@@ -53,7 +57,7 @@ class UserReadingSession(db.Model):
         self.user_id = user_id
         self.article_id = article_id
         self.is_active = True
-        if start_time is None:# Instance variable to override the system datetime, instead of the current server datetime
+        if start_time is None:  # Instance variable to override the system datetime, instead of the current server datetime
             start_time = datetime.now()
         self.start_time = start_time
         self.last_action_time = start_time
@@ -79,7 +83,7 @@ class UserReadingSession(db.Model):
         query = query.filter(cls.user_id == user_id)
         query = query.filter(cls.article_id == article_id)
         query = query.filter(cls.is_active == True)
-        
+
         try:
             return query.one()
 
@@ -147,7 +151,6 @@ class UserReadingSession(db.Model):
         db_session.add(self)
         db_session.commit()
         return self
-
 
     def _close_reading_session(self, db_session):
         """
@@ -217,14 +220,16 @@ class UserReadingSession(db.Model):
             if not active_reading_session:  # If there is no active reading session
                 UserReadingSession._close_user_reading_sessions(db_session, user_id)
                 return cls._create_new_session(db_session, user_id, article_id, current_time)
-                
+
             else:  # Is there an active reading session
                 # If the open reading session is still valid (within the reading_session_timeout window)
-                if active_reading_session._is_still_active(current_time):  
-                    return active_reading_session._update_last_action_time(db_session, add_grace_time=False, current_time=current_time)
+                if active_reading_session._is_still_active(current_time):
+                    return active_reading_session._update_last_action_time(db_session, add_grace_time=False,
+                                                                           current_time=current_time)
                 # There is an open reading session but the elapsed time is larger than the reading_session_timeout
-                else:  
-                    active_reading_session._update_last_action_time(db_session, add_grace_time=True, current_time=current_time)
+                else:
+                    active_reading_session._update_last_action_time(db_session, add_grace_time=True,
+                                                                    current_time=current_time)
                     active_reading_session._close_reading_session(db_session)
                     UserReadingSession._close_user_reading_sessions(db_session, user_id)
                     return cls._create_new_session(db_session, user_id, article_id, current_time)
@@ -232,12 +237,14 @@ class UserReadingSession(db.Model):
         elif event in CLOSING_ACTIONS:  # If the event is of a closing type
             if active_reading_session:  # If there is an open reading session
                 # If the elapsed time is shorter than the timeout parameter
-                if active_reading_session._is_still_active(current_time):  
-                    return active_reading_session._update_last_action_time(db_session, add_grace_time=False, current_time=current_time)
+                if active_reading_session._is_still_active(current_time):
+                    return active_reading_session._update_last_action_time(db_session, add_grace_time=False,
+                                                                           current_time=current_time)
                 # When the elapsed time is larger than the reading_session_timeout, 
                 # we add the grace time (which is n extra minutes where n=reading_session_timeout)
-                else: 
-                    active_reading_session._update_last_action_time(db_session, add_grace_time=True, current_time=current_time)
+                else:
+                    active_reading_session._update_last_action_time(db_session, add_grace_time=True,
+                                                                    current_time=current_time)
                     return active_reading_session._close_reading_session(db_session)
             else:
                 return None

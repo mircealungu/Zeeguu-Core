@@ -2,6 +2,7 @@ from unittest import TestCase
 from tests_zeeguu.model_test_mixin import ModelTestMixIn
 import zeeguu
 from tests_zeeguu.rules.user_reading_session_rule import ReadingSessionRule
+from zeeguu.constants import UMR_OPEN_ARTICLE_ACTION
 from zeeguu.model.user_reading_session import UserReadingSession
 from datetime import datetime, timedelta
 
@@ -51,7 +52,7 @@ class UserReadingSessionTest(ModelTestMixIn, TestCase):
 
     # Open action / different session
     def test_update_reading_session_scenario1(self):
-        event = "UMR - OPEN ARTICLE"
+        event = UMR_OPEN_ARTICLE_ACTION
         self.read_session.is_active = False
         assert UserReadingSession.update_reading_session(db_session, 
                                                             event, 
@@ -62,7 +63,7 @@ class UserReadingSessionTest(ModelTestMixIn, TestCase):
     # Open action / open and same session
     def test_update_reading_session_scenario2(self):
         self.read_session.last_action_time = datetime.now() - timedelta(minutes=self.reading_session_timeout)
-        event = "UMR - OPEN ARTICLE"
+        event = UMR_OPEN_ARTICLE_ACTION
         assert UserReadingSession.update_reading_session(db_session, 
                                                             event, 
                                                             self.read_session.user_id, 
@@ -71,7 +72,7 @@ class UserReadingSessionTest(ModelTestMixIn, TestCase):
 
     # Open action / open but different/older session
     def test_update_reading_session_scenario3(self):
-        event = "UMR - OPEN ARTICLE"
+        event = UMR_OPEN_ARTICLE_ACTION
         self.read_session.last_action_time = datetime.now() - timedelta(minutes=self.reading_session_timeout * 2)
         assert UserReadingSession.update_reading_session(db_session, 
                                                             event, 
