@@ -94,7 +94,7 @@ class UserReadingSession(db.Model):
         except sqlalchemy.orm.exc.NoResultFound:
             return None
 
-    def _is_same_reading_session(self, current_time=datetime.now()):
+    def _is_still_active(self, current_time=datetime.now()):
         """
             Validates if the reading session is still valid (according to the reading_session_timeout control variable)
 
@@ -137,7 +137,7 @@ class UserReadingSession(db.Model):
             current_time = when this parameter is sent, instead of using the datetime.now() value for the current time
                         we use the provided value as the system time (only used for filling in historical data)
 
-            returns: The reading session or None if none or multiple results are found
+            returns: The reading session
         """
 
         if add_grace_time:
@@ -220,7 +220,7 @@ class UserReadingSession(db.Model):
                 
             else:  # Is there an active reading session
                 # If the open reading session is still valid (within the reading_session_timeout window)
-                if active_reading_session._is_same_reading_session(current_time):  
+                if active_reading_session._is_still_active(current_time):  
                     return active_reading_session._update_last_action_time(db_session, add_grace_time=False, current_time=current_time)
                 # There is an open reading session but the elapsed time is larger than the reading_session_timeout
                 else:  
@@ -232,7 +232,7 @@ class UserReadingSession(db.Model):
         elif event in CLOSING_ACTIONS:  # If the event is of a closing type
             if active_reading_session:  # If there is an open reading session
                 # If the elapsed time is shorter than the timeout parameter
-                if active_reading_session._is_same_reading_session(current_time):  
+                if active_reading_session._is_still_active(current_time):  
                     return active_reading_session._update_last_action_time(db_session, add_grace_time=False, current_time=current_time)
                 # When the elapsed time is larger than the reading_session_timeout, 
                 # we add the grace time (which is n extra minutes where n=reading_session_timeout)

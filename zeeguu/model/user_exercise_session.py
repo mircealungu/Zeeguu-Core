@@ -116,28 +116,12 @@ class UserExerciseSession(db.Model):
             current_time = when this parameter is sent, instead of using the datetime.now() value for the current time
                         we use the provided value as the system time (only used for filling in historical data)
 
-            returns: The exercise session or None if none or multiple results are found
+            returns: The exercise session
         """
-        query = self.query
-        query = query.filter(self.user_id == self.user_id)
-        query = query.filter(self.is_active == True)
-        try:
-            exercise_session = query.one()
-            exercise_session.last_action_time = current_time
-            db_session.commit()
-            return exercise_session
-
-        except sqlalchemy.orm.exc.MultipleResultsFound:
-            # If for some reason we get here, it means we have many open sessions for the same
-            # user, in this case we leave the last_action_time unchanged
-            zeeguu.log(
-                "Carlos: Unexpected situation in _update_last_action_time: we should never have many open sessions at the same time. ")
-            import traceback
-            traceback.print_exc()
-            return None
-
-        except sqlalchemy.orm.exc.NoResultFound:
-            return None
+        self.last_action_time = current_time
+        db_session.add(self)
+        db_session.commit()
+        return self
 
     def _close_exercise_session(self, db_session):
         """

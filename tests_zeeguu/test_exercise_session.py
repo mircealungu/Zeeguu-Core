@@ -19,6 +19,7 @@ class UserExerciseSessionTest(ModelTestMixIn, TestCase):
 
     # One result scenario
     def test_get_exercise_session1(self):
+        #Since the ex_session1 rule saves the exercise_session in the DB, we expect to find it there
         assert UserExerciseSession._find(self.ex_session1.user_id, db_session)
 
     # Many results scenario
@@ -36,22 +37,16 @@ class UserExerciseSessionTest(ModelTestMixIn, TestCase):
         new_exercise_session.last_action_time = datetime.now() - timedelta(minutes=self.exercise_session_timeout * 2)
         assert (False == new_exercise_session._is_still_active())
 
-    # One result scenario
     def test__update_last_use(self):
         assert self.ex_session1._update_last_action_time(db_session)
 
-    # Many results scenario; which in practice should not happen
-    def test__update_last_use2(self):
-        self.ex_session2 = ExerciseSessionRule().exercise_session
-        self.ex_session2.user_id = self.ex_session1.user_id
-        assert (None == self.ex_session1._update_last_action_time(db_session))
-
-    # Cosing a session returns it in case everything went well
+    # Closing a session returns it in case everything went well
     def test__close_session(self):
         assert self.ex_session1 == self.ex_session1._close_exercise_session(db_session)
 
     # Scenario 1 = There is an active and still valid session
     def test_update_exercise_session_scenario1(self):
+        self.ex_session1.last_action_time = datetime.now() - timedelta(minutes=self.exercise_session_timeout)
         updated_session = UserExerciseSession.update_exercise_session(self.ex_session1.user_id, db_session)
         assert updated_session == self.ex_session1
 
@@ -79,7 +74,8 @@ class UserExerciseSessionTest(ModelTestMixIn, TestCase):
 
         self.ex_session1.is_active = False
 
-        self.ex_session2 = ExerciseSessionRule.exercise_session
+        self.ex_session2 = ExerciseSessionRule().exercise_session
+        self.ex_session2.user_id = user.id
         self.ex_session2.is_active = False
 
         # THEN: we find both of them
