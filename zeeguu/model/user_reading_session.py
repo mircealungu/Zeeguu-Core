@@ -126,7 +126,7 @@ class UserReadingSession(db.Model):
         db_session.commit()
         return reading_session
 
-    def _update_last_use(self, db_session, add_grace_time=False, current_time=datetime.now()):
+    def _update_last_action_time(self, db_session, add_grace_time=False, current_time=datetime.now()):
         """
             Updates the last_action_time field. For sessions that were left open, since we cannot know exactly
             when the user stopped using it, we give an additional (reading_session_timeout) time benefit
@@ -221,10 +221,10 @@ class UserReadingSession(db.Model):
             else:  # Is there an active reading session
                 # If the open reading session is still valid (within the reading_session_timeout window)
                 if active_reading_session._is_same_reading_session(current_time):  
-                    return active_reading_session._update_last_use(db_session, add_grace_time=False, current_time=current_time)
+                    return active_reading_session._update_last_action_time(db_session, add_grace_time=False, current_time=current_time)
                 # There is an open reading session but the elapsed time is larger than the reading_session_timeout
                 else:  
-                    active_reading_session._update_last_use(db_session, add_grace_time=True, current_time=current_time)
+                    active_reading_session._update_last_action_time(db_session, add_grace_time=True, current_time=current_time)
                     active_reading_session._close_reading_session(db_session)
                     UserReadingSession._close_user_reading_sessions(db_session, user_id)
                     return cls._create_new_session(db_session, user_id, article_id, current_time)
@@ -233,11 +233,11 @@ class UserReadingSession(db.Model):
             if active_reading_session:  # If there is an open reading session
                 # If the elapsed time is shorter than the timeout parameter
                 if active_reading_session._is_same_reading_session(current_time):  
-                    return active_reading_session._update_last_use(db_session, add_grace_time=False, current_time=current_time)
+                    return active_reading_session._update_last_action_time(db_session, add_grace_time=False, current_time=current_time)
                 # When the elapsed time is larger than the reading_session_timeout, 
                 # we add the grace time (which is n extra minutes where n=reading_session_timeout)
                 else: 
-                    active_reading_session._update_last_use(db_session, add_grace_time=True, current_time=current_time)
+                    active_reading_session._update_last_action_time(db_session, add_grace_time=True, current_time=current_time)
                     return active_reading_session._close_reading_session(db_session)
             else:
                 return None

@@ -9,6 +9,7 @@ db = zeeguu.db
 # Parameter that controls after how much time (in minutes) the session is expired
 EXERCISE_SESSION_TIMEOUT = 5
 
+
 class UserExerciseSession(db.Model):
     """
     This class keeps track of the user's exercise sessions.
@@ -72,7 +73,7 @@ class UserExerciseSession(db.Model):
         except sqlalchemy.orm.exc.NoResultFound:
             return None
 
-    def _is_same_exercise_session(self, current_time=datetime.now()):
+    def _is_still_active(self, current_time=datetime.now()):
         """
             Validates if the exercise session is still valid (according to the exercise_session_timeout control variable)
 
@@ -106,7 +107,7 @@ class UserExerciseSession(db.Model):
         db_session.commit()
         return exercise_session
 
-    def _update_last_use(self, db_session, current_time=datetime.now()):
+    def _update_last_action_time(self, db_session, current_time=datetime.now()):
         """
             Updates the last_action_time field. 
 
@@ -129,6 +130,8 @@ class UserExerciseSession(db.Model):
         except sqlalchemy.orm.exc.MultipleResultsFound:
             # If for some reason we get here, it means we have many open sessions for the same
             # user, in this case we leave the last_action_time unchanged
+            zeeguu.log(
+                "Carlos: Unexpected situation in _update_last_action_time: we should never have many open sessions at the same time. ")
             import traceback
             traceback.print_exc()
             return None
@@ -143,7 +146,7 @@ class UserExerciseSession(db.Model):
             Parameters:
             db_session = database session
 
-            returns: The exercise session or None if none is found
+            returns: The exercise session if everything went well otherwise probably exceptions related to the DB
         """
         self.is_active = False
         time_diff = self.last_action_time - self.start_time
@@ -155,22 +158,26 @@ class UserExerciseSession(db.Model):
     @classmethod
     def update_exercise_session(cls, user_id, db_session, current_time=None):
         """
+
             Main callable method that keeps track of the exercise sessions.
+
+            It does:
 
             Parameters:
             user_id = user identifier
             db_session = database session
+
             current_time = when this parameter is sent, instead of using the datetime.now() value for the current time
                         we use the provided value as the system time (only used for filling in historical data)
 
-            returns: The exercise session
+            returns: The exercise session or None
         """
         active_exercise_session = cls._find(user_id, db_session)
 
-        if active_exercise_session: #If there is an active exercise session for the user
-            if active_exercise_session._is_same_exercise_session(): #Verify if the session is not expired (according to session timeout)
-                return active_exercise_session._update_last_use(db_session)
-            else: # If the session is expired, close it and create a new one
+        if active_exercise_session:  # If there is an active exercise session for the user
+            if active_exercise_session._is_still_active():  # Verify if the session is not expired (according to session timeout)
+                return active_exercise_session._update_last_action_time(db_session)
+            else:  # If the session is expired, close it and create a new one
                 active_exercise_session._close_exercise_session(db_session)
                 return cls._create_new_session(db_session, user_id, current_time=current_time)
         else:

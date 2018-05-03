@@ -36,18 +36,18 @@ class UserReadingSessionTest(ModelTestMixIn, TestCase):
 
     # One result scenario (add grace time)
     def test__update_last_use1(self):
-        assert self.session_rule._update_last_use(db_session, add_grace_time=True)
+        assert self.session_rule._update_last_action_time(db_session, add_grace_time=True)
 
     # One result scenario (no grace time)
     def test__update_last_use2(self):
-        assert self.session_rule._update_last_use(db_session, add_grace_time=False)
+        assert self.session_rule._update_last_action_time(db_session, add_grace_time=False)
 
     # Many results scenario
     def test__update_last_use3(self):
         self.session_rule2 = ReadingSessionRule().w_session
         self.session_rule2.user_id = self.session_rule.user_id
         self.session_rule2.article_id = self.session_rule.article_id
-        assert self.session_rule._update_last_use(db_session, add_grace_time=True)
+        assert self.session_rule._update_last_action_time(db_session, add_grace_time=True)
 
     def test__close_session(self):
         assert self.session_rule._close_reading_session(db_session)
