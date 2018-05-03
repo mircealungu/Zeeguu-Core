@@ -20,13 +20,13 @@ class UserExerciseSessionTest(ModelTestMixIn, TestCase):
     # One result scenario
     def test_get_exercise_session1(self):
         #Since the ex_session1 rule saves the exercise_session in the DB, we expect to find it there
-        assert UserExerciseSession._find(self.ex_session1.user_id, db_session)
+        assert UserExerciseSession._find_active_session(self.ex_session1.user_id, db_session)
 
     # Many results scenario
     def test_get_exercise_session2(self):
         self.ex_session2 = ExerciseSessionRule().exercise_session
         self.ex_session2.user_id = self.ex_session1.user_id
-        assert UserExerciseSession._find(self.ex_session1.user_id, db_session)
+        assert UserExerciseSession._find_active_session(self.ex_session1.user_id, db_session)
 
     def test_is_same_exercise_session(self):
         self.ex_session1.last_action_time = datetime.now() - timedelta(minutes=self.exercise_session_timeout)

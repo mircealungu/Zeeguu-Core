@@ -46,7 +46,7 @@ class UserExerciseSession(db.Model):
         return EXERCISE_SESSION_TIMEOUT
 
     @classmethod
-    def _find(cls, user_id, db_session):
+    def _find_active_session(cls, user_id, db_session):
         """
             Queries and returns if there is an open exercise session for that user
 
@@ -156,7 +156,7 @@ class UserExerciseSession(db.Model):
 
             returns: The exercise session or None
         """
-        active_exercise_session = cls._find(user_id, db_session)
+        active_exercise_session = cls._find_active_session(user_id, db_session)
 
         if active_exercise_session:  # If there is an active exercise session for the user
             if active_exercise_session._is_still_active():  # Verify if the session is not expired (according to session timeout)
