@@ -24,7 +24,7 @@ def main():
 
     cursor = connection.cursor()
 
-    update_cohort_db(cursor, database)
+    upgrade_cohort_db(cursor, database)
 
     """this doesn't do anything but it is good to see if we update db correctly"""
     get_cohort(cursor)
@@ -32,7 +32,7 @@ def main():
     disconnect_db(cursor, connection)
 
 
-def update_cohort_db(cursor, database):
+def upgrade_cohort_db(cursor, database):
 
     """rename invitation_code to inv_code column"""
     cursor.execute("SELECT * FROM information_schema.COLUMNS "

@@ -21,13 +21,15 @@ def main():
 
     cursor = connection.cursor()
 
-    reset_cohort_db(cursor, database)
+    downgrade_cohort_db(cursor, database)
+
+    """this doesn't do anything but it is good to see if we update db correctly"""
     get_cohort(cursor)
 
     disconnect_db(cursor, connection)
 
 
-def reset_cohort_db(cursor, database):
+def downgrade_cohort_db(cursor, database):
 
     """drop max_students"""
     cursor.execute("SELECT * FROM information_schema.COLUMNS "
