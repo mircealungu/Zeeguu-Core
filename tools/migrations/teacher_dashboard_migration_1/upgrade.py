@@ -4,14 +4,16 @@ import MySQLdb
 
 # This file contains the scripts for migrating the old Zeeguu database to the new version for this project.
 
+"""
+for now fixed code for the below information of database
+"""
+host = "localhost"
+user = "root"
+password = "12345678"
+database = 'zeeguu_test'
+
 def main():
-    """
-    for now fixed code for the below information of database
-    """
-    host = "localhost"
-    user = "root"
-    password = "12345678"
-    database = 'zeeguu_test'
+
     try:
         connection = MySQLdb.connect (host = host,
                                       user = user,
@@ -38,7 +40,7 @@ def upgrade_cohort_db(cursor, database):
     cursor.execute("SELECT * FROM information_schema.COLUMNS "
                    "WHERE TABLE_SCHEMA = '" + database +
                    "' AND TABLE_NAME = 'cohort' "
-                   "AND COLUMN_NAME = 'inv_code'")
+                   "AND COLUMN_NAME = 'invitation_code'")
     result = cursor.fetchall()
     if not result:
         cursor.execute("ALTER TABLE cohort "
@@ -71,9 +73,10 @@ def upgrade_cohort_db(cursor, database):
     result = cursor.fetchall()
     if not result:
         cursor.execute("ALTER TABLE cohort "
-                       "ADD language_id int NOT NULL DEFAULT 4")
-        cursor.execure("ALTER TABLE cohort "
-                       "ADD FOREIGN KEY (language_id) REFERENCES language (id)")
+                       "ADD language_id int(3)")
+        cursor.execute("ALTER TABLE cohort "
+                       "ADD CONSTRAINT FK_language_id "
+                       "FOREIGN KEY (language_id) REFERENCES language (id)")
 
 def get_cohort(cursor):
     query = "SELECT * FROM cohort "

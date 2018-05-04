@@ -1,15 +1,18 @@
 import sys
 import MySQLdb
 
+# This file contains the scripts for converting the new Zeeguu database back to the old version for this project.
+
+"""
+for now fixed code for the below information of database
+"""
+host = "localhost"
+user = "root"
+password = "12345678"
+database = 'zeeguu_test'
+
 
 def main():
-    """
-    for now fixed code for the below information of database
-    """
-    host = "localhost"
-    user = "root"
-    password = "12345678"
-    database = 'zeeguu_test'
     try:
         connection = MySQLdb.connect (host = host,
                                       user = user,
