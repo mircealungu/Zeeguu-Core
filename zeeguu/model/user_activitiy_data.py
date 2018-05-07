@@ -153,12 +153,16 @@ class UserActivityData(db.Model):
             Finds or creates an article_id
 
             return: article ID or NONE
+
+            NOTE: When the article cannot be downloaded anymore, 
+            either because the article is no longer available or the newspaper.parser() fails
+
         """
         try:
             url = self._find_url_in_extra_data()
             if url: #If url exists
                 return Article.find_or_create(db_session, url).id
-            else:
+            else: #If url is empty
                 return None
         except:  # When the article cannot be downloaded anymore, either because the article is no longer available or the newspaper.parser() fails
             return None

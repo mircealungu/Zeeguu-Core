@@ -225,14 +225,7 @@ class Bookmark(db.Model):
         db.session.add(exercise)
 
         #Update the exercise session
-        user_id = exercise.find_user_id(db.session)
-        time = exercise.time
-
-        if user_id:
-            UserExerciseSession.update_exercise_session(user_id,
-                                                            db.session,
-                                                            current_time = time
-                                                        )
+        UserExerciseSession.update_exercise_session(exercise, db.session)
 
         
 

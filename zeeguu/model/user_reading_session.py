@@ -5,12 +5,17 @@ from datetime import datetime, timedelta
 from zeeguu.model.user import User
 from zeeguu.model.article import Article
 from zeeguu.constants import UMR_OPEN_ARTICLE_ACTION, UMR_OPEN_STARRED_ARTICLE_ACTION, \
-    UMR_ARTICLE_FOCUSED_ACTION
+    UMR_ARTICLE_FOCUSED_ACTION, UMR_TRANSLATE_TEXT_ACTION, UMR_SPEAK_TEXT_ACTION, \
+    UMR_OPEN_ALTERMENU_ACTION, UMR_CLOSE_ALTERMENU_ACTION, UMR_UNDO_TEXT_TRANSLATION_ACTION, \
+    UMR_SEND_SUGGESTION_ACTION, UMR_CHANGE_ORIENTATION_ACTION, UMR_LIKE_ARTICLE_ACTION, \
+    UMR_ARTICLE_CLOSED_ACTION, UMR_ARTICLE_LOST_FOCUS_ACTION
 
 db = zeeguu.db
 
 # Parameter that controls after how much time (in minutes) the session is expired
 READING_SESSION_TIMEOUT = 5
+VERY_FAR_IN_THE_PAST = '2000-01-01T00:00:00'
+VERY_FAR_IN_THE_FUTURE = '9999-12-31T23:59:59'
 
 OPENING_ACTIONS = [
     UMR_OPEN_ARTICLE_ACTION,
@@ -18,15 +23,15 @@ OPENING_ACTIONS = [
     UMR_ARTICLE_FOCUSED_ACTION
 ]
 
-INTERACTION_ACTIONS = ["UMR - TRANSLATE TEXT",
-                       "UMR - SPEAK TEXT",
-                       "UMR - OPEN ALTERMENU",
-                       "UMR - CLOSE ALTERMENU", "UMR - UNDO TEXT TRANSLATION",
-                       "UMR - SEND SUGGESTION", "UMR - CHANGE ORIENTATION"
+INTERACTION_ACTIONS = [UMR_TRANSLATE_TEXT_ACTION,
+                       UMR_SPEAK_TEXT_ACTION,
+                       UMR_OPEN_ALTERMENU_ACTION,
+                       UMR_CLOSE_ALTERMENU_ACTION, UMR_UNDO_TEXT_TRANSLATION_ACTION,
+                       UMR_SEND_SUGGESTION_ACTION, UMR_CHANGE_ORIENTATION_ACTION
                        ]
-CLOSING_ACTIONS = ["UMR - LIKE ARTICLE",
-                   "UMR - ARTICLE CLOSED",
-                   "UMR - ARTICLE LOST FOCUS"
+CLOSING_ACTIONS = [UMR_LIKE_ARTICLE_ACTION,
+                   UMR_ARTICLE_CLOSED_ACTION,
+                   UMR_ARTICLE_LOST_FOCUS_ACTION
                    ]
 
 
@@ -238,14 +243,14 @@ class UserReadingSession(db.Model):
             if active_reading_session:  # If there is an open reading session
                 # If the elapsed time is shorter than the timeout parameter
                 if active_reading_session._is_still_active(current_time):
-                    return active_reading_session._update_last_action_time(db_session, add_grace_time=False,
+                    active_reading_session._update_last_action_time(db_session, add_grace_time=False,
                                                                            current_time=current_time)
                 # When the elapsed time is larger than the reading_session_timeout, 
                 # we add the grace time (which is n extra minutes where n=reading_session_timeout)
                 else:
                     active_reading_session._update_last_action_time(db_session, add_grace_time=True,
                                                                     current_time=current_time)
-                    return active_reading_session._close_reading_session(db_session)
+                return active_reading_session._close_reading_session(db_session)
             else:
                 return None
         else:
@@ -254,8 +259,8 @@ class UserReadingSession(db.Model):
     @classmethod
     def find_by_user(cls,
                      user,
-                     from_date: str = '2000-01-01T00:00:00',
-                     to_date: str = '9999-12-31T23:59:59',
+                     from_date: str = VERY_FAR_IN_THE_PAST,
+                     to_date: str = VERY_FAR_IN_THE_FUTURE,
                      is_active: bool = None):
         """
 
@@ -278,8 +283,8 @@ class UserReadingSession(db.Model):
     @classmethod
     def find_by_cohort(cls,
                        cohort,
-                       from_date: str = '2000-01-01T00:00:00',
-                       to_date: str = '9999-12-31T23:59:59',
+                       from_date: str = VERY_FAR_IN_THE_PAST,
+                       to_date: str = VERY_FAR_IN_THE_FUTURE,
                        is_active: bool = None):
         """
             Get reading sessions by cohort
@@ -299,8 +304,8 @@ class UserReadingSession(db.Model):
     @classmethod
     def find_by_article(cls,
                         article,
-                        from_date: str = '2000-01-01T00:00:00',
-                        to_date: str = '9999-12-31T23:59:59',
+                        from_date: str = VERY_FAR_IN_THE_PAST,
+                        to_date: str = VERY_FAR_IN_THE_FUTURE,
                         is_active: bool = None,
                         cohort: bool = None):
         """

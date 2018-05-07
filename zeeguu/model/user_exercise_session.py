@@ -3,12 +3,14 @@ import zeeguu
 
 from datetime import datetime, timedelta
 from zeeguu.model.user import User
+from zeeguu.model.exercise import Exercise
 
 db = zeeguu.db
 
 # Parameter that controls after how much time (in minutes) the session is expired
 EXERCISE_SESSION_TIMEOUT = 5
-
+VERY_FAR_IN_THE_PAST = '2000-01-01T00:00:00'
+VERY_FAR_IN_THE_FUTURE = '9999-12-31T23:59:59'
 
 class UserExerciseSession(db.Model):
     """
@@ -34,7 +36,7 @@ class UserExerciseSession(db.Model):
     def __init__(self, user_id, current_time=None):
         self.user_id = user_id
         self.is_active = True
-        # Instance variable to override the system datetime, instead of the current server datetime
+        # Instance variable to override the current datetime, instead of using the server datetime
         if current_time is None:
             current_time = datetime.now()
         self.start_time = current_time
@@ -140,38 +142,43 @@ class UserExerciseSession(db.Model):
         return self
 
     @classmethod
-    def update_exercise_session(cls, user_id, db_session, current_time=None):
+    def update_exercise_session(cls, exercise, db_session):
         """
 
             Main callable method that keeps track of the exercise sessions.
 
-            It does:
+            It does: If there is an open session for the user and article and the elapsed time is within the
+            session_timeout range, it updates the session to the current time, otherwise, it closes and creates a new one
 
             Parameters:
-            user_id = user identifier
+            user_exercise = exercise instance
             db_session = database session
 
-            current_time = when this parameter is sent, instead of using the datetime.now() value for the current time
-                        we use the provided value as the system time (only used for filling in historical data)
-
-            returns: The exercise session or None
+            returns: The exercise session or None when no user is found
         """
-        active_exercise_session = cls._find_active_session(user_id, db_session)
+        user_id = exercise.find_user_id(db.session)
+        if user_id:
+            current_time = exercise.time
 
-        if active_exercise_session:  # If there is an active exercise session for the user
-            if active_exercise_session._is_still_active():  # Verify if the session is not expired (according to session timeout)
-                return active_exercise_session._update_last_action_time(db_session)
-            else:  # If the session is expired, close it and create a new one
-                active_exercise_session._close_exercise_session(db_session)
+            
+            active_exercise_session = cls._find_active_session(user_id, db_session)
+
+            if active_exercise_session:  # If there is an active exercise session for the user
+                if active_exercise_session._is_still_active():  # Verify if the session is not expired (according to session timeout)
+                    return active_exercise_session._update_last_action_time(db_session, current_time=current_time)
+                else:  # If the session is expired, close it and create a new one
+                    active_exercise_session._close_exercise_session(db_session)
+                    return cls._create_new_session(db_session, user_id, current_time=current_time)
+            else:
                 return cls._create_new_session(db_session, user_id, current_time=current_time)
         else:
-            return cls._create_new_session(db_session, user_id, current_time=current_time)
+            return None
 
     @classmethod
     def find_by_user(cls,
                      user_id,
-                     from_date: str = '2000-01-01T00:00:00',
-                     to_date: str = '9999-12-31T23:59:59',
+                     from_date: str = VERY_FAR_IN_THE_PAST,
+                     to_date: str = VERY_FAR_IN_THE_FUTURE,
                      is_active: bool = None):
         """
 
@@ -194,8 +201,8 @@ class UserExerciseSession(db.Model):
     @classmethod
     def find_by_cohort(cls,
                        cohort_id,
-                       from_date: str = '2000-01-01T00:00:00',
-                       to_date: str = '9999-12-31T23:59:59',
+                       from_date: str = VERY_FAR_IN_THE_PAST,
+                       to_date: str = VERY_FAR_IN_THE_FUTURE,
                        is_active: bool = None):
         """
             Get exercise sessions by cohort

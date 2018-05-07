@@ -38,7 +38,7 @@ class Exercise(db.Model):
             Parameters:
             user_id = user identifier
 
-            return: list of exercises
+            return: list of exercises sorted by time in ascending order
         """
         from zeeguu.model.bookmark import Bookmark, bookmark_exercise_mapping
         
