@@ -5,11 +5,16 @@ import zeeguu
 
 '''
     Script that loops through all the exercises in the database, and recomputes the history of
-    exercise sessions.
+    exercise sessions. 
 
-    WARNING: Do not run twice or it will inserd duplicated data
+    NOTE: It clears and recreates the table
 '''
+
 db_session = zeeguu.db.session
+
+#Clear table before starting
+UserExerciseSession.query.delete()
+db_session.commit()
 
 data = Exercise.find()
 

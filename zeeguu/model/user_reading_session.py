@@ -58,14 +58,18 @@ class UserReadingSession(db.Model):
 
     is_active = db.Column(db.Boolean)
 
-    def __init__(self, user_id, article_id, start_time=None):
+    def __init__(self, user_id, article_id, current_time=None):
         self.user_id = user_id
         self.article_id = article_id
         self.is_active = True
-        if start_time is None:  # Instance variable to override the system datetime, instead of the current server datetime
-            start_time = datetime.now()
-        self.start_time = start_time
-        self.last_action_time = start_time
+
+        # When we want to emulate an event happening in a particular moment in the past or in the future,
+        #   we can provide the current_time variable to override the datetime.now()
+        if current_time is None:
+            current_time = datetime.now()
+
+        self.start_time = current_time
+        self.last_action_time = current_time
         self.duration = 0
 
     @staticmethod
@@ -73,7 +77,7 @@ class UserReadingSession(db.Model):
         return READING_SESSION_TIMEOUT
 
     @classmethod
-    def _find_active_session(cls, user_id, article_id, db_session):
+    def _find_most_recent_session(cls, user_id, article_id, db_session):
         """
             Queries and returns if there is an open reading session for that user and article
 
@@ -218,7 +222,7 @@ class UserReadingSession(db.Model):
 
             returns: The reading session  or None if none is found
         """
-        active_reading_session = cls._find_active_session(user_id, article_id, db_session)
+        active_reading_session = cls._find_most_recent_session(user_id, article_id, db_session)
 
         # If the event is an opening or interaction type
         if event in OPENING_ACTIONS or event in INTERACTION_ACTIONS:

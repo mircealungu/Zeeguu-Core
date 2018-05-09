@@ -9,6 +9,7 @@ db = zeeguu.db
 
 # Parameter that controls after how much time (in minutes) the session is expired
 EXERCISE_SESSION_TIMEOUT = 5
+
 VERY_FAR_IN_THE_PAST = '2000-01-01T00:00:00'
 VERY_FAR_IN_THE_FUTURE = '9999-12-31T23:59:59'
 
@@ -36,9 +37,12 @@ class UserExerciseSession(db.Model):
     def __init__(self, user_id, current_time=None):
         self.user_id = user_id
         self.is_active = True
-        # Instance variable to override the current datetime, instead of using the server datetime
+
+        # When we want to emulate an event happening in a particular moment in the past or in the future,
+        #   we can provide the current_time variable to override the datetime.now()
         if current_time is None:
             current_time = datetime.now()
+
         self.start_time = current_time
         self.last_action_time = current_time
         self.duration = 0
@@ -48,7 +52,7 @@ class UserExerciseSession(db.Model):
         return EXERCISE_SESSION_TIMEOUT
 
     @classmethod
-    def _find_active_session(cls, user_id, db_session):
+    def _find_most_recent_session(cls, user_id, db_session):
         """
             Queries and returns if there is an open exercise session for that user
 
@@ -70,6 +74,7 @@ class UserExerciseSession(db.Model):
             open_sessions = query.all()
             for exercise_session in open_sessions[:-1]:
                 exercise_session._close_exercise_session(db_session)
+
             return open_sessions[-1]
 
         except sqlalchemy.orm.exc.NoResultFound:
@@ -161,9 +166,9 @@ class UserExerciseSession(db.Model):
             current_time = exercise.time
 
             
-            active_exercise_session = cls._find_active_session(user_id, db_session)
+            active_exercise_session = cls._find_most_recent_session(user_id, db_session)
 
-            if active_exercise_session:  # If there is an active exercise session for the user
+            if active_exercise_session:
                 if active_exercise_session._is_still_active():  # Verify if the session is not expired (according to session timeout)
                     return active_exercise_session._update_last_action_time(db_session, current_time=current_time)
                 else:  # If the session is expired, close it and create a new one

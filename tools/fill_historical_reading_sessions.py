@@ -7,12 +7,16 @@ import zeeguu
     Script that loops through all the exeuser_activity_data actions in the database, and recomputes the history of
     reading sessions.
 
-    WARNING: Do not run twice or it will inserd duplicated data
+    NOTE: It deletes and recreates the table
 '''
 #List of excluded ids that could not be recreated
 EXCLUDED_IDS = [20108]
 
 db_session = zeeguu.db.session
+
+#Clear table before starting
+UserReadingSession.query.delete()
+db_session.commit()
 
 data = UserActivityData.find()
 
