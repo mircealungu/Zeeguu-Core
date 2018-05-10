@@ -166,13 +166,13 @@ class UserExerciseSession(db.Model):
             current_time = exercise.time
 
             
-            active_exercise_session = cls._find_most_recent_session(user_id, db_session)
+            most_recent_exercise_session = cls._find_most_recent_session(user_id, db_session)
 
-            if active_exercise_session:
-                if active_exercise_session._is_still_active():  # Verify if the session is not expired (according to session timeout)
-                    return active_exercise_session._update_last_action_time(db_session, current_time=current_time)
+            if most_recent_exercise_session:
+                if most_recent_exercise_session._is_still_active():  # Verify if the session is not expired (according to session timeout)
+                    return most_recent_exercise_session._update_last_action_time(db_session, current_time=current_time)
                 else:  # If the session is expired, close it and create a new one
-                    active_exercise_session._close_exercise_session(db_session)
+                    most_recent_exercise_session._close_exercise_session(db_session)
                     return cls._create_new_session(db_session, user_id, current_time=current_time)
             else:
                 return cls._create_new_session(db_session, user_id, current_time=current_time)

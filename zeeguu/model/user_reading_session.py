@@ -222,39 +222,39 @@ class UserReadingSession(db.Model):
 
             returns: The reading session  or None if none is found
         """
-        active_reading_session = cls._find_most_recent_session(user_id, article_id, db_session)
+        most_recent_reading_session = cls._find_most_recent_session(user_id, article_id, db_session)
 
         # If the event is an opening or interaction type
         if event in OPENING_ACTIONS or event in INTERACTION_ACTIONS:
-            if not active_reading_session:  # If there is no active reading session
+            if not most_recent_reading_session:  # If there is no active reading session
                 UserReadingSession._close_user_reading_sessions(db_session, user_id)
                 return cls._create_new_session(db_session, user_id, article_id, current_time)
 
             else:  # Is there an active reading session
                 # If the open reading session is still valid (within the reading_session_timeout window)
-                if active_reading_session._is_still_active(current_time):
-                    return active_reading_session._update_last_action_time(db_session, add_grace_time=False,
+                if most_recent_reading_session._is_still_active(current_time):
+                    return most_recent_reading_session._update_last_action_time(db_session, add_grace_time=False,
                                                                            current_time=current_time)
                 # There is an open reading session but the elapsed time is larger than the reading_session_timeout
                 else:
-                    active_reading_session._update_last_action_time(db_session, add_grace_time=True,
+                    most_recent_reading_session._update_last_action_time(db_session, add_grace_time=True,
                                                                     current_time=current_time)
-                    active_reading_session._close_reading_session(db_session)
+                    most_recent_reading_session._close_reading_session(db_session)
                     UserReadingSession._close_user_reading_sessions(db_session, user_id)
                     return cls._create_new_session(db_session, user_id, article_id, current_time)
 
         elif event in CLOSING_ACTIONS:  # If the event is of a closing type
-            if active_reading_session:  # If there is an open reading session
+            if most_recent_reading_session:  # If there is an open reading session
                 # If the elapsed time is shorter than the timeout parameter
-                if active_reading_session._is_still_active(current_time):
-                    active_reading_session._update_last_action_time(db_session, add_grace_time=False,
+                if most_recent_reading_session._is_still_active(current_time):
+                    most_recent_reading_session._update_last_action_time(db_session, add_grace_time=False,
                                                                            current_time=current_time)
                 # When the elapsed time is larger than the reading_session_timeout, 
                 # we add the grace time (which is n extra minutes where n=reading_session_timeout)
                 else:
-                    active_reading_session._update_last_action_time(db_session, add_grace_time=True,
+                    most_recent_reading_session._update_last_action_time(db_session, add_grace_time=True,
                                                                     current_time=current_time)
-                return active_reading_session._close_reading_session(db_session)
+                return most_recent_reading_session._close_reading_session(db_session)
             else:
                 return None
         else:
