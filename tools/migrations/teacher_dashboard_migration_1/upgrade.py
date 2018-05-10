@@ -67,7 +67,7 @@ def upgrade_cohort_db(cursor, database):
         rows = cursor.fetchall()
         for row in rows:
             """
-            if no the class has no inv_code, set the name as same as inv_code
+            if no class has inv_code, set the name as same as inv_code
             """
             if row[2] is None:
                 q = "UPDATE cohort SET inv_code = %s WHERE id = %s" 
