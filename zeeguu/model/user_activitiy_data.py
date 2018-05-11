@@ -11,6 +11,9 @@ from zeeguu.model.user_reading_session import UserReadingSession
 
 db = zeeguu.db
 
+def _is_valid_url(a: str):
+    return urlparse(a).netloc is not ''
+
 
 class UserActivityData(db.Model):
     __table_args__ = dict(mysql_collate="utf8_bin")
@@ -126,8 +129,8 @@ class UserActivityData(db.Model):
             returns: url if found or None otherwise
         """
 
-        def _is_valid_url(a: str):
-            return urlparse(a).netloc is not ''
+        if _is_valid_url(self.value):
+            return self.value.split('articleURL=')[-1]
 
         if self.extra_data and self.extra_data != '{}' and self.extra_data != 'null':
             try:
@@ -137,11 +140,9 @@ class UserActivityData(db.Model):
                     url = extra_event_data['articleURL']
                 elif 'url' in extra_event_data:
                     url = extra_event_data['url']
-                elif _is_valid_url(self.value):
-                    url = self.value
                 else:  # There is no url
                     return None
-                return url
+                return url.split('articleURL=')[-1]
 
             except ValueError:  # Some json strings are truncated, therefore cannot be parsed correctly and throw an exception
                 return None
@@ -160,11 +161,15 @@ class UserActivityData(db.Model):
         """
         try:
             url = self._find_url_in_extra_data()
+
             if url:  # If url exists
                 return Article.find_or_create(db_session, url).id
             else:  # If url is empty
                 return None
-        except:  # When the article cannot be downloaded anymore, either because the article is no longer available or the newspaper.parser() fails
+        except Exception as e:  # When the article cannot be downloaded anymore, either because the article is no longer available or the newspaper.parser() fails
+            import traceback
+            traceback.print_exc()
+
             return None
 
     @classmethod
@@ -174,6 +179,7 @@ class UserActivityData(db.Model):
 
         event = data['event']
         value = data['value']
+
         extra_data = data['extra_data']
 
         zeeguu.log(f'{event} value[:42]: {value[:42]} extra_data[:42]: {extra_data[:42]}')
