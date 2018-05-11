@@ -186,7 +186,7 @@ class UserActivityData(db.Model):
 
         UserReadingSession.update_reading_session(session, 
                                                     event, 
-                                                    user, 
+                                                    user.id,
                                                     new_entry.find_or_create_article_id(session),
                                                     current_time=time
                                                 )
