@@ -87,11 +87,6 @@ class Bookmark(db.Model):
     def add_new_exercise(self, exercise):
         self.exercise_log.append(exercise)
 
-        # Update the exercise session
-        from zeeguu.model import UserExerciseSession
-        UserExerciseSession.update_exercise_session(exercise, db.session)
-
-
     def translations_rendered_as_text(self):
         return self.translation.word
 
