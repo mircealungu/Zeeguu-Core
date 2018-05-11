@@ -160,16 +160,18 @@ class UserActivityData(db.Model):
         """
         try:
             url = self._find_url_in_extra_data()
-            if url: #If url exists
+            if url:  # If url exists
                 return Article.find_or_create(db_session, url).id
-            else: #If url is empty
+            else:  # If url is empty
                 return None
         except:  # When the article cannot be downloaded anymore, either because the article is no longer available or the newspaper.parser() fails
             return None
 
     @classmethod
     def create_from_post_data(cls, session, data, user):
-        time = data['time']
+        _time = data['time']
+        time = datetime.strptime(_time, JSON_TIME_FORMAT)
+
         event = data['event']
         value = data['value']
         extra_data = data['extra_data']
@@ -177,16 +179,16 @@ class UserActivityData(db.Model):
         zeeguu.log(f'{event} value[:42]: {value[:42]} extra_data[:42]: {extra_data[:42]}')
 
         new_entry = UserActivityData(user,
-                                     datetime.strptime(time, JSON_TIME_FORMAT),
+                                     time,
                                      event,
                                      value,
                                      extra_data)
         session.add(new_entry)
         session.commit()
 
-        UserReadingSession.update_reading_session(session, 
-                                                    event, 
-                                                    user.id,
-                                                    new_entry.find_or_create_article_id(session),
-                                                    current_time=time
-                                                )
+        UserReadingSession.update_reading_session(session,
+                                                  event,
+                                                  user.id,
+                                                  new_entry.find_or_create_article_id(session),
+                                                  current_time=time
+                                                  )
