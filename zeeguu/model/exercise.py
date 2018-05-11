@@ -5,7 +5,6 @@ from zeeguu.model.exercise_source import ExerciseSource
 
 db = zeeguu.db
 
-
 class Exercise(db.Model):
     __table_args__ = {'mysql_collate': 'utf8_bin'}
     __tablename__ = 'exercise'
@@ -29,3 +28,44 @@ class Exercise(db.Model):
 
     def __str__(self):
         return f'{self.source.source} ' + str(self.time) + f' {self.outcome.outcome}'
+
+    @classmethod
+    def find(cls,
+             user_id = None):
+        """
+            Find all the exercises for a particular or for all users 
+
+            Parameters:
+            user_id = user identifier
+
+            return: list of exercises sorted by time in ascending order
+        """
+        from zeeguu.model.bookmark import Bookmark, bookmark_exercise_mapping
+        
+        query = cls.query
+        if user_id is not None:
+            query = query.join(bookmark_exercise_mapping).join(Bookmark).filter(Bookmark.user_id == user_id)
+        query = query.order_by('time')
+
+        return query.all()
+
+    def find_user_id(self, db_session):
+        """
+            Finds related user_id corresponding to the exercise
+
+            Parameters:
+            db_session = database session
+
+            returns: user_id or None when none is found
+        """
+        from zeeguu.model.bookmark import Bookmark, bookmark_exercise_mapping
+        import sqlalchemy
+
+        query = db_session.query(Exercise, Bookmark).join(bookmark_exercise_mapping, Bookmark)
+        query = query.filter(Exercise.id == self.id)
+
+        try:
+            related_data = query.one()
+            return related_data.Bookmark.user_id
+        except sqlalchemy.orm.exc.NoResultFound:
+            return None
