@@ -197,6 +197,8 @@ class UserReadingSession(db.Model):
         for reading_session in reading_sessions:
             time_diff = reading_session.last_action_time - reading_session.start_time
             #If the duration is zero, we delete the session
+            #This can happen when the user opens a session and does nothing afterwards, 
+            # so the timeout closes the session with a duration of zero
             if time_diff.total_seconds() == 0:
                 db_session.delete(reading_session)
             else:
@@ -257,7 +259,8 @@ class UserReadingSession(db.Model):
                     most_recent_reading_session._update_last_action_time(db_session, add_grace_time=True,
                                                                     current_time=current_time)
                 return most_recent_reading_session._close_reading_session(db_session)
-            else: #If there is no open reading session for the specified article, we close all the articles from the user
+            else: #If there is no open reading session for the specified article, 
+                    #we close all the articles from the user
                 UserReadingSession._close_user_reading_sessions(db_session, user_id)
                 return None
         else:
