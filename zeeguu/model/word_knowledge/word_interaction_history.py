@@ -6,7 +6,7 @@ import zeeguu
 
 from sqlalchemy import Column, Integer, UnicodeText
 
-from zeeguu.model import User, UserWord
+from zeeguu.model import User, UserWord, Language
 
 db = zeeguu.db
 
@@ -32,26 +32,34 @@ class WordInteractionEvent(object):
 
 
 class WordInteractionHistory(db.Model):
-    __table_args__ = {'mysql_collate': 'utf8_bin'}
+    __table_args__ = dict(mysql_collate='utf8_bin')
+    __tablename__ = 'word_interaction_history'
 
-    id = Column(Integer, primary_key=True)
 
-    user_id = db.Column(db.Integer, db.ForeignKey(User.id))
-    user = db.relationship(User)
+    id = db.Column(Integer, primary_key=True)
+
+    user_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+    user = db.relationship(User, primaryjoin=user_id == User.id)
 
     word_id = db.Column(db.Integer, db.ForeignKey(UserWord.id), nullable=False)
     word = db.relationship(UserWord, primaryjoin=word_id == UserWord.id)
 
+    language = None
+
     # should be between 0 and 100
     known_probability = db.Column(db.Integer, db.ForeignKey(User.id))
 
-    # the interaction history stored as string
-    interaction_history_json = Column(UnicodeText())
+    interaction_history = []
 
-    def __init__(self):
+    # the interaction history stored as string
+    interaction_history_json = db.Column(UnicodeText())
+
+    def __init__(self, user:User, word: UserWord):
         # never work with the self._interaction_history itself
         # always, work with the method interaction_history()
-        self.interaction_history = None
+        self.user = user
+        self.word = word
+        self.interaction_history = []
 
     def add_event(self, event_type, timestamp):
         """
@@ -65,7 +73,7 @@ class WordInteractionHistory(db.Model):
         seconds_since_epoch = int(timestamp.strftime("%s"))
 
         self.interaction_history.insert(0, WordInteractionEvent(event_type, seconds_since_epoch))
-        self.interaction_history = self.interaction_history()[0:MAX_EVENT_HISTORY_LENGTH]
+        self.interaction_history = self.interaction_history[0:MAX_EVENT_HISTORY_LENGTH]
 
     def reify_interaction_history(self):
         """
@@ -83,6 +91,7 @@ class WordInteractionHistory(db.Model):
             after this the interaction_history_json will be the result of converting  interaction_history to json
         :return:
         """
+        #self.interaction_history_json = "None"
         self.interaction_history_json = json.dumps([e.to_json() for e in self.interaction_history])
         db_session.add(self)
         db_session.commit()
@@ -106,6 +115,26 @@ class WordInteractionHistory(db.Model):
 
         except NoResultFound:
             return None
+
+    @classmethod
+    def find_or_create(cls, user: User, word: UserWord):
+        """
+
+            get the data from db & convert the string  rep of the history
+            to the object
+
+        :param user:
+        :param word:
+        :return:
+        """
+
+        try:
+            history = cls.query.filter_by(user=user, word=word).one()
+            history.reify_interaction_history()
+            return history
+
+        except NoResultFound:
+            return cls(user, word)
 
     @classmethod
     def find_all_word_histories_for_user(cls, user: User):
