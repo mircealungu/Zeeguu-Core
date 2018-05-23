@@ -53,7 +53,7 @@ class LocalizedTopic(db.Model):
     def all_articles(self):
         from zeeguu.model import Article
 
-        return Article.query.filter(Article.topics.any(id=self.id)).all()
+        return Article.query.filter(Article.topics.any(id=self.topic_id)).all()
 
     @classmethod
     def get_topics_by_language(cls, language):
@@ -61,8 +61,8 @@ class LocalizedTopic(db.Model):
 
     @classmethod
     def find(cls, name: str, language: 'Language'):
-
         try:
             return (cls.query.filter(and_(cls.name == name, cls.language == language))).one()
-        except:
+        except Exception as e:
+            print(e)
             return None

@@ -12,6 +12,8 @@ CREATE TABLE user_language (
 	id INT(11) AUTO_INCREMENT PRIMARY KEY,
 	user_id INT(11),
 	language_id INT(11),
+	INDEX u_id (user_id),
+	INDEX l_id (language_id),
 	FOREIGN KEY (user_id) REFERENCES user(id),
 	FOREIGN KEY (language_id) REFERENCES language(id) 
 ); 
@@ -32,6 +34,8 @@ CREATE TABLE localized_topic (
 	language_id INT(11),
 	topic_translated VARCHAR(30) NOT NULL,
 	keywords  VARCHAR(1024) NOT NULL,
+	INDEX t_id (topic_id),
+	INDEX l_id (language_id),
 	FOREIGN KEY (topic_id) REFERENCES topic(id),
 	FOREIGN KEY (language_id) REFERENCES language(id)
 );
@@ -42,6 +46,8 @@ CREATE TABLE topic_subscription (
 	id INT(11) AUTO_INCREMENT PRIMARY KEY,
 	user_id INT(11),
 	topic_id INT(11),
+	INDEX t_id (topic_id),
+	INDEX u_id (user_id),
 	FOREIGN KEY (user_id) REFERENCES user(id),
 	FOREIGN KEY (topic_id) REFERENCES topic(id)
 );
@@ -52,6 +58,8 @@ CREATE TABLE topic_filter (
 	id INT(11) AUTO_INCREMENT PRIMARY KEY,
 	user_id INT(11),
 	topic_id INT(11),
+	INDEX t_id (topic_id),
+	INDEX u_id (user_id),
 	FOREIGN KEY (user_id) REFERENCES user(id),
 	FOREIGN KEY (topic_id) REFERENCES topic(id)
 );
@@ -62,6 +70,8 @@ CREATE TABLE article_topic_map (
 	id INT(11) AUTO_INCREMENT PRIMARY KEY,
 	article_id INT(11),
 	topic_id INT(11),
+	INDEX a_id (article_id),
+	INDEX t_id (topic_id),
 	FOREIGN KEY (article_id) REFERENCES article(id),
 	FOREIGN KEY (topic_id) REFERENCES topic(id)
 );
@@ -78,6 +88,8 @@ CREATE TABLE article_search_map (
 	id INT(11) AUTO_INCREMENT PRIMARY KEY,
 	article_id INT(11),
 	search_id INT(11),
+	INDEX a_id (article_id),
+	INDEX s_id (search_id),
 	FOREIGN KEY (article_id) REFERENCES article(id),
 	FOREIGN KEY (search_id) REFERENCES search(id)
 );
@@ -88,6 +100,8 @@ CREATE TABLE search_subscription (
 	id INT(11) AUTO_INCREMENT PRIMARY KEY,
 	user_id INT(11),
 	search_id INT(11),
+	INDEX u_id (user_id),
+	INDEX s_id (search_id),
 	FOREIGN KEY (user_id) REFERENCES user(id),
 	FOREIGN KEY (search_id) REFERENCES search(id)
 );
@@ -98,6 +112,8 @@ CREATE TABLE search_filter (
 	id INT(11) AUTO_INCREMENT PRIMARY KEY,
 	user_id INT(11),
 	search_id INT(11),
+	INDEX u_id (user_id),
+	INDEX s_id (search_id),
 	FOREIGN KEY (user_id) REFERENCES user(id),
 	FOREIGN KEY (search_id) REFERENCES search(id)
 );
@@ -105,7 +121,8 @@ CREATE TABLE search_filter (
 /** article_word(id, word) */
 CREATE TABLE article_word (
 	id INT(11) AUTO_INCREMENT PRIMARY KEY,
-	word VARCHAR(30)
+	word VARCHAR(30),
+		INDEX article_word_index (word)
 );
 
 /** article_word_map(article_id, word_id)
@@ -114,6 +131,8 @@ CREATE TABLE article_word (
 CREATE TABLE article_word_map (
 	article_id INT(11),
 	word_id INT(11),
+	INDEX a_id (article_id),
+	INDEX w_id (word_id),
 	FOREIGN KEY (article_id) REFERENCES article(id),
 	FOREIGN KEY (word_id) REFERENCES article_word(id)
 );

@@ -1,12 +1,14 @@
 """
 
- Recommends a mix of articles from all the sources
+ Recommends a mix of articles from all the languages,
+ sources, topics, filters, and searches.
 
 
 """
 from zeeguu import log
-from zeeguu.model import RSSFeedRegistration, UserArticle, Article, User, Bookmark, Language, \
-    UserLanguage, TopicSubscription, TopicFilter, SearchSubscription, SearchFilter, article_word
+import time
+from zeeguu.model import RSSFeedRegistration, UserArticle, Article, User, Bookmark, \
+    UserLanguage, TopicSubscription, TopicFilter, SearchSubscription, SearchFilter, ArticleWord
 
 
 def user_article_info(user: User, article: Article, with_content=False):
@@ -40,64 +42,29 @@ def article_recommendations_for_user(user, count):
     :return:
 
     """
-
-    user_topics = TopicSubscription.topics_for_user(user)
-    user_filters = TopicFilter.topics_for_user(user)
-    user_searches = SearchSubscription.search_subscriptions_for_user(user)
-    user_search_filters = SearchFilter.search_filters_for_user(user)
-
-    topic_articles = []
-    if len(user_topics) > 0:
-        for sub in user_topics:
-            topic = sub.topic
-            new_articles = topic.all_articles()
-            topic_articles.extend(new_articles)
-
-    filter_articles = []
-    if len(user_filters) > 0:
-        for filt in user_filters:
-            topic = filt.topic
-            new_articles = topic.all_articles()
-            filter_articles.extend(new_articles)
-
-    search_articles = []
-    if len(user_searches) > 0:
-        for user_search in user_searches:
-            search = user_search.search
-            new_articles = search.all_articles()
-            search_articles.extend(new_articles)
-
-    search_filter_articles = []
-    if len(user_search_filters) > 0:
-        for user_search_filter in user_search_filters:
-            search = user_search_filter.search
-            new_articles = search.all_articles()
-            search_filter_articles.extend(new_articles)
-
-    filter_articles.extend(search_filter_articles)
-
-    if len(topic_articles) > 0:
-        if len(search_articles) > 0:
-            all_filter_articles = [article for article in topic_articles if article in search_articles]
-        else:
-            all_filter_articles = topic_articles
-    else:
-        all_filter_articles = search_articles
+    start_time = time.time()
+    subscribed_articles = get_subscribed_articles_for_user(user)
+    filter_articles = get_filtered_articles_for_user(user)
     all_articles = get_user_articles_sources_languages(user)
 
-    if len(all_filter_articles) > 0:
-        filtered_articles = [article for article in all_filter_articles if article in all_articles]
-    else:
-        filtered_articles = all_articles
+    print(f'Getting all articles took {time.time()-start_time} seconds')
 
-    final = [article for article in filtered_articles if article not in filter_articles]
+    # Get only the articles for the topics and searches subscribed
+    if len(subscribed_articles) > 0:
+        all_articles = [article for article in subscribed_articles if article in all_articles]
 
+    print(f'Subscribing all articles took {time.time()-start_time} seconds')
+    # If there are any filters, filter out all these articles
+    if len(filter_articles) > 0:
+        all_articles = [article for article in all_articles if article not in filter_articles]
+
+    print(f'Filtering all articles took {time.time()-start_time} seconds')
     log('Sorting articles...')
-    #final.sort(key=lambda each: each.published_time, reverse=True)
-    final.sort(key=lambda each: each.content, reverse=False)
+    all_articles.sort(key=lambda each: each.content, reverse=False)
     log('Sorted articles')
 
-    return [user_article_info(user, article) for article in final[:count]]
+    print(f'Sorting all articles took {time.time()-start_time} seconds')
+    return [user_article_info(user, article) for article in all_articles[:count]]
 
 
 def article_search_for_user(user, count, search):
@@ -115,49 +82,56 @@ def article_search_for_user(user, count, search):
     # Sort them, so the first 'count' articles will be the most recent ones
     all_articles.sort(key=lambda each: each.published_time)
 
-    # For now we just look in the url and title, url being first, title being second.
-    search_articles = article_word.get_articles_for_word(search)
+    # We are just using the first word of the user's search now
+    search_term = search.split()[0]
+    search_articles = ArticleWord.get_articles_for_word(search_term)
 
     final = [article for article in search_articles if article in all_articles]
     return [user_article_info(user, article) for article in final[:count]]
 
 
-def search_render_articles(user, count, search):
+def get_filtered_articles_for_user(user):
 
-    all_articles = get_user_articles_sources_languages(user)
-    # Sort them, so the first 'count' articles will be the most recent ones
-    all_articles.sort(key=lambda each: each.published_time)
+    user_filters = TopicFilter.topics_for_user(user)
+    user_search_filters = SearchFilter.search_filters_for_user(user)
 
-    search_filtered_articles = []
-    log(f'Getting articles with {search} in url')
-    counter = 0
-    for article in all_articles:
-        if search in article.url.as_string() or search in article.title:
-            search_filtered_articles.append(article)
-            counter += 1
-        if counter > count:
-            break
+    filter_articles = []
+    if len(user_filters) > 0:
+        for filt in user_filters:
+            topic = filt.topic
+            new_articles = topic.all_articles()
+            filter_articles.extend(new_articles)
 
-    return [user_article_info(user, article) for article in search_filtered_articles[:count]]
+    if len(user_search_filters) > 0:
+        for user_search_filter in user_search_filters:
+            search = user_search_filter.search.keywords
+            search_term = search.split()[0]
+            new_articles = ArticleWord.get_articles_for_word(search_term)
+            filter_articles.extend(new_articles)
+
+    return filter_articles
 
 
-def filter_render_articles(user, count, search):
+def get_subscribed_articles_for_user(user):
 
-    all_articles = get_user_articles_sources_languages(user)
-    # Sort them, so the first 'count' articles will be the most recent ones
-    all_articles.sort(key=lambda each: each.published_time)
+    user_topics = TopicSubscription.topics_for_user(user)
+    user_searches = SearchSubscription.search_subscriptions_for_user(user)
 
-    search_filtered_articles = []
-    log(f'Getting articles with {search} in url')
-    counter = 0
-    for article in all_articles:
-        if search not in article.url.as_string() and search not in article.title:
-            search_filtered_articles.append(article)
-            counter += 1
-        if counter > count:
-            break
+    subscribed_articles = []
+    if len(user_topics) > 0:
+        for sub in user_topics:
+            topic = sub.topic
+            new_articles = topic.all_articles()
+            subscribed_articles.extend(new_articles)
 
-    return [user_article_info(user, article) for article in search_filtered_articles[:count]]
+    if len(user_searches) > 0:
+        for user_search in user_searches:
+            search = user_search.search.keywords
+            search_term = search.split()[0]
+            new_articles = ArticleWord.get_articles_for_word(search_term)
+            subscribed_articles.extend(new_articles)
+
+    return subscribed_articles
 
 
 def get_user_articles_sources_languages(user):

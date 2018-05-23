@@ -45,28 +45,10 @@ class Search(db.Model):
         return Article.query.filter(Article.searches.any(id=self.id)).all()
 
     @classmethod
-    def tag_articles(cls, articles, session, search, keywords):
-        """
-            This function is used, as doing the tagging
-            in the find_or_create function would result in a
-            15 second time until returned, which is extremely
-            un-user-friendly.
-
-        """
-        for article in articles:
-            if keywords in article.title or keywords in article.url.as_string():
-                article.add_search(search)
-            session.add(article)
-        session.commit()
-
-    @classmethod
-    def find_or_create(cls, session, keywords, user):
+    def find_or_create(cls, session, keywords):
         new = cls(keywords)
         session.add(new)
         session.commit()
-        from zeeguu.model.article import Article
-        articles = Article.query.all()
-        cls.tag_articles(articles, session, new, keywords)
         return new
 
     @classmethod
