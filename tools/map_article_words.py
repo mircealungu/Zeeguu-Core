@@ -1,3 +1,16 @@
+#!/usr/bin/env python
+
+
+"""
+
+    Script that goes through all the articles in the database,
+    gets all the words from an article title and url, and
+    finally puts these words in a separate table with a map
+    from words to articles.
+
+
+"""
+
 import zeeguu
 from zeeguu.model.article import Article
 from zeeguu.model.article_word import ArticleWord
@@ -45,6 +58,7 @@ for article in articles:
         else:
             article_word = ArticleWord.find_or_create(session, word)
             article_word.add_article(article)
+            session.add(article_word)
         word_count += 1
         if word_count % 1000 == 0:
             print("another 1000 words added")
@@ -52,6 +66,7 @@ for article in articles:
     article_count += 1
     if article_count % 1000 == 0:
         print("another 1000 articles done and committed")
+        session.commit()
 
 ending_time = time.time()
 print(f'In a total of {ending_time - starting_time} seconds :')

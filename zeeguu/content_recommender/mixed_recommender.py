@@ -91,7 +91,14 @@ def article_search_for_user(user, count, search):
 
 
 def get_filtered_articles_for_user(user):
+    """
 
+    This method gets all topic and search filters for a user.
+    It then returns all the articles that are associated with these.
+    :param user:
+    :return:
+
+    """
     user_filters = TopicFilter.topics_for_user(user)
     user_search_filters = SearchFilter.search_filters_for_user(user)
 
@@ -113,7 +120,15 @@ def get_filtered_articles_for_user(user):
 
 
 def get_subscribed_articles_for_user(user):
+    """
 
+    This method gets all the topic and search subscriptions for a user.
+    It then returns all the articles that are associated with these.
+
+    :param user:
+    :return:
+
+    """
     user_topics = TopicSubscription.topics_for_user(user)
     user_searches = SearchSubscription.search_subscriptions_for_user(user)
 
@@ -143,6 +158,7 @@ def get_user_articles_sources_languages(user):
 
     :param user: the user for which the articles should be fetched
     :return: a list of articles based on the parameters
+
     """
 
     user_sources = RSSFeedRegistration.feeds_for_user(user)

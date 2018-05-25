@@ -82,18 +82,6 @@ CREATE TABLE search (
 	keywords VARCHAR(100)
 );
 
-/** article_search_map(id,article_id,topic_id)
-		foreign keys for article_id and topic_id */
-CREATE TABLE article_search_map (
-	id INT(11) AUTO_INCREMENT PRIMARY KEY,
-	article_id INT(11),
-	search_id INT(11),
-	INDEX a_id (article_id),
-	INDEX s_id (search_id),
-	FOREIGN KEY (article_id) REFERENCES article(id),
-	FOREIGN KEY (search_id) REFERENCES search(id)
-);
-
 /** search_subscription(id,user_id,search)
 		foreign key for user_id */
 CREATE TABLE search_subscription (
