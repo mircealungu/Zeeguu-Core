@@ -55,11 +55,5 @@ class Topic(db.Model):
             return None
 
     @classmethod
-    def find_interesting_topics(cls, user):
-        # TODO: use user data to find 'interesting topics': not followed, not filtered.
-        return Topic.query.all()
-
-    @classmethod
-    def find_interesting_filters(cls, user):
-        # TODO: use user data to find 'interesting topics': not followed, not filtered.
+    def get_all_topics(cls):
         return Topic.query.all()
