@@ -75,6 +75,9 @@ class WordInteractionHistory(db.Model):
         self.interaction_history.insert(0, WordInteractionEvent(event_type, seconds_since_epoch))
         self.interaction_history = self.interaction_history[0:MAX_EVENT_HISTORY_LENGTH]
 
+    def time_exists(self, timestamp):
+        return int(timestamp.strftime("%s")) in [ih.seconds_since_epoch for ih in self.interaction_history]
+
     def reify_interaction_history(self):
         """
 

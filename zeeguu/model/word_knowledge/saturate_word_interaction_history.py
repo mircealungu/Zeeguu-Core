@@ -2,7 +2,7 @@ from datetime import datetime
 
 import zeeguu
 from zeeguu import model
-from zeeguu.model import User, RSSFeed, Url, Article, DomainName, Bookmark, UserArticle, Text, UserWord
+from zeeguu.model import User, RSSFeed, Url, Article, DomainName, Bookmark, UserArticle, Text, UserWord, ExerciseBasedProbability
 from nltk import word_tokenize
 from zeeguu.model.word_knowledge.word_interaction_history import WordInteractionHistory, WordInteractionEvent
 
@@ -32,29 +32,44 @@ for ua in UserArticle.query.all():
 
 
 
-    #additional checks whether article is read
+    #todo: additional checks whether article is read
 
+    # reduce bookmarks to unique words and earliest translations
+    bookmarked_words = dict()
+    for bm in bookmarks:
+        word = bm.origin.word.lower()
+        if word not in bookmarked_words or bookmarked_words[word] > bm.time:
+            bookmarked_words[word] = bm.time
 
+    # add Interaction event
+    for word, time in bookmarked_words.items():
+        userWord = UserWord.find_or_create(session, word, ua.article.language)
+        wih = WordInteractionHistory.find_or_create(user, userWord)
+        if not wih.time_exists(time):
+            wih.add_event(WordInteractionEvent.CLICKED, time)
+            wih.save_to_db(session)
 
-    for w in unique_words:
+    # all other unique words are stored as NOT_CLICKED
+    for w in unique_words.difference(bookmarked_words.keys()):
+
         userWord = UserWord.find_or_create(session, w, ua.article.language)
+
         wih = WordInteractionHistory.find_or_create(user, userWord)
 
-        bookmarked = False
-        for bm in bookmarks:
-            if bm.origin.word.lower() == w:
-                wih.add_event(WordInteractionEvent.CLICKED, bm.time)
-                bookmarked = True
-                break
-
-        if not bookmarked:
+        if not wih.time_exists(ua.opened):
             wih.add_event(WordInteractionEvent.NOT_CLICKED, ua.opened)
+            wih.save_to_db(session)
 
+    # words encountered in exercises
+    for ebp in ExerciseBasedProbability.query.filter(ExerciseBasedProbability.user == user).all():
+        userWord = ebp.user_word
+        wih = WordInteractionHistory.find_or_create(user, userWord)
+        # todo: need timestamp here
+        break
+        if not wih.time_exists(ua.opened):
 
-
-
-
-        wih.save_to_db(session)
+            wih.add_event(WordInteractionEvent.NOT_CLICKED, timestamp)
+            wih.save_to_db()
 
 
 
