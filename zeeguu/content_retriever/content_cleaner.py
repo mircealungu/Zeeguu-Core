@@ -13,8 +13,6 @@ def cleanup_non_content_bits(text: str):
     """
     new_text = text
 
-    new_text = text.replace("\nAdvertisement\n", "")
-
     new_text = new_text.replace("\nAdvertisement\n", "")
 
     new_text = new_text.replace("\ntrue\n", "")
