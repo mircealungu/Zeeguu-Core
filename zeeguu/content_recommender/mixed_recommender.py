@@ -42,7 +42,6 @@ def article_recommendations_for_user(user, count):
     :return:
 
     """
-    start_time = time.time()
     subscribed_articles = get_subscribed_articles_for_user(user)
     filter_articles = get_filtered_articles_for_user(user)
     all_articles = get_user_articles_sources_languages(user)
@@ -157,7 +156,7 @@ def get_user_articles_sources_languages(user):
     """
 
     user_sources = RSSFeedRegistration.feeds_for_user(user)
-    user_languages = UserLanguage.get_all_user_languages(user)
+    user_languages = UserLanguage.get_all_reading_languages(user)
     all_articles = []
 
     # If there are sources, get the articles from the sources

@@ -1,8 +1,6 @@
 import sqlalchemy
-from sqlalchemy import Column, Integer, ForeignKey
+from sqlalchemy import Column, Integer, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
-from sqlalchemy.orm.exc import NoResultFound
-from datetime import time
 
 from zeeguu.model import User
 
@@ -21,23 +19,30 @@ class UserLanguage(db.Model):
 
     from zeeguu.model.language import Language
 
-    language_id = Column(db.Integer, ForeignKey(Language.id))
+    language_id = Column(Integer, ForeignKey(Language.id))
     language = relationship(Language)
+
+    declared_level = Column(Integer)
+    inferred_level = Column(Integer)
+
+    reading_news = Column(Boolean)
+    doing_exercises = Column(Boolean)
 
     user_main_learned_language = User.learned_language
 
-    def __init__(self, user, language):
+    def __init__(self, user, language, declared_level=0, inferred_level=0, reading_news=False, doing_exercises=False):
         self.user = user
         self.language = language
+        self.declared_level = declared_level
+        self.inferred_level = inferred_level
+        self.reading_news = reading_news
+        self.doing_exercises = doing_exercises
 
     def get(self):
         return self.value
 
     def __str__(self):
         return f'User language (uid: {self.user_id}, language:"{self.Language}")'
-
-    # Specific Getter / Setter Methods below
-    # --------------------------------------
 
     @classmethod
     def find_or_create(cls, session, user, language):
@@ -51,6 +56,12 @@ class UserLanguage(db.Model):
             session.commit()
             return new
 
+    def set_reading_news(self):
+        self.reading_news = True
+
+    def stop_reading_news(self):
+        self.reading_news = False
+
     @classmethod
     def with_language_id(cls, i, user):
         return (cls.query.filter(cls.user == user)
@@ -58,7 +69,7 @@ class UserLanguage(db.Model):
                 .one())
 
     @classmethod
-    def get_all_user_languages(cls, user: User):
+    def get_all_user_languages(cls, user):
         user_main_learned_language = user.learned_language
         user_languages = [language_id.language for language_id in cls.query.filter(cls.user == user).all()]
 
@@ -66,3 +77,9 @@ class UserLanguage(db.Model):
             user_languages.append(user_main_learned_language)
 
         return user_languages
+
+    @classmethod
+    def get_all_reading_languages(cls, user):
+        result = cls.query.filter(cls.user == user).filter(cls.reading_news==True).all()
+
+        return [language_id.language for language_id in result]
