@@ -210,6 +210,9 @@ class Bookmark(db.Model):
 
     def add_new_exercise_result(self, exercise_source, exercise_outcome,
                                 exercise_solving_speed):
+
+        from .user_exercise_session import UserExerciseSession
+        
         new_source = ExerciseSource.query.filter_by(
             source=exercise_source.source
         ).first()
@@ -220,6 +223,7 @@ class Bookmark(db.Model):
                             datetime.now())
         self.add_new_exercise(exercise)
         db.session.add(exercise)
+        
 
     def split_words_from_context(self):
 

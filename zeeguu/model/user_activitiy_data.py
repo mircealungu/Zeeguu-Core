@@ -1,10 +1,18 @@
+import json
 from datetime import datetime
+from urllib.parse import urlparse
+
 import zeeguu
+from zeeguu.model import Article
 
 from zeeguu.model.user import User
 from zeeguu.constants import JSON_TIME_FORMAT
+from zeeguu.model.user_reading_session import UserReadingSession
 
 db = zeeguu.db
+
+def _is_valid_url(a: str):
+    return urlparse(a).netloc is not ''
 
 
 class UserActivityData(db.Model):
@@ -109,19 +117,85 @@ class UserActivityData(db.Model):
         except:
             return None
 
+    def find_url_in_extra_data(self):
+
+        """
+            DB structure is a mess!
+            There is no convention where the url associated with an event is.
+            Thu we need to look for it in different places
+
+            NOTE: This can be solved by creating a new column called url and write the url only there
+
+            returns: url if found or None otherwise
+        """
+
+        if _is_valid_url(self.value):
+            return self.value.split('articleURL=')[-1]
+
+        if self.extra_data and self.extra_data != '{}' and self.extra_data != 'null':
+            try:
+                extra_event_data = json.loads(self.extra_data)
+
+                if 'articleURL' in extra_event_data:
+                    url = extra_event_data['articleURL']
+                elif 'url' in extra_event_data:
+                    url = extra_event_data['url']
+                else:  # There is no url
+                    return None
+                return url.split('articleURL=')[-1]
+
+            except:  # Some json strings are truncated and some other times extra_event_data is an int
+                # therefore cannot be parsed correctly and throw an exception
+                return None
+        else:  # The extra_data field is empty
+            return None
+
+    def find_or_create_article_id(self, db_session):
+        """
+            Finds or creates an article_id
+
+            return: article ID or NONE
+
+            NOTE: When the article cannot be downloaded anymore, 
+            either because the article is no longer available or the newspaper.parser() fails
+
+        """
+        try:
+            url = self.find_url_in_extra_data()
+
+            if url:  # If url exists
+                return Article.find_or_create(db_session, url).id
+            else:  # If url is empty
+                return None
+        except Exception as e:  # When the article cannot be downloaded anymore, either because the article is no longer available or the newspaper.parser() fails
+            import traceback
+            traceback.print_exc()
+
+            return None
+
     @classmethod
     def create_from_post_data(cls, session, data, user):
-        time = data['time']
+        _time = data['time']
+        time = datetime.strptime(_time, JSON_TIME_FORMAT)
+
         event = data['event']
         value = data['value']
+
         extra_data = data['extra_data']
 
         zeeguu.log(f'{event} value[:42]: {value[:42]} extra_data[:42]: {extra_data[:42]}')
 
         new_entry = UserActivityData(user,
-                                     datetime.strptime(time, JSON_TIME_FORMAT),
+                                     time,
                                      event,
                                      value,
                                      extra_data)
         session.add(new_entry)
         session.commit()
+
+        UserReadingSession.update_reading_session(session,
+                                                  event,
+                                                  user.id,
+                                                  new_entry.find_or_create_article_id(session),
+                                                  current_time=time
+                                                  )

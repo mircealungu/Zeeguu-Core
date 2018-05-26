@@ -224,6 +224,19 @@ class Article(db.Model):
             return None
 
     @classmethod
+    def all_older_than(cls, days):
+        import datetime
+        today = datetime.date.today()
+        long_ago = today - datetime.timedelta(days)
+        try:
+            return cls.query.filter(
+                cls.published_time < long_ago
+            ).all()
+
+        except NoResultFound:
+            return []
+
+    @classmethod
     def exists(cls, article):
         try:
             cls.query.filter(

@@ -15,7 +15,9 @@ def cleanup_non_content_bits(text: str):
 
     new_text = text.replace("\nAdvertisement\n", "")
 
-    new_text = text.replace("\ntrue\n", "")
+    new_text = new_text.replace("\nAdvertisement\n", "")
+
+    new_text = new_text.replace("\ntrue\n", "")
     if new_text != text:
         zeeguu.log("clean")
 
