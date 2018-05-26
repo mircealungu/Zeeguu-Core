@@ -11,9 +11,11 @@ def cleanup_non_content_bits(text: str):
     :param text:
     :return:
     """
+    new_text = text
+
     new_text = text.replace("\nAdvertisement\n", "")
 
-    #new_text = text.replace("\ntrue\n", "")
+    new_text = text.replace("\ntrue\n", "")
     if new_text != text:
         zeeguu.log("clean")
 
