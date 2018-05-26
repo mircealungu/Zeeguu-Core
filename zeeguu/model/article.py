@@ -22,14 +22,6 @@ article_topic_map = Table('article_topic_map',
                                      ForeignKey('topic.id'))
                               )
 
-article_search_map = Table('article_search_map',
-                              db.Model.metadata,
-                              Column('article_id', Integer,
-                                     ForeignKey('article.id')),
-                              Column('search_id', Integer,
-                                     ForeignKey('search.id'))
-                              )
-
 
 class Article(db.Model):
     __table_args__ = {'mysql_collate': 'utf8_bin'}
@@ -64,11 +56,6 @@ class Article(db.Model):
     topics = relationship(Topic,
                           secondary="article_topic_map",
                           backref=backref('articles'))
-
-    from zeeguu.model.search import Search
-    searches = relationship(Search,
-                            secondary="article_search_map",
-                            backref=backref('articles'))
 
     # Few words in an article is very often not an
     # actul article but the caption for a video / comic.
