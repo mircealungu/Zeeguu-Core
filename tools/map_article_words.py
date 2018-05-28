@@ -14,6 +14,7 @@
 import zeeguu
 from zeeguu.model.article import Article
 from zeeguu.model.article_word import ArticleWord
+from nltk.corpus import stopwords
 from urllib.parse import urlparse
 import time
 import re
@@ -27,14 +28,12 @@ filtered_digits = 0
 articles = Article.query.all()
 
 filter_general = ['www', '', ' ']
-filter_fr = ['le', 'la', 'est', 'en', 'un', 'a', 'l', 'du', 'de', 'les']
-
-filter_general.extend(filter_fr)
 starting_time = time.time()
 
 for article in articles:
     title = article.title
     address = article.url.as_string()
+    language = article.language.name.lower()
     all_words = []
 
     url = urlparse(address)
@@ -48,13 +47,16 @@ for article in articles:
     all_words = list(filter(None, all_words))
     for word in all_words:
         word = word.strip()
-        word = word.strip(":,\,,\",?,!")
+        word = word.strip(":,\,,\",?,!,<,>")
+        word = word.lower()
         if word in filter_general:
             filtered_general += 1
         elif len(word) < 3 or len(word) > 29:
             filtered_length += 1
-        elif any(char in range(9) for char in word):
+        elif all(char in range(9) for char in word):
             filtered_digits += 1
+        elif word in set(stopwords.words(language)):
+            filtered_general += 1
         else:
             article_word = ArticleWord.find_or_create(session, word)
             article_word.add_article(article)

@@ -29,14 +29,14 @@ CREATE TABLE topic (
 	title VARCHAR(30) NOT NULL
 ); 
 
-/** topic_keyword(id,topic_id,language_id,topic_translated,keywords)
+/** localized_topic(id,topic_id,language_id,localized_name,keywords)
 		foreign keys for topic_id and language_id */
 
 CREATE TABLE localized_topic (
 	id INT(11) AUTO_INCREMENT PRIMARY KEY,
 	topic_id INT(11),
 	language_id INT(11),
-	topic_translated VARCHAR(30) NOT NULL,
+	localized_name VARCHAR(30) NOT NULL,
 	keywords  VARCHAR(1024) NOT NULL,
 	INDEX t_id (topic_id),
 	INDEX l_id (language_id),

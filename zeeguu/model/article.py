@@ -140,15 +140,6 @@ class Article(db.Model):
         ua.set_starred(state)
         session.add(ua)
 
-    def map_article_to_search(self, search):
-        if search.matches_article(self):
-            self.searches.append(search)
-
-    def unmap_article_to_search(self, search):
-        print("entered unmap method")
-        if search in self.searches:
-            self.searches.remove(search)
-
     @classmethod
     def find_or_create(cls, session, url, language=None):
         """

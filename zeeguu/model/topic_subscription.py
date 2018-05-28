@@ -1,3 +1,4 @@
+from sqlalchemy import UniqueConstraint
 from sqlalchemy.orm import relationship
 
 from zeeguu.model.topic import Topic
@@ -9,6 +10,15 @@ db = zeeguu.db
 
 
 class TopicSubscription(db.Model):
+    """
+
+            A topic subscription is created when
+            the user subscribed to a particular topic.
+            This is then taken into account in the
+            mixed recomemmder, when retrieving articles.
+
+    """
+
     __table_args__ = {'mysql_collate': 'utf8_bin'}
     __tablename__ = 'topic_subscription'
 
@@ -20,6 +30,8 @@ class TopicSubscription(db.Model):
     topic_id = db.Column(db.Integer, db.ForeignKey(Topic.id))
     topic = relationship(Topic)
 
+    UniqueConstraint(user_id, topic_id)
+
     def __init__(self, user, topic):
         self.user = user
         self.topic = topic
@@ -27,8 +39,7 @@ class TopicSubscription(db.Model):
     def __str__(self):
         return f'Topic subscription ({self.user.name}, {self.topic})'
 
-    def __repr__(self):
-        return f'Topic subscription ({self.user.name}, {self.topic})'
+    __repr__ = __str__
 
     @classmethod
     def find_or_create(cls, session, user, topic):

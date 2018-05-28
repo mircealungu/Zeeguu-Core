@@ -90,7 +90,7 @@ class Language(db.Model):
     def get_articles(self, limit=None, after_date=None, most_recent_first=False, easiest_first=False):
         """
 
-            Articles for this feed from the article DB
+            Articles for this language from the article DB
 
         :param limit:
         :param after_date:

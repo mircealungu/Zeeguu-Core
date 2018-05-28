@@ -28,8 +28,6 @@ class UserLanguage(db.Model):
     reading_news = Column(Boolean)
     doing_exercises = Column(Boolean)
 
-    user_main_learned_language = User.learned_language
-
     def __init__(self, user, language, declared_level=0, inferred_level=0, reading_news=False, doing_exercises=False):
         self.user = user
         self.language = language
@@ -80,6 +78,6 @@ class UserLanguage(db.Model):
 
     @classmethod
     def get_all_reading_languages(cls, user):
-        result = cls.query.filter(cls.user == user).filter(cls.reading_news==True).all()
+        result = cls.query.filter(cls.user == user).filter(cls.reading_news == True).all()
 
         return [language_id.language for language_id in result]

@@ -7,7 +7,7 @@ db = zeeguu.db
 class Search(db.Model):
     """
 
-        A search is a (set of) keyword(s) which any user can enter.
+        A search is string which any user can enter.
         When searched, it won't be entered in the DB yet.
         Only when a user subscribes or filters a search.
         When subscribing, the articles are also mapped to the search.
@@ -32,12 +32,6 @@ class Search(db.Model):
             id=self.id,
             search=self.keywords,
         )
-
-    def matches_article(self, article):
-        if self.keywords in article.url.as_string() or self.keywords in article.title:
-            return True
-
-        return False
 
     def all_articles(self):
         from zeeguu.model import Article

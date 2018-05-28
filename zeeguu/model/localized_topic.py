@@ -10,7 +10,7 @@ db = zeeguu.db
 class LocalizedTopic(db.Model):
     """
 
-        A localized topic is a child of a topic,
+        A localized topic is a localized version of a topic,
         it is the same topic but translated and with
         the added language_id and localized keywords.
 
@@ -29,18 +29,18 @@ class LocalizedTopic(db.Model):
     language_id = Column(Integer, ForeignKey(Language.id))
     language = relationship(Language)
 
-    topic_translated = Column(String(30))
+    localized_name = Column(String(30))
 
     keywords = Column(String(1024))
 
-    def __init__(self, topic, language, topic_translated, keywords=""):
+    def __init__(self, topic: Topic, language: Language, topic_translated: str, keywords: str=""):
         self.topic = topic
         self.language = language
-        self.topic_translated = topic_translated
+        self.localized_name = topic_translated
         self.keywords = keywords
 
     def __repr__(self):
-        return f'<Localized topic {self.topic} ({self.language}) : {self.topic_translated}>'
+        return f'<Localized topic {self.topic} ({self.language}) : {self.localized_name}>'
 
     def matches_article(self, article):
         keywords = self.keywords.strip().split(" ")

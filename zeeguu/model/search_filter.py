@@ -1,3 +1,4 @@
+from sqlalchemy import UniqueConstraint
 from sqlalchemy.orm import relationship
 from zeeguu.model.user import User
 
@@ -8,6 +9,15 @@ db = zeeguu.db
 
 
 class SearchFilter(db.Model):
+    """
+
+            A search filter is created when the user
+            wants to filter out a particular search.
+            This is then taken into account in the
+            mixed recomemnder, when retrieving articles.
+
+    """
+
     __table_args__ = {'mysql_collate': 'utf8_bin'}
     __tablename__ = 'search_filter'
 
@@ -21,6 +31,8 @@ class SearchFilter(db.Model):
     search_id = db.Column(db.Integer, db.ForeignKey(Search.id))
     search = relationship(Search)
 
+    UniqueConstraint(user_id, search_id)
+
     def __init__(self, user, search):
         self.user = user
         self.search = search
@@ -28,8 +40,7 @@ class SearchFilter(db.Model):
     def __str__(self):
         return f'Search filter ({self.user.name}, {self.search})'
 
-    def __repr__(self):
-        return f'Search filter ({self.user.name}, {self.search})'
+    __repr__ = __str__
 
     @classmethod
     def find_or_create(cls, session, user, search):
