@@ -93,8 +93,8 @@ def get_filtered_articles_for_user(user):
     :return:
 
     """
-    user_filters = TopicFilter.topics_for_user(user)
-    user_search_filters = SearchFilter.search_filters_for_user(user)
+    user_filters = TopicFilter.all_for_user(user)
+    user_search_filters = SearchFilter.all_for_user(user)
 
     filter_articles = []
     if len(user_filters) > 0:
@@ -123,8 +123,8 @@ def get_subscribed_articles_for_user(user):
     :return:
 
     """
-    user_topics = TopicSubscription.topics_for_user(user)
-    user_searches = SearchSubscription.search_subscriptions_for_user(user)
+    user_topics = TopicSubscription.all_for_user(user)
+    user_searches = SearchSubscription.all_for_user(user)
 
     subscribed_articles = []
     if len(user_topics) > 0:
@@ -156,7 +156,7 @@ def get_user_articles_sources_languages(user):
     """
 
     user_sources = RSSFeedRegistration.feeds_for_user(user)
-    user_languages = UserLanguage.get_all_reading_languages(user)
+    user_languages = UserLanguage.all_for_user(user)
     all_articles = []
 
     # If there are sources, get the articles from the sources

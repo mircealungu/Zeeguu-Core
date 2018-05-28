@@ -56,7 +56,7 @@ class LocalizedTopic(db.Model):
         return Article.query.filter(Article.topics.any(id=self.topic_id)).all()
 
     @classmethod
-    def for_language(cls, language):
+    def all_for_language(cls, language):
         return (cls.query.filter(cls.language == language)).all()
 
     @classmethod

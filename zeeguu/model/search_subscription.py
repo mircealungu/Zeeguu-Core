@@ -63,10 +63,6 @@ class SearchSubscription(db.Model):
                 .filter(cls.user == user)).one()
 
     @classmethod
-    def with_id(cls, i):
-        return (cls.query.filter(cls.search_id == i)).all()
-
-    @classmethod
     def with_search(cls, search_id):
         try:
             return (cls.query.filter(cls.search_id == search_id)).one()
