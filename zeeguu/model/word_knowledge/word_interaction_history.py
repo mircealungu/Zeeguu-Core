@@ -56,9 +56,10 @@ class WordInteractionHistory(db.Model):
         self.word = word
         self.interaction_history = []
 
-    def add_event(self, event_type, timestamp):
+    def add_event_insert(self, event_type, timestamp):
         """
-            add a new event
+            add a new event, compares to previous events in order to only store most recent events
+            and avoid duplicate events
         :param event_type:
         :param timestamp:
         :return:
@@ -67,11 +68,34 @@ class WordInteractionHistory(db.Model):
         # json can't serialize timestamps, so we simply
         seconds_since_epoch = int(timestamp.strftime("%s"))
 
-        # If the new event is older than the ones we have or it already exists, we ignore it
-        if seconds_since_epoch > self.interaction_history[0] and not self.time_exists(seconds_since_epoch):
-            
+        # Don't add event if at already occurs
+        if self.time_exists(timestamp):
+            return
+
+        # insert if less than 50 events recorded
+        if len(self.interaction_history) < MAX_EVENT_HISTORY_LENGTH:
             self.interaction_history.insert(0, WordInteractionEvent(event_type, seconds_since_epoch))
-            self.interaction_history = self.interaction_history[0:MAX_EVENT_HISTORY_LENGTH]
+        # otherwise only insert if oldest event is older than new event
+        else:
+            self.interaction_history.sort(key=lambda x: x[1])
+            if seconds_since_epoch > self.interaction_history[0]:
+                self.interaction_history[0] = WordInteractionEvent(event_type, seconds_since_epoch)
+
+
+    def add_event(self, event_type, timestamp):
+        """
+            add a new event, no comparison or duplication check involved, use
+            only if an original event is certain
+        :param event_type:
+        :param timestamp:
+        :return:
+        """
+
+        # json can't serialize timestamps, so we simply
+        seconds_since_epoch = int(timestamp.strftime("%s"))
+
+        self.interaction_history.insert(0, WordInteractionEvent(event_type, seconds_since_epoch))
+        self.interaction_history = self.interaction_history[0:MAX_EVENT_HISTORY_LENGTH]
 
     def time_exists(self, timestamp):
         """

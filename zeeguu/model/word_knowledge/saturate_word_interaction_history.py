@@ -14,7 +14,7 @@ LOG_CONTEXT = "FEED RETRIEVAL"
 session = zeeguu.db.session
 
 for ua in UserArticle.query.all():
-    break
+
     if ua.opened == None:
         continue
 
@@ -47,7 +47,7 @@ for ua in UserArticle.query.all():
         userWord = UserWord.find_or_create(session, word, ua.article.language)
         wih = WordInteractionHistory.find_or_create(user, userWord)
         if not wih.time_exists(time):
-            wih.add_event("CLICKED", time)
+            wih.add_event_insert("CLICKED", time)
             wih.save_to_db(session)
 
     # all other unique words are stored as NOT_CLICKED
@@ -58,7 +58,7 @@ for ua in UserArticle.query.all():
         wih = WordInteractionHistory.find_or_create(user, userWord)
 
         if not wih.time_exists(ua.opened):
-            wih.add_event("NOTCLICKED", ua.opened)
+            wih.add_event_insert("NOTCLICKED", ua.opened)
             wih.save_to_db(session)
 
 # words encountered in exercises
@@ -80,7 +80,7 @@ for bm_id, ex_id in bmex_mapping:
 
     wih = WordInteractionHistory.find_or_create(bm.user, userWord)
     if not wih.time_exists(ex.time):
-        wih.add_event(ex.outcome.outcome, ex.time)
+        wih.add_event_insert(ex.outcome.outcome, ex.time)
         wih.save_to_db(session)
 
 
