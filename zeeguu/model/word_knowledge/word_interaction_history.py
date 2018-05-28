@@ -14,11 +14,6 @@ MAX_EVENT_HISTORY_LENGTH = 50
 
 
 class WordInteractionEvent(object):
-    CLICKED = 0
-    NOT_CLICKED = 1
-    CORRECT_IN_EXERCISE = 2
-    WRONG_IN_EX_EASY = 3
-    WRONG_IN_EX_DIFFICULT = 4
 
     def __init__(self, event_type: int, seconds_since_epoch):
         self.event_type = event_type
