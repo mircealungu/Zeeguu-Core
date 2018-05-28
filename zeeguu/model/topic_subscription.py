@@ -54,11 +54,11 @@ class TopicSubscription(db.Model):
             return new
 
     @classmethod
-    def topics_for_user(cls, user):
+    def all_for_user(cls, user):
         return cls.query.filter(cls.user == user).all()
 
     @classmethod
-    def topics_for_user_as_list(cls,user):
+    def all_for_user_as_list(cls,user):
         return [topic_id for topic_id in cls.query.filter(cls.user == user).all()]
 
     @classmethod

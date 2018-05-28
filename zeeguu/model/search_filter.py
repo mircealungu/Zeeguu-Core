@@ -55,7 +55,7 @@ class SearchFilter(db.Model):
             return new
 
     @classmethod
-    def search_filters_for_user(cls, user):
+    def all_for_user(cls, user):
         return cls.query.filter(cls.user == user).all()
 
     @classmethod

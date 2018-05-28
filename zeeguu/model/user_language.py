@@ -67,7 +67,7 @@ class UserLanguage(db.Model):
                 .one())
 
     @classmethod
-    def get_all_user_languages(cls, user):
+    def all_for_user(cls, user):
         user_main_learned_language = user.learned_language
         user_languages = [language_id.language for language_id in cls.query.filter(cls.user == user).all()]
 
@@ -77,7 +77,7 @@ class UserLanguage(db.Model):
         return user_languages
 
     @classmethod
-    def get_all_reading_languages(cls, user):
+    def all_reading_for_user(cls, user):
         result = cls.query.filter(cls.user == user).filter(cls.reading_news == True).all()
 
         return [language_id.language for language_id in result]

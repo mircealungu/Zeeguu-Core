@@ -54,21 +54,16 @@ class TopicFilter(db.Model):
             return new
 
     @classmethod
-    def topics_for_user(cls, user):
+    def all_for_user(cls, user):
         return cls.query.filter(cls.user == user).all()
 
     @classmethod
-    def topics_for_user_as_list(cls,user):
+    def all_for_user_as_list(cls,user):
         return [topic_id for topic_id in cls.query.filter(cls.user == user).all()]
 
     @classmethod
     def with_id(cls, i):
         return (cls.query.filter(cls.id == i)).one()
-
-    @classmethod
-    def with_feed_id(cls, i, user):
-        return (cls.query.filter(cls.topic_id == i)) \
-            .filter(cls.user_id == user.id).one()
 
     @classmethod
     def with_topic_id(cls, i, user):
