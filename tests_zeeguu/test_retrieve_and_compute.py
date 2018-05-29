@@ -8,7 +8,7 @@ from tests_zeeguu.rules.user_rule import UserRule
 from zeeguu.content_retriever.content_cleaner import cleanup_non_content_bits
 from zeeguu.content_retriever.article_downloader import download_from_feed
 from zeeguu.content_retriever.quality_filter import sufficient_quality
-from zeeguu.model import Topic
+from zeeguu.model import Topic, LocalizedTopic
 
 
 class TestRetrieveAndCompute(ModelTestMixIn):
@@ -29,8 +29,11 @@ class TestRetrieveAndCompute(ModelTestMixIn):
 
     def testDownloadWithTopic(self):
         feed = RSSFeedRule().feed1
-        topic = Topic("#spiegel", feed.language, "www.spiegel")
+        topic = Topic("Spiegel")
         zeeguu.db.session.add(topic)
+        zeeguu.db.session.commit()
+        loc_topic = LocalizedTopic(topic, self.lan, "spiegelDE", "spiegel")
+        zeeguu.db.session.add(loc_topic)
         zeeguu.db.session.commit()
 
         download_from_feed(feed, zeeguu.db.session, 3)
@@ -77,4 +80,4 @@ class TestRetrieveAndCompute(ModelTestMixIn):
         art.parse()
 
         cleaned_up_text = cleanup_non_content_bits(art.text)
-        assert (not "Advertisement" in cleaned_up_text)
+        assert ("Advertisement" not in cleaned_up_text)

@@ -14,7 +14,7 @@ import zeeguu
 from zeeguu import model
 from zeeguu.content_retriever.content_cleaner import cleanup_non_content_bits
 from zeeguu.content_retriever.quality_filter import sufficient_quality
-from zeeguu.model import Url, RSSFeed, Topic
+from zeeguu.model import Url, RSSFeed, LocalizedTopic
 from zeeguu.constants import SIMPLE_TIME_FORMAT
 
 LOG_CONTEXT = "FEED RETRIEVAL"
@@ -113,9 +113,9 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
                     session.commit()
                     downloaded += 1
 
-                    for each in Topic.query.all():
-                        if each.language == new_article.language and each.matches_article(new_article):
-                            new_article.add_topic(each)
+                    for loc_topic in LocalizedTopic.query.all():
+                        if loc_topic.language == new_article.language and loc_topic.matches_article(new_article):
+                            new_article.add_topic(loc_topic.topic)
             except Exception as e:
                 # raise e
                 import sys

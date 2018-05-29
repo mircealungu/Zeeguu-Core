@@ -1,8 +1,6 @@
-from sqlalchemy.orm import relationship
-
 import zeeguu
 
-from sqlalchemy import Column, Integer, String, ForeignKey, and_
+from sqlalchemy import Column, Integer, String
 
 db = zeeguu.db
 
@@ -10,40 +8,29 @@ db = zeeguu.db
 class Topic(db.Model):
     """
 
-        A topic is one way of categorizing articles.
-        Examples: #health #sports etc.
+        A topic is the general (English) name of a topic,
+        the localized_topic contains the language, translation,
+        and the keywords used to find the articles.
 
     """
     __table_args__ = {'mysql_collate': 'utf8_bin'}
 
     id = Column(Integer, primary_key=True)
 
-    name = Column(String(64))
+    title = Column(String(64))
 
-    from zeeguu.model.language import Language
-
-    language_id = Column(Integer, ForeignKey(Language.id))
-    language = relationship(Language)
-
-    # space separated patterns that when found in the url
-    # hint that we have an article for the topic
-    url_patterns = Column(String(1024))
-
-    def __init__(self, name, language, url_patterns=""):
-        self.name = name
-        self.language = language
-        self.url_patterns = url_patterns
+    def __init__(self, title):
+        self.title = title
 
     def __repr__(self):
-        return f'<Topic {self.name} ({self.language})>'
+        return f'<Topic {self.title}>'
 
-    def matches_article(self, article):
-        patterns = self.url_patterns.strip().split(" ")
-        for each_pattern in patterns:
-            if each_pattern in article.url.as_string():
-                return True
+    def as_dictionary(self):
 
-        return False
+        return dict(
+            id=self.id,
+            title=self.title,
+        )
 
     def all_articles(self):
         from zeeguu.model import Article
@@ -51,9 +38,22 @@ class Topic(db.Model):
         return Article.query.filter(Article.topics.any(id=self.id)).all()
 
     @classmethod
-    def find(cls, name: str, language: 'Language'):
-
+    def find(cls, name: str):
         try:
-            return (cls.query.filter(and_(cls.name == name, cls.language == language))).one()
-        except:
+            return cls.query.filter(cls.title == name).one()
+        except Exception as e:
+            print(e)
             return None
+
+    @classmethod
+    def find_by_id(cls, i):
+        try:
+            result = cls.query.filter(cls.id == i).one()
+            return result
+        except Exception as e:
+            print(e)
+            return None
+
+    @classmethod
+    def get_all_topics(cls):
+        return Topic.query.all()

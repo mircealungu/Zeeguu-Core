@@ -29,9 +29,6 @@ class CohortRule(BaseRule):
         student2.cohort = self.cohort
         self.save(student2)
 
-
-
-
     def _create_model_object(self, *args):
         name = self.faker.word()
         inv_code = self.faker.word()

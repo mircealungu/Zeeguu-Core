@@ -54,7 +54,7 @@ class User(db.Model):
 
     @classmethod
     def create_anonymous(cls, uuid, password, learned_language_code=None, native_language_code=None):
-        """j
+        """
 
         :param uuid:
         :param password:

@@ -26,8 +26,8 @@ class ArticleTest(ModelTestMixIn, TestCase):
         assert self.article1.article_info()
 
     def test_add_topic(self):
-        health = Topic("health", self.language)
-        sports = Topic("sports", self.language)
+        health = Topic("health")
+        sports = Topic("sports")
         self.article1.add_topic(health)
         self.article1.add_topic(sports)
         assert len(self.article1.topics) == 2
