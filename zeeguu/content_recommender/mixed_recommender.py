@@ -76,9 +76,8 @@ def article_search_for_user(user, count, search):
     # Sort them, so the first 'count' articles will be the most recent ones
     all_articles.sort(key=lambda each: each.published_time)
 
-    # We are just using the first word of the user's search now
-    search_term = search.split()[0]
-    search_articles = ArticleWord.get_articles_for_word(search_term)
+    # We are just using the first and second word of the user's search now
+    search_articles = get_articles_for_search_term(search)
 
     final = [article for article in search_articles if article in all_articles]
     return [user_article_info(user, article) for article in final[:count]]
@@ -106,8 +105,7 @@ def get_filtered_articles_for_user(user):
     if len(user_search_filters) > 0:
         for user_search_filter in user_search_filters:
             search = user_search_filter.search.keywords
-            search_term = search.split()[0]
-            new_articles = ArticleWord.get_articles_for_word(search_term)
+            new_articles = get_articles_for_search_term(search)
             filter_articles.extend(new_articles)
 
     return filter_articles
@@ -136,8 +134,7 @@ def get_subscribed_articles_for_user(user):
     if len(user_searches) > 0:
         for user_search in user_searches:
             search = user_search.search.keywords
-            search_term = search.split()[0]
-            new_articles = ArticleWord.get_articles_for_word(search_term)
+            new_articles = get_articles_for_search_term(search)
             subscribed_articles.extend(new_articles)
 
     return subscribed_articles
@@ -156,7 +153,7 @@ def get_user_articles_sources_languages(user):
     """
 
     user_sources = RSSFeedRegistration.feeds_for_user(user)
-    user_languages = UserLanguage.all_for_user(user)
+    user_languages = UserLanguage.all_reading_for_user(user)
     all_articles = []
 
     # If there are sources, get the articles from the sources
@@ -175,3 +172,16 @@ def get_user_articles_sources_languages(user):
             log(f'Added articles for {language}')
 
     return all_articles
+
+
+def get_articles_for_search_term(search_term):
+    search_terms = search_term.split()
+
+    if len(search_terms) > 1:
+        search_articles_first = ArticleWord.get_articles_for_word(search_terms[0])
+        search_articles_second = ArticleWord.get_articles_for_word(search_terms[1])
+        if search_articles_first is None or search_articles_second is None:
+            return []
+        return [article for article in search_articles_first if article in search_articles_second]
+
+    return ArticleWord.get_articles_for_word(search_terms[0])
