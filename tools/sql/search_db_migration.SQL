@@ -3,7 +3,7 @@
  */
  
 /** Drop the tables for the old topics which isn't needed anymore */
-DROP TABLE article_topic_mapping;
+DROP TABLE article_topic_map;
 DROP TABLE topic;
 
 
