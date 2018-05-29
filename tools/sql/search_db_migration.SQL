@@ -19,7 +19,7 @@ CREATE TABLE user_language (
 	INDEX u_id (user_id),
 	INDEX l_id (language_id),
 	FOREIGN KEY (user_id) REFERENCES user(id),
-	FOREIGN KEY (language_show id) REFERENCES language(id)
+	FOREIGN KEY (language_id) REFERENCES language(id)
 ); 
 
 /** Create the new tables needed */
