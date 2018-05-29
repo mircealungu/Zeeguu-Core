@@ -36,8 +36,8 @@ CREATE TABLE localized_topic (
 	id INT(11) AUTO_INCREMENT PRIMARY KEY,
 	topic_id INT(11),
 	language_id INT(11),
-	localized_name VARCHAR(30) CHARACTER SET utf8 NOT NULL,
-	keywords  VARCHAR(1024) CHARACTER SET utf8 NOT NULL,
+	localized_name VARCHAR(30) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+	keywords  VARCHAR(1024) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
 	INDEX t_id (topic_id),
 	INDEX l_id (language_id),
 	FOREIGN KEY (topic_id) REFERENCES topic(id),
@@ -83,7 +83,7 @@ CREATE TABLE article_topic_map (
 /** search(id,keywords) */
 CREATE TABLE search (
 	id INT(11) AUTO_INCREMENT PRIMARY KEY,
-	keywords VARCHAR(100) CHARACTER SET utf8
+	keywords VARCHAR(100) CHARACTER SET utf8 COLLATE utf8_bin
 );
 
 /** search_subscription(id,user_id,search)
@@ -113,7 +113,7 @@ CREATE TABLE search_filter (
 /** article_word(id, word) */
 CREATE TABLE article_word (
 	id INT(11) AUTO_INCREMENT PRIMARY KEY,
-	word VARCHAR(30) CHARACTER SET utf8,
+	word VARCHAR(30) CHARACTER SET utf8 COLLATE utf8_bin,
 	INDEX article_word_index (word)
 );
 
