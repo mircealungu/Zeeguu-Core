@@ -3,8 +3,8 @@
  */
  
 /** Drop the tables for the old topics which isn't needed anymore */
-DROP TABLE if EXISTS article_topic_map;
-DROP TABLE if EXISTS topic;
+DROP TABLE IF EXISTS article_topic_map;
+DROP TABLE IF EXISTS topic;
 
 
 /** Optional: apply changes so people can learn more than one language */
