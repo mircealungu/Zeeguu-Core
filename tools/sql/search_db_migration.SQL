@@ -7,7 +7,6 @@ DROP TABLE IF EXISTS article_topic_mapping;
 DROP TABLE IF EXISTS topic;
 DROP TABLE IF EXISTS search;
 
-
 /** Optional: apply changes so people can learn more than one language */
 CREATE TABLE user_language (
 	id INT(11) AUTO_INCREMENT PRIMARY KEY,
@@ -37,8 +36,8 @@ CREATE TABLE localized_topic (
 	id INT(11) AUTO_INCREMENT PRIMARY KEY,
 	topic_id INT(11),
 	language_id INT(11),
-	localized_name VARCHAR(30) NOT NULL,
-	keywords  VARCHAR(1024) NOT NULL,
+	localized_name VARCHAR(30) CHARACTER SET utf8 NOT NULL,
+	keywords  VARCHAR(1024) CHARACTER SET utf8 NOT NULL,
 	INDEX t_id (topic_id),
 	INDEX l_id (language_id),
 	FOREIGN KEY (topic_id) REFERENCES topic(id),
@@ -83,8 +82,8 @@ CREATE TABLE article_topic_map (
 
 /** search(id,keywords) */
 CREATE TABLE search (
-	id INT(6) AUTO_INCREMENT PRIMARY KEY,
-	keywords VARCHAR(100)
+	id INT(11) AUTO_INCREMENT PRIMARY KEY,
+	keywords VARCHAR(100) CHARACTER SET utf8
 );
 
 /** search_subscription(id,user_id,search)
@@ -114,8 +113,8 @@ CREATE TABLE search_filter (
 /** article_word(id, word) */
 CREATE TABLE article_word (
 	id INT(11) AUTO_INCREMENT PRIMARY KEY,
-	word VARCHAR(30),
-		INDEX article_word_index (word)
+	word VARCHAR(30) CHARACTER SET utf8,
+	INDEX article_word_index (word)
 );
 
 /** article_word_map(article_id, word_id)
