@@ -30,6 +30,8 @@ articles = Article.query.all()
 filter_general = ['www', '', ' ']
 starting_time = time.time()
 
+all_words_list = []
+
 for article in articles:
     title = article.title
     address = article.url.as_string()
@@ -46,6 +48,7 @@ for article in articles:
 
     all_words = list(filter(None, all_words))
     for word in all_words:
+        article_word_obj = None
         word = word.strip()
         word = word.strip(":,\,,\",?,!,<,>")
         word = word.lower()
@@ -58,9 +61,16 @@ for article in articles:
         elif word in set(stopwords.words(language)):
             filtered_general += 1
         else:
-            article_word = ArticleWord.find_or_create(session, word)
-            article_word.add_article(article)
-            session.add(article_word)
+            for article_word in all_words_list:
+                if word == article_word.word:
+                    print("saved a db query")
+                    article_word_obj = article_word
+                    break
+            if article_word_obj is None:
+                article_word_obj = ArticleWord.find_or_create(session, word)
+            article_word_obj.add_article(article)
+            session.add(article_word_obj)
+            all_words_list.append(article_word_obj)
         word_count += 1
         if word_count % 1000 == 0:
             print("another 1000 words added")
