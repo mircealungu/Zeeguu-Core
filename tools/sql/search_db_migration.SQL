@@ -5,6 +5,7 @@
 /** Drop the tables for the old topics which isn't needed anymore */
 DROP TABLE IF EXISTS article_topic_mapping;
 DROP TABLE IF EXISTS topic;
+DROP TABLE IF EXISTS search;
 
 
 /** Optional: apply changes so people can learn more than one language */
