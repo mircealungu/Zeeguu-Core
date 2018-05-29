@@ -26,7 +26,7 @@ CREATE TABLE user_language (
 /** topic(id,title) */
 CREATE TABLE topic ( 
 	id INT(11) AUTO_INCREMENT PRIMARY KEY,
-	title VARCHAR(30) NOT NULL
+	title VARCHAR(30) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL
 ); 
 
 /** localized_topic(id,topic_id,language_id,localized_name,keywords)
