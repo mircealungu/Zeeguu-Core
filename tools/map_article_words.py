@@ -33,13 +33,13 @@ starting_time = time.time()
 all_words_list = []
 
 min_id = articles[-1].id
+max_id = 0
 print(f'#### LAST ARTICLE IN ARTICLES : {min_id} ####')
-article_words = ArticleWord.query.order_by(ArticleWord.id.desc()).all()
+article_words = ArticleWord.query.order_by(ArticleWord.id.desc()).limit(100).all()
 # This is kind of an awkward way of finding the last tagged article,
 # though it definitely works as it check the last 100 words and all the
 # articles associated to it.
-last_words = article_words[-100:]
-for last_word in last_words:
+for last_word in article_words:
     for article in last_word.articles:
         if article.id < min_id:
             min_id = article.id
