@@ -12,6 +12,17 @@ db = zeeguu.db
 
 MAX_EVENT_HISTORY_LENGTH = 50
 
+from zeeguu.constants import (
+                        WIH_CORRECT_EX_RECOGNIZE,
+                        WIH_CORRECT_EX_TRANSLATE,
+                        WIH_CORRECT_EX_CHOICE,
+                        WIH_CORRECT_EX_MATCH,
+                        WIH_WRONG_EX_RECOGNIZE,
+                        WIH_WRONG_EX_TRANSLATE,
+                        WIH_WRONG_EX_CHOICE,
+                        WIH_WRONG_EX_MATCH
+)
+
 
 class WordInteractionEvent(object):
 
@@ -25,6 +36,32 @@ class WordInteractionEvent(object):
     def __repr__(self):
         return f"(WordInteractionEvent: {self.event_type} - {self.seconds_since_epoch}) "
 
+    @staticmethod
+    def encodeExerciseResult(exercise_outcome, exercise_source):
+        """
+            Matches the exercise type and result to a WordHistoryEvent code
+
+            returns: an integer representing the type of event
+        """
+        if exercise_outcome in [3,5]:#Correct
+            if exercise_source in [1,4]: #Recognize
+                return WIH_CORRECT_EX_RECOGNIZE
+            elif exercise_source == 2: #Translate
+                return WIH_CORRECT_EX_TRANSLATE
+            elif exercise_source in [3,5,7]: #Choice
+                return WIH_CORRECT_EX_CHOICE
+            elif exercise_source == 6:#Match three
+                return WIH_CORRECT_EX_MATCH
+        elif exercise_outcome in [1,2,4]: #Wrong
+            if exercise_source in [1,4]: #Recognize
+                return WIH_WRONG_EX_RECOGNIZE
+            elif exercise_source == 2: #Translate
+                return WIH_WRONG_EX_TRANSLATE
+            elif exercise_source in [3,5,7]: #Choice
+                return WIH_WRONG_EX_CHOICE
+            elif exercise_source == 6:#Match three
+                return WIH_WRONG_EX_MATCH
+        
 
 class WordInteractionHistory(db.Model):
     __table_args__ = dict(mysql_collate='utf8_bin')
