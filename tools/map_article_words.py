@@ -32,7 +32,24 @@ starting_time = time.time()
 
 all_words_list = []
 
+min_id = articles[-1].id
+print(f'#### LAST ARTICLE IN ARTICLES : {min_id} ####')
+article_words = ArticleWord.query.order_by(ArticleWord.id.desc()).all()
+last_words = article_words[-5:]
+for last_word in last_words:
+    for article in last_word.articles:
+        if article.id < min_id:
+            min_id = article.id
+print(f'#### ID TO START AT: {min_id} ####')
+
+articles.reverse()
+
+print(f'#### STARTING MAIN LOOP ####')
 for article in articles:
+    if article.id > min_id:
+        print(f'#### SKIPPED article with id: {article.id} ####')
+        continue
+    print(f'#### PROCESSING ARTICLE WITH ID: {article.id} ####')
     title = article.title
     address = article.url.as_string()
     language = article.language.name.lower()
@@ -63,7 +80,6 @@ for article in articles:
         else:
             for article_word in all_words_list:
                 if word == article_word.word:
-                    print("saved a db query")
                     article_word_obj = article_word
                     break
             if article_word_obj is None:
