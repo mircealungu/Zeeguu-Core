@@ -90,10 +90,12 @@ for article in articles:
         word_count += 1
         if word_count % 1000 == 0:
             print("another 1000 words added")
+            print(f'That took {time.time() - starting_time} seconds...')
 
     article_count += 1
     if article_count % 1000 == 0:
         print("another 1000 articles done and committed")
+        print(f'That took {time.time() - starting_time} seconds...')
         session.commit()
 
 ending_time = time.time()
