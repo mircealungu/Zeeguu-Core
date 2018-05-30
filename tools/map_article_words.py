@@ -81,7 +81,7 @@ for article in articles:
                     article_word_obj = article_word
                     break
             if article_word_obj is None:
-                article_word_obj = ArticleWord.find_or_create(session, word)
+                article_word_obj = ArticleWord(word)
             article_word_obj.add_article(article)
             session.add(article_word_obj)
             all_words_list.append(article_word_obj)
