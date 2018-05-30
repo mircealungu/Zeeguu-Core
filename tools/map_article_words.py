@@ -32,7 +32,6 @@ starting_time = time.time()
 
 all_words_list = []
 
-article_words = ArticleWord.query.order_by(ArticleWord.id.desc()).all()
 result = zeeguu.db.engine.execute("SELECT min(article_id) FROM article_word_map").fetchone()
 # This is kind of an awkward way of finding the last tagged article,
 # though it definitely works as it check the last 100 words and all the
