@@ -35,13 +35,17 @@ all_words_list = []
 min_id = articles[-1].id
 print(f'#### LAST ARTICLE IN ARTICLES : {min_id} ####')
 article_words = ArticleWord.query.order_by(ArticleWord.id.desc()).all()
-last_words = article_words[-5:]
+# This is kind of an awkward way of finding the last tagged article,
+# though it definitely works as it check the last 100 words and all the
+# articles associated to it.
+last_words = article_words[-100:]
 for last_word in last_words:
     for article in last_word.articles:
         if article.id < min_id:
             min_id = article.id
 print(f'#### ID TO START AT: {min_id} ####')
 
+# Reverse the articles to start at the most recent ones
 articles.reverse()
 
 print(f'#### STARTING MAIN LOOP ####')

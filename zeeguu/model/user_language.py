@@ -63,12 +63,6 @@ class UserLanguage(db.Model):
             session.commit()
             return new
 
-    def set_reading_news(self):
-        self.reading_news = True
-
-    def stop_reading_news(self):
-        self.reading_news = False
-
     @classmethod
     def with_language_id(cls, i, user):
         return (cls.query.filter(cls.user == user)
