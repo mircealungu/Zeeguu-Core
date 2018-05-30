@@ -17,7 +17,7 @@ class UserLanguage(db.Model):
         with respect to the language. Most importantly it
         contains the declared level, inferred level,
         and if the user is reading news / doing exercises.
-        
+
     """
     __table_args__ = {'mysql_collate': 'utf8_bin'}
 
