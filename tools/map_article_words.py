@@ -71,7 +71,7 @@ for article in articles:
             filtered_general += 1
         elif len(word) < 3 or len(word) > 29:
             filtered_length += 1
-        elif all(char in range(9) for char in word):
+        elif word.isdigit():
             filtered_digits += 1
         elif word in set(stopwords.words(language)):
             filtered_general += 1
