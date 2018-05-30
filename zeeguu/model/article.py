@@ -58,7 +58,7 @@ class Article(db.Model):
                           backref=backref('articles'))
 
     # Few words in an article is very often not an
-    # actul article but the caption for a video / comic.
+    # actual article but the caption for a video / comic.
     # Or maybe an article that's behind a paywall and
     # has only the first paragraph available
     MINIMUM_WORD_COUNT = 90

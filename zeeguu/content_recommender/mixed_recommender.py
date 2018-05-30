@@ -55,7 +55,7 @@ def article_recommendations_for_user(user, count):
         all_articles = [article for article in all_articles if article not in filter_articles]
 
     log('Sorting articles...')
-    all_articles.sort(key=lambda each: each.content, reverse=False)
+    all_articles.sort(key=lambda each: each.published_time, reverse=True)
     log('Sorted articles')
 
     return [user_article_info(user, article) for article in all_articles[:count]]
