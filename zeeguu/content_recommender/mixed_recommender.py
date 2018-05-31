@@ -109,7 +109,8 @@ def get_filtered_articles_for_user(user):
         for user_search_filter in user_search_filters:
             search = user_search_filter.search.keywords
             new_articles = get_articles_for_search_term(search)
-            filter_articles.extend(new_articles)
+            if new_articles is not None:
+                filter_articles.extend(new_articles)
 
     return filter_articles
 
@@ -138,7 +139,8 @@ def get_subscribed_articles_for_user(user):
         for user_search in user_searches:
             search = user_search.search.keywords
             new_articles = get_articles_for_search_term(search)
-            subscribed_articles.extend(new_articles)
+            if new_articles is not None:
+                subscribed_articles.extend(new_articles)
 
     return subscribed_articles
 
