@@ -79,7 +79,10 @@ def article_search_for_user(user, count, search):
     # We are just using the first and second word of the user's search now
     search_articles = get_articles_for_search_term(search)
 
-    final = [article for article in search_articles if article in all_articles]
+    if search_articles is None:
+        final = []
+    else:
+        final = [article for article in search_articles if article in all_articles]
     return [user_article_info(user, article) for article in final[:count]]
 
 

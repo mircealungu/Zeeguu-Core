@@ -32,7 +32,22 @@ starting_time = time.time()
 
 all_words_list = []
 
+result = zeeguu.db.engine.execute("SELECT min(article_id) FROM article_word_map").fetchone()
+# This is kind of an awkward way of finding the last tagged article,
+# though it definitely works as it check the last 100 words and all the
+# articles associated to it.
+min_id = result[0] or 10000000
+print(f'#### ID TO START AT: {min_id} ####')
+
+# Reverse the articles to start at the most recent ones
+articles.reverse()
+
+print(f'#### STARTING MAIN LOOP ####')
 for article in articles:
+    if article.id > min_id:
+        print(f'#### SKIPPED article with id: {article.id} ####')
+        continue
+    print(f'#### PROCESSING ARTICLE WITH ID: {article.id} ####')
     title = article.title
     address = article.url.as_string()
     language = article.language.name.lower()
@@ -56,28 +71,29 @@ for article in articles:
             filtered_general += 1
         elif len(word) < 3 or len(word) > 29:
             filtered_length += 1
-        elif all(char in range(9) for char in word):
+        elif word.isdigit():
             filtered_digits += 1
         elif word in set(stopwords.words(language)):
             filtered_general += 1
         else:
             for article_word in all_words_list:
                 if word == article_word.word:
-                    print("saved a db query")
                     article_word_obj = article_word
                     break
             if article_word_obj is None:
-                article_word_obj = ArticleWord.find_or_create(session, word)
+                article_word_obj = ArticleWord(word)
             article_word_obj.add_article(article)
             session.add(article_word_obj)
             all_words_list.append(article_word_obj)
         word_count += 1
         if word_count % 1000 == 0:
             print("another 1000 words added")
+            print(f'That took {time.time() - starting_time} seconds...')
 
     article_count += 1
     if article_count % 1000 == 0:
         print("another 1000 articles done and committed")
+        print(f'That took {time.time() - starting_time} seconds...')
         session.commit()
 
 ending_time = time.time()

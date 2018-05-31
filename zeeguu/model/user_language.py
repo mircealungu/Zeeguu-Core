@@ -10,6 +10,15 @@ db = zeeguu.db
 
 
 class UserLanguage(db.Model):
+    """
+
+        A UserLanguage is the 'personalized' version
+        of a language. It contains the data about the user
+        with respect to the language. Most importantly it
+        contains the declared level, inferred level,
+        and if the user is reading news / doing exercises.
+
+    """
     __table_args__ = {'mysql_collate': 'utf8_bin'}
 
     id = Column(Integer, primary_key=True)
@@ -53,12 +62,6 @@ class UserLanguage(db.Model):
             session.add(new)
             session.commit()
             return new
-
-    def set_reading_news(self):
-        self.reading_news = True
-
-    def stop_reading_news(self):
-        self.reading_news = False
 
     @classmethod
     def with_language_id(cls, i, user):
