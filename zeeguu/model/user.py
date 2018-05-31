@@ -164,7 +164,7 @@ class User(db.Model):
             raise ValueError("Invalid username")
         return name
 
-    def update_password(self, password:str):
+    def update_password(self, password: str):
         """
         
         :param password: str
@@ -195,6 +195,25 @@ class User(db.Model):
         from zeeguu.model.bookmark import Bookmark
         return Bookmark.query.filter_by(user_id=self.id).order_by(
             Bookmark.time.desc()).all()
+
+    def top_bookmarks(self, count=50, also_print=False):
+        from zeeguu.model.bookmark import Bookmark
+        from wordstats import Word
+
+        def rank(b):
+            return Word.stats(b.origin.word, b.origin.language.code).rank
+
+        all_bookmarks = Bookmark.query.filter_by(user_id=self.id)
+
+        sorted_bookmarks = sorted(all_bookmarks,
+                                  key=lambda b: rank(b))
+        sorted_bookmarks = sorted_bookmarks[:count]
+
+        if also_print:
+            for b in sorted_bookmarks:
+                print(f"{b.origin.word} ({b.origin.language.code})- {rank(b)} (id: {b.id})")
+
+        return sorted_bookmarks
 
     def bookmarks_by_date(self, after_date=datetime.datetime(1970, 1, 1)):
         """
