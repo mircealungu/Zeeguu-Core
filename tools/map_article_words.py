@@ -36,7 +36,7 @@ result = zeeguu.db.engine.execute("SELECT min(article_id) FROM article_word_map"
 # This is kind of an awkward way of finding the last tagged article,
 # though it definitely works as it check the last 100 words and all the
 # articles associated to it.
-min_id = result[0]
+min_id = result[0] or 10000000
 print(f'#### ID TO START AT: {min_id} ####')
 
 # Reverse the articles to start at the most recent ones
