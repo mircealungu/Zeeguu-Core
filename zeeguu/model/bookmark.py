@@ -247,6 +247,8 @@ class Bookmark(db.Model):
             zeeguu.log(f"Exception caught: for some reason there was no translation for {self.id}")
             print(str(e))
 
+        word_info = Word.stats(self.origin.word,
+                                         self.origin.language.code)
         result = dict(
             id=self.id,
             to=translation_word,
@@ -254,8 +256,8 @@ class Bookmark(db.Model):
             to_lang=self.translation.language.code,
             title=self.text.url.title,
             url=self.text.url.as_string(),
-            origin_importance=Word.stats(self.origin.word,
-                                         self.origin.language.code).importance,
+            origin_importance=word_info.importance,
+            origin_rank=word_info.rank,
             starred=self.starred if self.starred is not None else False
         )
         result["from"] = self.origin.word
