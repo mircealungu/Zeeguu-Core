@@ -205,7 +205,6 @@ class User(db.Model):
     def top_bookmarks(self, count=50, also_print=False):
         from zeeguu.model.bookmark import Bookmark
 
-
         def rank(b):
             return Word.stats(b.origin.word, b.origin.language.code).rank
 
@@ -217,7 +216,8 @@ class User(db.Model):
 
             return len(context.all_bookmarks(self)) == 1
 
-        all_bookmarks = Bookmark.query.filter_by(user_id=self.id).order_by(Bookmark.time.desc()).limit(400)
+        all_bookmarks = Bookmark.query.filter_by(user_id=self.id).filter_by(learned=False).order_by(
+            Bookmark.time.desc()).limit(400)
 
         single_word_bookmarks = [each for each in all_bookmarks if single_word_in_context(each)]
 
