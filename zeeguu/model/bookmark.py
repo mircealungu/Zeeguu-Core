@@ -123,6 +123,35 @@ class Bookmark(db.Model):
     def origin_word_count(self):
         return len(self.origin.word.split(" "))
 
+    def multiple_bookmarks_for_same_context(self):
+        return len(self.text.all_bookmarks(self))
+
+    def quality_top_bookmark(self):
+        """
+
+            used in the top bookmarks
+            differs a bit from the exercises...
+            although it could be decided to merge them in the future
+
+        """
+        context = self.text
+
+        # word should not be too short
+        if len(self.origin.word) < 5:
+            return False
+
+        # if there are other bookmarks in this context
+        # it is not an ideal context, since the user
+        # might not understand the context
+        if self.multiple_bookmarks_for_same_context():
+            return False
+
+        # context not too long
+        if len(context.content) > 140:
+            return False
+
+        return True
+
     def quality_bookmark(self):
 
         # If it's starred by the user, then it's good quality!
@@ -212,7 +241,7 @@ class Bookmark(db.Model):
                                 exercise_solving_speed):
 
         from .user_exercise_session import UserExerciseSession
-        
+
         new_source = ExerciseSource.query.filter_by(
             source=exercise_source.source
         ).first()
@@ -223,7 +252,6 @@ class Bookmark(db.Model):
                             datetime.now())
         self.add_new_exercise(exercise)
         db.session.add(exercise)
-        
 
     def split_words_from_context(self):
 
@@ -248,7 +276,9 @@ class Bookmark(db.Model):
             print(str(e))
 
         word_info = Word.stats(self.origin.word,
-                                         self.origin.language.code)
+                               self.origin.language.code)
+
+        learned_datetime = str(self.learned_time.date()) if self.learned else ''
         result = dict(
             id=self.id,
             to=translation_word,
@@ -257,6 +287,7 @@ class Bookmark(db.Model):
             title=self.text.url.title,
             url=self.text.url.as_string(),
             origin_importance=word_info.importance,
+            learned_datetime=learned_datetime,
             origin_rank=word_info.rank if word_info.rank != 100000 else '',
             starred=self.starred if self.starred is not None else False
         )
