@@ -279,6 +279,9 @@ class Bookmark(db.Model):
                                self.origin.language.code)
 
         learned_datetime = str(self.learned_time.date()) if self.learned else ''
+
+        created_day = "today" if self.time.date() == datetime.now().date() else ''
+
         result = dict(
             id=self.id,
             to=translation_word,
@@ -289,7 +292,8 @@ class Bookmark(db.Model):
             origin_importance=word_info.importance,
             learned_datetime=learned_datetime,
             origin_rank=word_info.rank if word_info.rank != 100000 else '',
-            starred=self.starred if self.starred is not None else False
+            starred=self.starred if self.starred is not None else False,
+            created_day= created_day
         )
         result["from"] = self.origin.word
         if with_context:
