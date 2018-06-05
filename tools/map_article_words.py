@@ -63,6 +63,14 @@ for article in articles:
 
     all_words = list(filter(None, all_words))
     for word in all_words:
+        # Fix utf-8 characters
+        word = bytes(word, 'utf-8').decode('utf-8', 'ignore')
+        try:
+            stopwords = set(stopwords.words(language))
+        except OSError as e:
+            print(f'Stopwords failed somehow: {e}')
+        except AttributeError:
+            pass
         article_word_obj = None
         word = word.strip()
         word = word.strip(":,\,,\",?,!,<,>")
@@ -73,7 +81,7 @@ for article in articles:
             filtered_length += 1
         elif word.isdigit():
             filtered_digits += 1
-        elif word in set(stopwords.words(language)):
+        elif word in stopwords:
             filtered_general += 1
         else:
             for article_word in all_words_list:
@@ -82,10 +90,13 @@ for article in articles:
                     break
             if article_word_obj is None:
                 article_word_obj = ArticleWord(word)
-            article_word_obj.add_article(article)
-            session.add(article_word_obj)
-            all_words_list.append(article_word_obj)
-        word_count += 1
+            try:
+                article_word_obj.add_article(article)
+                session.add(article_word_obj)
+                all_words_list.append(article_word_obj)
+            except Exception as e:
+                print(f'Exception caught: {e}')
+            word_count += 1
         if word_count % 1000 == 0:
             print("another 1000 words added")
             print(f'That took {time.time() - starting_time} seconds...')
