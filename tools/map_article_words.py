@@ -30,12 +30,7 @@ articles = Article.query.all()
 filter_general = ['www', '', ' ']
 starting_time = time.time()
 
-all_words_list = []
-
 result = zeeguu.db.engine.execute("SELECT min(article_id) FROM article_word_map").fetchone()
-# This is kind of an awkward way of finding the last tagged article,
-# though it definitely works as it check the last 100 words and all the
-# articles associated to it.
 min_id = result[0] or 10000000
 print(f'#### ID TO START AT: {min_id} ####')
 
@@ -68,9 +63,11 @@ for article in articles:
         try:
             stopwords = set(stopwords.words(language))
         except OSError as e:
+            stopwords = []
             print(f'Stopwords failed somehow: {e}')
         except AttributeError:
-            pass
+            stopwords = []
+
         article_word_obj = None
         word = word.strip()
         word = word.strip(":,\,,\",?,!,<,>")
@@ -84,28 +81,24 @@ for article in articles:
         elif word in stopwords:
             filtered_general += 1
         else:
-            for article_word in all_words_list:
-                if word == article_word.word:
-                    article_word_obj = article_word
-                    break
+            article_word_obj = ArticleWord.find_by_word(word)
             if article_word_obj is None:
                 article_word_obj = ArticleWord(word)
-            try:
-                article_word_obj.add_article(article)
-                session.add(article_word_obj)
-                all_words_list.append(article_word_obj)
-            except Exception as e:
-                print(f'Exception caught: {e}')
+            article_word_obj.add_article(article)
             word_count += 1
         if word_count % 1000 == 0:
             print("another 1000 words added")
             print(f'That took {time.time() - starting_time} seconds...')
 
     article_count += 1
-    if article_count % 1000 == 0:
-        print("another 1000 articles done and committed")
+    if article_count % 100 == 0:
         print(f'That took {time.time() - starting_time} seconds...')
-        session.commit()
+        try:
+            session.commit()
+            print("another 100 articles done and committed")
+        except Exception as e:
+            print(f'Exception during commit: {e}')
+
 
 ending_time = time.time()
 print(f'In a total of {ending_time - starting_time} seconds :')
