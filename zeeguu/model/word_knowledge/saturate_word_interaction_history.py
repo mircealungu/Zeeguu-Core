@@ -8,7 +8,7 @@ from zeeguu.model.bookmark import bookmark_exercise_mapping
 from nltk import word_tokenize
 from zeeguu.model.word_knowledge.word_interaction_history import WordInteractionHistory, WordInteractionEvent
 from zeeguu.constants import WIH_READ_NOT_CLICKED_IN_SENTENCE, WIH_READ_NOT_CLICKED_OUT_SENTENCE,\
-     WIH_READ_CLICKED, UMR_USER_FEEDBACK_ACTION
+     WIH_READ_CLICKED, UMR_USER_FEEDBACK_ACTION, TIMEDELTA
 from sqlalchemy.sql import func
 
 import re
@@ -64,32 +64,8 @@ def process_bookmarked_sentences(user_article, start_time=LONG_TIME_IN_THE_PAST,
     bookmarks = query.order_by(Bookmark.time).all()
     
     for bookmark in bookmarks:
-
-        # reading_sessions = UserReadingSession.find_by_user_and_article(user=user.id, article=user_article.article_id)
         
-        # #Find corresponding reading session based on the date of the timestamp
-        # for read_session in reading_sessions:
-        #     session_start_time = read_session.start_time
-        #     session_end_time = read_session.start_time + timedelta(seconds=read_session.duration/1000)
-
-        #     # if bookmark.time > session_start_time and bookmark.time < session_end_time:
-        #     #     current_read_session = read_session
-        #     #     break
-
-        # #If no reading session exists
-        session_start_time = Bookmark.time - timedelta(minutes=2)
-
-        #Find previous bookmarks in same reading session and article
-        query = Bookmark.query.join(Text).filter(Bookmark.user == user).filter(Text.url == user_article.article.url)
-        query = query.filter(Bookmark.time > session_start_time).filter(Bookmark.time < bookmark.time)
-        bookmarks_in_same_session = query.order_by(Bookmark.time).all()
-        same_session_bmk_times = []
-        same_session_bmk_words = [bookmark.origin.word]
-        for bmk in bookmarks_in_same_session: 
-            same_session_bmk_times.append(int(bmk.time.strftime("%s")))
-            same_session_bmk_words.append(bmk.origin.word)
-        
-        #Get text in the sentece of the bookmark
+        #Get text in the sentence of the bookmark
         sentence = Text.query.filter(Text.id == bookmark.text_id).one().content
 
         # Get unique words in sentence
@@ -97,35 +73,20 @@ def process_bookmarked_sentences(user_article, start_time=LONG_TIME_IN_THE_PAST,
 
         for word in unique_words_in_sentence:
 
-            #Get UserWord object
+            # label the word as clicked or not clicked
+            if word in bookmark.origin.word.lower():
+                event_type = WIH_READ_CLICKED
+            else:
+                event_type = WIH_READ_NOT_CLICKED_IN_SENTENCE
+
+            #Get or create word object
             user_word = UserWord.find_or_create(session=session, _word=word, language=user_article.article.language)
 
             #Find a WordInteractionHistory
             word_interaction_history = WordInteractionHistory.find_or_create(user=user, word=user_word)
 
-            #Find if the word has been inserted by previous bookmarks in th same reading session
-            word_history_events = word_interaction_history.interaction_history
-
-            if word in same_session_bmk_words:
-                event_type = WIH_READ_CLICKED
-            else:
-                event_type = WIH_READ_NOT_CLICKED_IN_SENTENCE
-                    
-            if word_history_events:
-                for event in word_history_events:
-                    
-                    #If there is a match then update the timestamp
-                    if event.seconds_since_epoch in same_session_bmk_times:
-                        event.seconds_since_epoch = int(bookmark.time.strftime("%s"))
-                        #If the precedence order of events is higher, update the event type (clicked > not clicked in sentence)
-                        if word in same_session_bmk_words:
-                            event.event_type = WIH_READ_CLICKED
-                    else:
-                        #Create a new event
-                        word_interaction_history.add_event_insert(event_type, bookmark.time)
-            else:
-                
-                word_interaction_history.add_event_insert(event_type, bookmark.time)
+            #Add event
+            word_interaction_history.add_event_insert(event_type, bookmark.time)
             
             word_interaction_history.save_to_db(session)
 
@@ -135,19 +96,20 @@ def process_bookmarked_sentences(user_article, start_time=LONG_TIME_IN_THE_PAST,
 #Fill reading sessions word history information
 for ua in UserArticle.query.all():
 
-    if ua.opened == None:
+    if ua.opened == None or ua.article == None:
         continue
 
     user = ua.user
     text = ua.article.content
+
     print(ua.id)
 
     fully_read_dates = get_fully_read_timestamps(ua)
 
     #If the article has nos been marked as fully read, we only process the sentences of the bookmarks
     if not fully_read_dates:
-        continue
         process_bookmarked_sentences(ua)
+        continue
     else: #If article has been fully read
 
         #If article is fully read, process the remaning words as not read out of bookmarked sentence

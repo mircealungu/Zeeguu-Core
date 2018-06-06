@@ -20,7 +20,10 @@ from zeeguu.constants import (
                         WIH_WRONG_EX_RECOGNIZE,
                         WIH_WRONG_EX_TRANSLATE,
                         WIH_WRONG_EX_CHOICE,
-                        WIH_WRONG_EX_MATCH
+                        WIH_WRONG_EX_MATCH,
+                        WIH_READ_CLICKED,
+                        WIH_READ_NOT_CLICKED_IN_SENTENCE,
+                        TIMEDELTA
 )
 
 
@@ -86,6 +89,8 @@ class WordInteractionHistory(db.Model):
     # the interaction history stored as string
     interaction_history_json = db.Column(UnicodeText())
 
+    db.UniqueConstraint(user_id, word_id)
+
     def __init__(self, user:User, word: UserWord):
         # never work with the self._interaction_history itself
         # always, work with the method interaction_history()
@@ -93,7 +98,7 @@ class WordInteractionHistory(db.Model):
         self.word = word
         self.interaction_history = []
 
-    def add_event_insert(self, event_type, timestamp):
+    def add_event_insert(self, event_type, timestamp, timedelta = TIMEDELTA):
         """
             add a new event, compares to previous events in order to only store most recent events
             and avoid duplicate events
@@ -105,24 +110,36 @@ class WordInteractionHistory(db.Model):
         # json can't serialize timestamps, so we simply
         seconds_since_epoch = int(timestamp.strftime("%s"))
 
-        # Don't add event if at already occurs
+        # Don't add event if it already occurs
         if self.time_exists(timestamp):
             return
 
-        # insert if less than 50 events recorded
-        if len(self.interaction_history) < MAX_EVENT_HISTORY_LENGTH:
-            self.interaction_history.insert(0, WordInteractionEvent(event_type, seconds_since_epoch))
+        if len(self.interaction_history) == 0:
+            self.interaction_history.append(WordInteractionEvent(event_type, seconds_since_epoch))
+
+        # change event if latest event was already recorded within the timedelta
+        elif self.interaction_history[-1].seconds_since_epoch + timedelta >= seconds_since_epoch and\
+                (event_type == WIH_READ_CLICKED or event_type == WIH_READ_NOT_CLICKED_IN_SENTENCE):
+            self.interaction_history[-1].seconds_since_epoch = seconds_since_epoch
+            if event_type == WIH_READ_CLICKED:
+                self.interaction_history[-1].event_type = event_type
+
+        # append if less than 50 events recorded
+        elif len(self.interaction_history) < MAX_EVENT_HISTORY_LENGTH:
+            self.interaction_history.append(WordInteractionEvent(event_type, seconds_since_epoch))
+            self.interaction_history.sort(key=lambda x: x.seconds_since_epoch)
+
         # otherwise only insert if oldest event is older than new event
-        else:
-            self.interaction_history.sort(key=lambda x: x[1])
-            if seconds_since_epoch > self.interaction_history[0]:
-                self.interaction_history[0] = WordInteractionEvent(event_type, seconds_since_epoch)
+        elif seconds_since_epoch > self.interaction_history[0].seconds_since_epoch:
+            self.interaction_history[0] = WordInteractionEvent(event_type, seconds_since_epoch)
+            self.interaction_history.sort(key=lambda x: x.seconds_since_epoch)
 
 
-    def add_event(self, event_type, timestamp):
+    def add_event(self, event_type, timestamp, timedelta = TIMEDELTA):
         """
             add a new event, no comparison or duplication check involved, use
             only if an original event is certain
+            use for live implementation where time goes in one direction =)
         :param event_type:
         :param timestamp:
         :return:
@@ -133,6 +150,23 @@ class WordInteractionHistory(db.Model):
 
         self.interaction_history.insert(0, WordInteractionEvent(event_type, seconds_since_epoch))
         self.interaction_history = self.interaction_history[0:MAX_EVENT_HISTORY_LENGTH]
+
+        # change event if an event was already recorded within the timedelta
+        if self.interaction_history[-1].seconds_since_epoch + timedelta >= seconds_since_epoch:
+            self.interaction_history[-1].seconds_since_epoch = seconds_since_epoch
+            if event_type == WIH_READ_CLICKED:
+                self.interaction_history[-1].event_type = event_type
+
+        # append if less than 50 events recorded
+        elif len(self.interaction_history) < MAX_EVENT_HISTORY_LENGTH:
+            self.interaction_history.append(WordInteractionEvent(event_type, seconds_since_epoch))
+
+        # append new event and pop oldest event
+        else:
+            self.interaction_history.append(WordInteractionEvent(event_type, seconds_since_epoch))
+            self.interaction_history.pop(0)
+
+
 
     def time_exists(self, timestamp):
         """
