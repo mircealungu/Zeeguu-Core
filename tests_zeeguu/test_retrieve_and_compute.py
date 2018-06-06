@@ -44,15 +44,15 @@ class TestRetrieveAndCompute(ModelTestMixIn):
 
     def testDownloadWithWords(self):
         feed = RSSFeedRule().feed1
-        word = ArticleWord("verwahren")
-        zeeguu.db.session.add(word)
-        zeeguu.db.session.commit()
 
         download_from_feed(feed, zeeguu.db.session, 3)
 
         article = feed.get_articles(self.user, limit=2)[0]
 
-        assert (article in word.articles)
+        word = article.title.split()[2]
+        articleword = ArticleWord.find_by_word(word)
+
+        assert (article in articleword.articles)
 
     def testSufficientQuality(self):
         u = "https://www.propublica.org/article/" \
