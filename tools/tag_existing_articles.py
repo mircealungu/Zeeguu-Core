@@ -28,7 +28,7 @@ languages = Language.available_languages()
 
 for language in languages:
     articles = Article.query.filter(Article.language == language).all()
-    loc_topics = LocalizedTopic.get_topics_by_language(language)
+    loc_topics = LocalizedTopic.all_for_language(language)
 
     for article in articles:
         counter += 1
