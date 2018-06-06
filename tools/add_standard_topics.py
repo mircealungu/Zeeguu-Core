@@ -19,15 +19,21 @@ from zeeguu.model.localized_topic import LocalizedTopic
 session = zeeguu.db.session
 
 count = 0
-TOPICS = ["Sport", "Health", "Technology"]
+TOPICS = ["Sport", "Health", "Technology", "Politics"]
 LANGUAGES = [Language.find("es"), Language.find("fr"), Language.find("nl"), Language.find("de")
             , Language.find("en"), Language.find("it")]
-SPANISH_TOPICS = [["Sport", "juego sport deporte"], ["Salud", "salud hospital"], ["Technologia", "tech technologia"]]
-FRENCH_TOPICS = [["Sport", "sport divertissement jouer"], ["Sante", "sante hopital"], ["Technologie", "tech technologie"]]
-DUTCH_TOPICS = [["Sport", "sport spel"], ["Gezondheid", "gezondheid ziekenhuis gezond"], ["Technologie", "tech technologie"]]
-GERMAN_TOPICS = [["Sport", "sport sportart spielart abart"], ["Gesundheit", "gesundheit gesundheitszustand"], ["Technologie", "technologie technik"]]
-ENGLISH_TOPICS = [["Sport", "sport playing"], ["Health", "health hospital healthy"], ["Technology", "tech technology"]]
-ITALIAN_TOPICS = [["Sport", "sport gioco divertimento"], ["Salute", "salute salutare hospedale"], ["Technologia", "tech technologia"]]
+SPANISH_TOPICS = [["Sport", "juego sport deporte"], ["Salud", "salud hospital"]
+    , ["Technologia", "tech technologia"], ["Politica", "politica diplomatico"]]
+FRENCH_TOPICS = [["Sport", "sport divertissement jouer"], ["Sante", "sante hopital"]
+    , ["Technologie", "tech technologie"], ["Politique", "politique politologie"]]
+DUTCH_TOPICS = [["Sport", "sport spel"], ["Gezondheid", "gezondheid ziekenhuis gezond"]
+    , ["Technologie", "tech technologie"], ["Politiek", "politiek politisch"]]
+GERMAN_TOPICS = [["Sport", "sport sportart spielart abart"], ["Gesundheit", "gesundheit gesundheitszustand"]
+    , ["Technologie", "technologie technik"], ["Politik", "politik politologie"]]
+ENGLISH_TOPICS = [["Sport", "sport playing"], ["Health", "health hospital healthy"]
+    , ["Technology", "tech technology"], ["Politics", "politics politic"]]
+ITALIAN_TOPICS = [["Sport", "sport gioco divertimento"], ["Salute", "salute salutare hospedale"]
+    , ["Technologia", "tech technologia"], ["Politica", "politica"]]
 
 
 def add_topic(title):
