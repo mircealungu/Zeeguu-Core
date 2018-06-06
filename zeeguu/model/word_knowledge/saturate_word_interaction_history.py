@@ -36,12 +36,12 @@ def get_fully_read_timestamps(user_article):
     query = UserActivityData.query.filter(UserActivityData.user_id == user_article.user_id)
     query = query.filter(UserActivityData.event == UMR_USER_FEEDBACK_ACTION)
     query = query.filter(UserActivityData.value == url)
-    query = query.filter(UserActivityData.extra_data.like(ARTICLE_FULLY_READ))
+    query = query.filter(UserActivityData.extra_data.like("%finished%"))
 
     full_read_activity_results = query.all()
 
     if full_read_activity_results:
-        return full_read_activity_results.time
+        return [result.time for result in full_read_activity_results]
     else:
         return full_read_activity_results
 
@@ -146,6 +146,7 @@ for ua in UserArticle.query.all():
 
     #If the article has nos been marked as fully read, we only process the sentences of the bookmarks
     if not fully_read_dates:
+        continue
         process_bookmarked_sentences(ua)
     else: #If article has been fully read
 
