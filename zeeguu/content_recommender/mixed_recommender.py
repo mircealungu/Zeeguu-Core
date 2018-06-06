@@ -42,22 +42,31 @@ def article_recommendations_for_user(user, count):
     :return:
 
     """
+    start = time.time()
+
     subscribed_articles = get_subscribed_articles_for_user(user)
+    print(f'Getting the topics/searches took {time.time() - start} seconds')
     filter_articles = get_filtered_articles_for_user(user)
+    print(f'Getting the filters/searchfilters took {time.time() - start} seconds')
     all_articles = get_user_articles_sources_languages(user)
+    print(f'Getting the sources/languages took {time.time() - start} seconds')
 
     # Get only the articles for the topics and searches subscribed
     if len(subscribed_articles) > 0:
-        all_articles = [article for article in subscribed_articles if article in all_articles]
+        s = set(all_articles)
+        all_articles = [article for article in subscribed_articles if article in s]
 
     # If there are any filters, filter out all these articles
     if len(filter_articles) > 0:
-        all_articles = [article for article in all_articles if article not in filter_articles]
+        s = set(all_articles)
+        all_articles = [article for article in s if article not in filter_articles]
 
+    print(f'Doing all the comprehensions took {time.time() - start} seconds')
     log('Sorting articles...')
     all_articles.sort(key=lambda each: each.published_time, reverse=True)
     log('Sorted articles')
 
+    print(f'sorting took {time.time() - start} seconds')
     return [user_article_info(user, article) for article in all_articles[:count]]
 
 

@@ -102,8 +102,9 @@ while restart_loop is True:
                 print("another 100 articles done and committed")
             except Exception as e:
                 print(f'Exception during commit: {e}')
+                session.rollback()
                 result = zeeguu.db.engine.execute("SELECT min(article_id) FROM article_word_map").fetchone()
-                min_id = result[0]
+                min_id = result[0] - 1
                 restart_loop = True
                 break
 
