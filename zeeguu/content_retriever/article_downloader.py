@@ -8,13 +8,14 @@
 from datetime import datetime
 
 import newspaper
+import re
 
 import zeeguu
 
 from zeeguu import model
 from zeeguu.content_retriever.content_cleaner import cleanup_non_content_bits
 from zeeguu.content_retriever.quality_filter import sufficient_quality
-from zeeguu.model import Url, RSSFeed, LocalizedTopic
+from zeeguu.model import Url, RSSFeed, LocalizedTopic, ArticleWord
 from zeeguu.constants import SIMPLE_TIME_FORMAT
 
 LOG_CONTEXT = "FEED RETRIEVAL"
@@ -113,9 +114,32 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
                     session.commit()
                     downloaded += 1
 
+                    # Add possible topics to the new article
                     for loc_topic in LocalizedTopic.query.all():
                         if loc_topic.language == new_article.language and loc_topic.matches_article(new_article):
                             new_article.add_topic(loc_topic.topic)
+                            session.add(new_article)
+
+                    # Map the words for the search
+                    all_words = title.split()
+                    all_words.append(re.split('; |, |\*|-|%20|/', o.path))
+                    all_words.append(o.netloc.split('.'))
+                    for word in all_words:
+                        word.strip(":,\,,\",?,!,<,>").lower()
+                        if word in ['www', '', ' '] or word.isdigit() or len(word) < 3 or len(word) > 25:
+                            continue
+                        else:
+                            article_word_obj = ArticleWord.find_by_word(word)
+                            if article_word_obj is None:
+                                article_word_obj = ArticleWord(word)
+                            article_word_obj.add_article(new_article)
+                            session.add(article_word_obj)
+
+                    try:
+                        session.commit()
+                    except Exception as e:
+                        zeeguu.log(f'{LOG_CONTEXT}: Something went wrong when committing words/topic to article: {e}')
+
             except Exception as e:
                 # raise e
                 import sys

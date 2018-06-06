@@ -114,8 +114,3 @@ print(f'A total of {word_count} words handled')
 print(f'A total of {filtered_general} words filtered general')
 print(f'A total of {filtered_length} words filtered length')
 print(f'A total of {filtered_digits} words filtered digit')
-
-
-
-
-
