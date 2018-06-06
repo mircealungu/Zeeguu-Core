@@ -31,3 +31,6 @@ WIH_WRONG_EX_RECOGNIZE = 7
 WIH_WRONG_EX_TRANSLATE = 8
 WIH_WRONG_EX_CHOICE = 9
 WIH_WRONG_EX_MATCH = 10
+
+# time delta in which consecutive bookmarks are merged together
+TIMEDELTA = 120
