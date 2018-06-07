@@ -33,7 +33,6 @@ from .user_preference import UserPreference
 from .session import Session
 from .unique_code import UniqueCode
 from .word_knowledge.word_interaction_history import WordInteractionHistory
-from .learner_stats.word_exercise_stats import ExerciseBasedProbability
 
 from .article import Article
 from .topic import Topic

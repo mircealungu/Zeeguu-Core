@@ -1,15 +1,13 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import zeeguu
-from zeeguu import model
-from zeeguu.model import User, RSSFeed, Url, Article, DomainName, Bookmark, UserArticle, Text, \
-    UserWord, ExerciseBasedProbability, Exercise, ExerciseOutcome, UserActivityData, UserReadingSession
+from zeeguu.model import Bookmark, UserArticle, Text, \
+    UserWord, UserActivityData
 from zeeguu.model.bookmark import bookmark_exercise_mapping
-from nltk import word_tokenize
-from zeeguu.model.word_knowledge.word_interaction_history import WordInteractionHistory, WordInteractionEvent
-from zeeguu.constants import WIH_READ_NOT_CLICKED_IN_SENTENCE, WIH_READ_NOT_CLICKED_OUT_SENTENCE,\
-     WIH_READ_CLICKED, UMR_USER_FEEDBACK_ACTION, TIMEDELTA
-from sqlalchemy.sql import func
+
+from zeeguu.model.word_knowledge.word_interaction_history import WordInteractionHistory
+from zeeguu.constants import WIH_READ_NOT_CLICKED_IN_SENTENCE, WIH_READ_NOT_CLICKED_OUT_SENTENCE, \
+    WIH_READ_CLICKED, UMR_USER_FEEDBACK_ACTION
 
 import re
 
@@ -19,10 +17,12 @@ LONG_TIME_IN_THE_PAST = "2000-01-01T00:00:00"
 
 session = zeeguu.db.session
 
-def extract_words_from_text(text):#Tokenize the words and create a set of unique words
+
+def extract_words_from_text(text):  # Tokenize the words and create a set of unique words
     words = re.findall(r'[a-zA-Z]+', text)
     words = [w.lower() for w in words]
     return set(words)
+
 
 def get_fully_read_timestamps(user_article):
     """
@@ -45,6 +45,7 @@ def get_fully_read_timestamps(user_article):
     else:
         return full_read_activity_results
 
+
 def process_bookmarked_sentences(user_article, start_time=LONG_TIME_IN_THE_PAST, end_time=datetime.now()):
     """
         Process all bookmarks for the user_article within the specified times
@@ -58,14 +59,14 @@ def process_bookmarked_sentences(user_article, start_time=LONG_TIME_IN_THE_PAST,
     """
     user = user_article.user
 
-    #Get all the bookmarks for the specified article and dates
+    # Get all the bookmarks for the specified article and dates
     query = Bookmark.query.join(Text).filter(Bookmark.user == user).filter(Text.url == user_article.article.url)
     query = query.filter(Bookmark.time >= start_time).filter(Bookmark.time <= end_time)
     bookmarks = query.order_by(Bookmark.time).all()
-    
+
     for bookmark in bookmarks:
-        
-        #Get text in the sentence of the bookmark
+
+        # Get text in the sentence of the bookmark
         sentence = Text.query.filter(Text.id == bookmark.text_id).one().content
 
         # Get unique words in sentence
@@ -79,21 +80,22 @@ def process_bookmarked_sentences(user_article, start_time=LONG_TIME_IN_THE_PAST,
             else:
                 event_type = WIH_READ_NOT_CLICKED_IN_SENTENCE
 
-            #Get or create word object
+            # Get or create word object
             user_word = UserWord.find_or_create(session=session, _word=word, language=user_article.article.language)
 
-            #Find a WordInteractionHistory
+            # Find a WordInteractionHistory
             word_interaction_history = WordInteractionHistory.find_or_create(user=user, word=user_word)
 
-            #Add event
+            # Add event
             word_interaction_history.add_event_insert(event_type, bookmark.time)
-            
+
             word_interaction_history.save_to_db(session)
 
     return bookmarks
 
-#==============================READING================================
-#Fill reading sessions word history information
+
+# ==============================READING================================
+# Fill reading sessions word history information
 for ua in UserArticle.query.all():
 
     if ua.opened == None or ua.article == None:
@@ -106,47 +108,44 @@ for ua in UserArticle.query.all():
 
     fully_read_dates = get_fully_read_timestamps(ua)
 
-    #If the article has nos been marked as fully read, we only process the sentences of the bookmarks
+    # If the article has nos been marked as fully read, we only process the sentences of the bookmarks
     if not fully_read_dates:
         process_bookmarked_sentences(ua)
         continue
-    else: #If article has been fully read
+    else:  # If article has been fully read
 
-        #If article is fully read, process the remaning words as not read out of bookmarked sentence
-        #NOTE: The article can be fully read multiple times, therefore we only consider the corresponding bookmarks
+        # If article is fully read, process the remaning words as not read out of bookmarked sentence
+        # NOTE: The article can be fully read multiple times, therefore we only consider the corresponding bookmarks
 
-        #Get all the unique article words
+        # Get all the unique article words
         unique_words_in_article = extract_words_from_text(text)
 
-        #For each fully read date, we process the corresponding bookmarked sentences
+        # For each fully read date, we process the corresponding bookmarked sentences
         previous_fully_read_date = LONG_TIME_IN_THE_PAST
         for fully_read_date in fully_read_dates:
             processed_bookmarks = process_bookmarked_sentences(ua, previous_fully_read_date, fully_read_date)
             previous_fully_read_date = fully_read_date
 
-            #Extract words from bookmarked sentences
+            # Extract words from bookmarked sentences
             for bookmark in processed_bookmarks:
-
-                #Get text in the sentece of the bookmark
+                # Get text in the sentece of the bookmark
                 sentence = Text.query.filter(Text.id == bookmark.text_id).one().content
 
                 # Get unique words in sentence
                 unique_words_in_sentence = extract_words_from_text(sentence)
 
-                #Remove already processed words
+                # Remove already processed words
                 unique_words_in_article = unique_words_in_article.difference(unique_words_in_sentence)
 
-            #Insert remaining words as not clicked out of sentence
+            # Insert remaining words as not clicked out of sentence
             for word in unique_words_in_article:
                 user_word = UserWord.find_or_create(session=session, _word=word, language=ua.article.language)
                 word_interaction_history = WordInteractionHistory.find_or_create(user=user, word=user_word)
                 word_interaction_history.add_event_insert(WIH_READ_NOT_CLICKED_OUT_SENTENCE, fully_read_date)
-                
+
                 word_interaction_history.save_to_db(session)
 
-
-
-#==============================EXERCISES================================
+# ==============================EXERCISES================================
 # words encountered in exercises
 bmex_mapping = data = session.query(bookmark_exercise_mapping).all()
 # print(bmex_mapping)
@@ -168,17 +167,16 @@ for bm_id, ex_id in bmex_mapping:
     wih.add_event_insert(word_interaction_event, ex.time)
     wih.save_to_db(session)
 
-#TODO: store last processed exercise id
+# TODO: store last processed exercise id
 
 
+# go through bookmarks
+# for each bookmark extract user and textid
+# retrieve content of testid and create a set of words
+# for each word determine whether it has been translated (use bookmark)
+# apply unique labels for words translated and not translated
 
-    #go through bookmarks
-    # for each bookmark extract user and textid
-    # retrieve content of testid and create a set of words
-    # for each word determine whether it has been translated (use bookmark)
-    # apply unique labels for words translated and not translated
+# for each word determine whether it has a history otherwise create a new one
+# apply changes in history for the word
 
-    # for each word determine whether it has a history otherwise create a new one
-    # apply changes in history for the word
-
-    # save and repeat for next bookmark
+# save and repeat for next bookmark
