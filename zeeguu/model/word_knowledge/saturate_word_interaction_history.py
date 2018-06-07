@@ -19,14 +19,17 @@ session = zeeguu.db.session
 
 
 def extract_words_from_text(text):  # Tokenize the words and create a set of unique words
-    words = re.findall(r'[a-zA-Z]+', text)
+    words = re.findall(r'(?u)\w+', text)
     words = [w.lower() for w in words]
     return set(words)
 
 
 def get_fully_read_timestamps(user_article):
     """
+
         Find all the fully read dates of an article by a user
+        If a user fully reads an article multiple times,
+        this returns all those dates (timestamps)
 
         return: list of timestamps
     """
@@ -40,10 +43,7 @@ def get_fully_read_timestamps(user_article):
 
     full_read_activity_results = query.all()
 
-    if full_read_activity_results:
-        return [result.time for result in full_read_activity_results]
-    else:
-        return full_read_activity_results
+    return [result.time for result in full_read_activity_results]
 
 
 def process_bookmarked_sentences(user_article, start_time=LONG_TIME_IN_THE_PAST, end_time=datetime.now()):
@@ -87,7 +87,7 @@ def process_bookmarked_sentences(user_article, start_time=LONG_TIME_IN_THE_PAST,
             word_interaction_history = WordInteractionHistory.find_or_create(user=user, word=user_word)
 
             # Add event
-            word_interaction_history.add_event_insert(event_type, bookmark.time)
+            word_interaction_history.insert_event(event_type, bookmark.time)
 
             word_interaction_history.save_to_db(session)
 
@@ -121,6 +121,9 @@ for ua in UserArticle.query.all():
         unique_words_in_article = extract_words_from_text(text)
 
         # For each fully read date, we process the corresponding bookmarked sentences
+        # this is because an article can be read multiple times
+        # thus, the second time when it was fully read
+        # the analyzed bopokmarks might be different
         previous_fully_read_date = LONG_TIME_IN_THE_PAST
         for fully_read_date in fully_read_dates:
             processed_bookmarks = process_bookmarked_sentences(ua, previous_fully_read_date, fully_read_date)
@@ -141,7 +144,7 @@ for ua in UserArticle.query.all():
             for word in unique_words_in_article:
                 user_word = UserWord.find_or_create(session=session, _word=word, language=ua.article.language)
                 word_interaction_history = WordInteractionHistory.find_or_create(user=user, word=user_word)
-                word_interaction_history.add_event_insert(WIH_READ_NOT_CLICKED_OUT_SENTENCE, fully_read_date)
+                word_interaction_history.insert_event(WIH_READ_NOT_CLICKED_OUT_SENTENCE, fully_read_date)
 
                 word_interaction_history.save_to_db(session)
 
@@ -164,7 +167,7 @@ for bm_id, ex_id in bmex_mapping:
 
     userWord = UserWord.find_or_create(session, bm.origin.word.lower(), bm.origin.language)
     wih = WordInteractionHistory.find_or_create(bm.user, userWord)
-    wih.add_event_insert(word_interaction_event, ex.time)
+    wih.insert_event(word_interaction_event, ex.time)
     wih.save_to_db(session)
 
 # TODO: store last processed exercise id

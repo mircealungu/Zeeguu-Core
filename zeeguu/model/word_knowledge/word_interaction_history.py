@@ -98,9 +98,12 @@ class WordInteractionHistory(db.Model):
         self.word = word
         self.interaction_history = []
 
-    def add_event_insert(self, event_type, timestamp, timedelta = TIMEDELTA):
+    def insert_event(self, event_type, timestamp, timedelta = TIMEDELTA):
         """
+            inserts the event in the sorted list
+
             add a new event, compares to previous events in order to only store most recent events
+
             and avoid duplicate events
         :param event_type:
         :param timestamp:
