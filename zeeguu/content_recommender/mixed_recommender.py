@@ -182,14 +182,14 @@ def get_user_articles_sources_languages(user, limit):
         for registration in user_sources:
             feed = registration.rss_feed
             new_articles = feed.get_articles(user, limit=limit, most_recent_first=True)
-            all_articles.append(new_articles)
+            all_articles.extend(new_articles)
 
     # If there are no sources available, get the articles based on the languages
     else:
         for language in user_languages:
             log(f'Getting articles for {language}')
             new_articles = language.get_articles(limit=limit, most_recent_first=True)
-            all_articles.append(new_articles)
+            all_articles.extend(new_articles)
             log(f'Added articles for {language}')
 
     return all_articles
