@@ -8,7 +8,7 @@ from tests_zeeguu.rules.user_rule import UserRule
 from zeeguu.content_retriever.content_cleaner import cleanup_non_content_bits
 from zeeguu.content_retriever.article_downloader import download_from_feed
 from zeeguu.content_retriever.quality_filter import sufficient_quality
-from zeeguu.model import Topic, LocalizedTopic
+from zeeguu.model import Topic, LocalizedTopic, ArticleWord
 
 
 class TestRetrieveAndCompute(ModelTestMixIn):
@@ -41,7 +41,18 @@ class TestRetrieveAndCompute(ModelTestMixIn):
         article = feed.get_articles(self.user, limit=2)[0]
 
         assert (topic in article.topics)
-        # print (topic.all_articles())
+
+    def testDownloadWithWords(self):
+        feed = RSSFeedRule().feed1
+
+        download_from_feed(feed, zeeguu.db.session, 3)
+
+        article = feed.get_articles(self.user, limit=2)[0]
+
+        word = article.title.split()[2]
+        articleword = ArticleWord.find_by_word(word)
+
+        assert (article in articleword.articles)
 
     def testSufficientQuality(self):
         u = "https://www.propublica.org/article/" \

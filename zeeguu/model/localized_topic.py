@@ -29,18 +29,18 @@ class LocalizedTopic(db.Model):
     language_id = Column(Integer, ForeignKey(Language.id))
     language = relationship(Language)
 
-    localized_name = Column(String(30))
+    topic_translated = Column(String(30))
 
     keywords = Column(String(1024))
 
     def __init__(self, topic: Topic, language: Language, topic_translated: str, keywords: str=""):
         self.topic = topic
         self.language = language
-        self.localized_name = topic_translated
+        self.topic_translated = topic_translated
         self.keywords = keywords
 
     def __repr__(self):
-        return f'<Localized topic {self.topic} ({self.language}) : {self.localized_name}>'
+        return f'<Localized topic {self.topic} ({self.language}) : {self.topic_translated}>'
 
     def matches_article(self, article):
         keywords = self.keywords.strip().split(" ")

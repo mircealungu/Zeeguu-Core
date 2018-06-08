@@ -53,7 +53,6 @@ class ArticleWord(db.Model):
         try:
             return cls.query.filter(cls.word == word).one()
         except Exception as e:
-            print(e)
             return None
 
     @classmethod
