@@ -42,14 +42,10 @@ def article_recommendations_for_user(user, count):
     :return:
 
     """
-    start = time.time()
-
+    
     subscribed_articles = get_subscribed_articles_for_user(user)
-    print(f'Getting the topics/searches took {time.time() - start} seconds')
     filter_articles = get_filtered_articles_for_user(user)
-    print(f'Getting the filters/searchfilters took {time.time() - start} seconds')
     all_articles = get_user_articles_sources_languages(user)
-    print(f'Getting the sources/languages took {time.time() - start} seconds')
 
     # Get only the articles for the topics and searches subscribed
     if len(subscribed_articles) > 0:
@@ -61,12 +57,10 @@ def article_recommendations_for_user(user, count):
         s = set(all_articles)
         all_articles = [article for article in s if article not in filter_articles]
 
-    print(f'Doing all the comprehensions took {time.time() - start} seconds')
     log('Sorting articles...')
     all_articles.sort(key=lambda each: each.published_time, reverse=True)
     log('Sorted articles')
 
-    print(f'sorting took {time.time() - start} seconds')
     return [user_article_info(user, article) for article in all_articles[:count]]
 
 
@@ -174,14 +168,14 @@ def get_user_articles_sources_languages(user):
     if len(user_sources) > 0:
         for registration in user_sources:
             feed = registration.rss_feed
-            new_articles = feed.get_articles(user, most_recent_first=True)
+            new_articles = feed.get_articles(user, limit=10000, most_recent_first=True)
             all_articles.extend(new_articles)
 
     # If there are no sources available, get the articles based on the languages
     else:
         for language in user_languages:
             log(f'Getting articles for {language}')
-            new_articles = language.get_articles(most_recent_first=True)
+            new_articles = language.get_articles(limit=10000, most_recent_first=True)
             all_articles.extend(new_articles)
             log(f'Added articles for {language}')
 
