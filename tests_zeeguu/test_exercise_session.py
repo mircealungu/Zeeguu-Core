@@ -24,8 +24,10 @@ class UserExerciseSessionTest(ModelTestMixIn, TestCase):
         self.exercise_session_timeout = UserExerciseSession.get_exercise_session_timeout()
         self.VERY_FAR_IN_THE_PAST = '2000-01-01T00:00:00'
         self.VERY_FAR_IN_THE_FUTURE = '2030-01-01T00:00:00'
+        self.CURRENT_TIME = datetime.now()
         self.TIMEOUT_MINUTES_IN_THE_PAST = datetime.now() - timedelta(minutes=self.exercise_session_timeout)
         self.TWICE_TIMEOUT_MINUTES_IN_THE_PAST = datetime.now() - timedelta(minutes=self.exercise_session_timeout * 2)
+        
 
     # One result scenario
     def test__get_exercise_session1(self):
@@ -49,7 +51,7 @@ class UserExerciseSessionTest(ModelTestMixIn, TestCase):
         assert (False == new_exercise_session._is_still_active())
 
     def test__update_last_use(self):
-        current_time = datetime.now()
+        current_time = self.CURRENT_TIME
         updated_session = self.ex_session1._update_last_action_time(db_session, current_time)
         assert (current_time  == updated_session.last_action_time)
 
@@ -60,14 +62,14 @@ class UserExerciseSessionTest(ModelTestMixIn, TestCase):
     # Scenario 1 = There is an active and still valid session
     def test__update_exercise_session_scenario1(self):
         self.ex_session1.last_action_time = self.TIMEOUT_MINUTES_IN_THE_PAST
-        self.exercises[0].time = datetime.now()
+        self.exercises[0].time = self.CURRENT_TIME
         updated_session = UserExerciseSession.update_exercise_session(self.exercises[0], db_session)
         assert updated_session == self.ex_session1
 
     # Scenario2 = There is an active but no longer valid session
     def test__update_exercise_session_scenario2(self):
         self.ex_session1.last_action_time = self.TWICE_TIMEOUT_MINUTES_IN_THE_PAST
-        self.exercises[0].time = datetime.now()
+        self.exercises[0].time = self.CURRENT_TIME
         resulting_exercise_session = UserExerciseSession.update_exercise_session(self.exercises[0], db_session)
         assert resulting_exercise_session != self.ex_session1
 

@@ -14,7 +14,7 @@ from langdetect import detect
 
 db = zeeguu.db
 
-article_topic_mapping = Table('article_topic_mapping',
+article_topic_map = Table('article_topic_map',
                               db.Model.metadata,
                               Column('article_id', Integer,
                                      ForeignKey('article.id')),
@@ -54,16 +54,17 @@ class Article(db.Model):
 
     from zeeguu.model.topic import Topic
     topics = relationship(Topic,
-                          secondary=article_topic_mapping,
+                          secondary="article_topic_map",
                           backref=backref('articles'))
 
     # Few words in an article is very often not an
-    # actul article but the caption for a video / comic.
+    # actual article but the caption for a video / comic.
     # Or maybe an article that's behind a paywall and
     # has only the first paragraph available
     MINIMUM_WORD_COUNT = 90
 
-    def __init__(self, url, title, authors, content, summary, published_time, rss_feed, language, broken=0):
+    def __init__(self, url, title, authors, content, summary, published_time, rss_feed,
+                 language, broken=0):
         self.url = url
         self.title = title
         self.authors = authors
@@ -125,6 +126,13 @@ class Article(db.Model):
 
     def add_topic(self, topic):
         self.topics.append(topic)
+
+    def add_search(self, search):
+        self.searches.append(search)
+
+    def remove_search(self, search):
+        print("trying to remove a search term")
+        self.searches.remove(search)
 
     def star_for_user(self, session, user, state=True):
         from zeeguu.model.user_article import UserArticle
@@ -207,6 +215,19 @@ class Article(db.Model):
             return None
 
     @classmethod
+    def all_older_than(cls, days):
+        import datetime
+        today = datetime.date.today()
+        long_ago = today - datetime.timedelta(days)
+        try:
+            return cls.query.filter(
+                cls.published_time < long_ago
+            ).all()
+
+        except NoResultFound:
+            return []
+
+    @classmethod
     def exists(cls, article):
         try:
             cls.query.filter(
@@ -215,3 +236,4 @@ class Article(db.Model):
             return True
         except NoResultFound:
             return False
+

@@ -116,7 +116,7 @@ class UserExerciseSession(db.Model):
 
     def _update_last_action_time(self, db_session, current_time=datetime.now()):
         """
-            Updates the last_action_time field. 
+            Updates the last_action_time field and computes the duration of the exercise session
 
             Parameters:
             db_session = database session
@@ -125,6 +125,11 @@ class UserExerciseSession(db.Model):
 
             returns: The exercise session
         """
+
+        #Update duration
+        current_session_length = current_time - self.start_time
+        self.duration = current_session_length.total_seconds() * 1000 #Convert to miliseconds
+
         self.last_action_time = current_time
         db_session.add(self)
         db_session.commit()
@@ -132,7 +137,7 @@ class UserExerciseSession(db.Model):
 
     def _close_exercise_session(self, db_session):
         """
-            Computes the duration of the exercise session and sets the is_active field to False
+           Sets the is_active field to False
 
             Parameters:
             db_session = database session
@@ -140,8 +145,6 @@ class UserExerciseSession(db.Model):
             returns: The exercise session if everything went well otherwise probably exceptions related to the DB
         """
         self.is_active = False
-        time_diff = self.last_action_time - self.start_time
-        self.duration = time_diff.total_seconds() * 1000  # Convert to miliseconds
         db_session.add(self)
         db_session.commit()
         return self
@@ -169,7 +172,7 @@ class UserExerciseSession(db.Model):
             most_recent_exercise_session = cls._find_most_recent_session(user_id, db_session)
 
             if most_recent_exercise_session:
-                if most_recent_exercise_session._is_still_active():  # Verify if the session is not expired (according to session timeout)
+                if most_recent_exercise_session._is_still_active(current_time):  # Verify if the session is not expired (according to session timeout)
                     return most_recent_exercise_session._update_last_action_time(db_session, current_time=current_time)
                 else:  # If the session is expired, close it and create a new one
                     most_recent_exercise_session._close_exercise_session(db_session)

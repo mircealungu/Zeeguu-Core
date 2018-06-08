@@ -32,14 +32,27 @@ from .user_word import UserWord
 from .user_preference import UserPreference
 from .session import Session
 from .unique_code import UniqueCode
-from .word_knowledge.word_interaction_history import WordInteractionHistory
+from .word_knowledge.word_interaction_history import 
+
+
+from .user_language import UserLanguage
 
 from .article import Article
 from .topic import Topic
 from .user_article import UserArticle
+from .article_word import ArticleWord
 
 from .feed import RSSFeed
 from .feed_registrations import RSSFeedRegistration
+
+from .topic import Topic
+from .topic_subscription import TopicSubscription
+from .topic_filter import TopicFilter
+from .localized_topic import LocalizedTopic
+
+from .search import Search
+from .search_filter import SearchFilter
+from .search_subscription import SearchSubscription
 
 # exercises
 from .exercise import Exercise
@@ -47,7 +60,9 @@ from .exercise_outcome import ExerciseOutcome
 from .exercise_source import ExerciseSource
 
 # user logging
-from .user_activitiy_data import UserActivityData
+from .user_acti
+
+WordInteractionHistoryitiy_data import UserActivityData
 from .smartwatch.watch_event_type import WatchEventType
 from .smartwatch.watch_interaction_event import WatchInteractionEvent
 
