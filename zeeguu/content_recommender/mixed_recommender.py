@@ -88,7 +88,7 @@ def article_search_for_user(user, count, search):
 
     """
 
-    all_articles = get_user_articles_sources_languages(user)
+    all_articles = get_user_articles_sources_languages(user, 5000)
     # Sort them, so the first 'count' articles will be the most recent ones
     all_articles.sort(key=lambda each: each.published_time)
 
@@ -169,6 +169,7 @@ def get_user_articles_sources_languages(user, limit):
     current learning languages for the user.
 
     :param user: the user for which the articles should be fetched
+    :param limit: the amount of articles for each source or language
     :return: a list of articles based on the parameters
 
     """
