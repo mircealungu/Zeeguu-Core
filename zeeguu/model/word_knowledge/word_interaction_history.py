@@ -255,3 +255,19 @@ class WordInteractionHistory(db.Model):
         for history in histories:
             history.reify_interaction_history()
         return histories
+
+    @classmethod
+    def find_all_word_histories_for_user_language(cls, user: User, language: Language):
+        """
+
+            get the data from db & convert the string  rep of the history
+            to the object
+
+        :param user:
+        :return:
+        """
+
+        histories = cls.query.join(UserWord).filter(cls.user == user).filter(UserWord.language == language).all()
+        for history in histories:
+            history.reify_interaction_history()
+        return histories
