@@ -103,7 +103,6 @@ def process_bookmarked_sentences(user_article, start_time=LONG_TIME_IN_THE_PAST,
 # ==============================READING================================
 # Fill reading sessions word history information
 for ua in UserArticle.query.all():
-    break
 
     if ua.opened == None or ua.article == None:
         continue
