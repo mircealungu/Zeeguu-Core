@@ -2,7 +2,7 @@ from datetime import datetime
 
 import zeeguu
 from zeeguu.model import Bookmark, UserArticle, Text, \
-    UserWord, UserActivityData
+    UserWord, UserActivityData, Language
 from zeeguu.model.bookmark import bookmark_exercise_mapping
 
 from zeeguu.model.word_knowledge.word_interaction_history import WordInteractionHistory
@@ -10,6 +10,7 @@ from zeeguu.constants import WIH_READ_NOT_CLICKED_IN_SENTENCE, WIH_READ_NOT_CLIC
     WIH_READ_CLICKED, UMR_USER_FEEDBACK_ACTION
 
 import re
+from nltk.stem.snowball import SnowballStemmer
 
 LOG_CONTEXT = "FEED RETRIEVAL"
 ARTICLE_FULLY_READ = "finished%"
@@ -18,11 +19,16 @@ LONG_TIME_IN_THE_PAST = "2000-01-01T00:00:00"
 session = zeeguu.db.session
 
 
-def extract_words_from_text(text):  # Tokenize the words and create a set of unique words
+def extract_words_from_text(text, language:Language, stem: bool = True):  # Tokenize the words and create a set of unique words
     words = re.findall(r'(?u)\w+', text)
     words = [w.lower() for w in words]
-    return set(words)
 
+
+    if stem:
+        stemmer = SnowballStemmer(language.name.lower())
+        words = [stemmer.stem(w) for w in words]
+
+    return set(words)
 
 def get_fully_read_timestamps(user_article):
     """
@@ -70,7 +76,7 @@ def process_bookmarked_sentences(user_article, start_time=LONG_TIME_IN_THE_PAST,
         sentence = Text.query.filter(Text.id == bookmark.text_id).one().content
 
         # Get unique words in sentence
-        unique_words_in_sentence = extract_words_from_text(sentence)
+        unique_words_in_sentence = extract_words_from_text(sentence, user_article.article.language)
 
         for word in unique_words_in_sentence:
 
@@ -97,6 +103,7 @@ def process_bookmarked_sentences(user_article, start_time=LONG_TIME_IN_THE_PAST,
 # ==============================READING================================
 # Fill reading sessions word history information
 for ua in UserArticle.query.all():
+    break
 
     if ua.opened == None or ua.article == None:
         continue
@@ -118,7 +125,7 @@ for ua in UserArticle.query.all():
         # NOTE: The article can be fully read multiple times, therefore we only consider the corresponding bookmarks
 
         # Get all the unique article words
-        unique_words_in_article = extract_words_from_text(text)
+        unique_words_in_article = extract_words_from_text(text, ua.article.language)
 
         # For each fully read date, we process the corresponding bookmarked sentences
         # this is because an article can be read multiple times
@@ -135,7 +142,7 @@ for ua in UserArticle.query.all():
                 sentence = Text.query.filter(Text.id == bookmark.text_id).one().content
 
                 # Get unique words in sentence
-                unique_words_in_sentence = extract_words_from_text(sentence)
+                unique_words_in_sentence = extract_words_from_text(sentence, ua.article.language)
 
                 # Remove already processed words
                 unique_words_in_article = unique_words_in_article.difference(unique_words_in_sentence)
@@ -151,21 +158,25 @@ for ua in UserArticle.query.all():
 # ==============================EXERCISES================================
 # words encountered in exercises
 bmex_mapping = data = session.query(bookmark_exercise_mapping).all()
-# print(bmex_mapping)
 
 
 for bm_id, ex_id in bmex_mapping:
-    break
+
     try:
+        break
+        #todo: this always fails
         bm = Bookmark.query.filter(Bookmark.id == bm_id).one()
         ex = Exercise.query.filter(Exercise.id == ex_id).one()
     except:
         print("bookmark or exercise not found")
         continue
 
+    language = bm.origin.language
     word_interaction_event = WordInteractionEvent.encodeExerciseResult(ex.outcome_id, ex.source_id)
 
-    userWord = UserWord.find_or_create(session, bm.origin.word.lower(), bm.origin.language)
+    word = extract_words_from_text(bm.origin.word, bm.origin.language).pop()
+
+    userWord = UserWord.find_or_create(session, word, bm.origin.language)
     wih = WordInteractionHistory.find_or_create(bm.user, userWord)
     wih.insert_event(word_interaction_event, ex.time)
     wih.save_to_db(session)
