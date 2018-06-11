@@ -32,7 +32,7 @@ from .user_word import UserWord
 from .user_preference import UserPreference
 from .session import Session
 from .unique_code import UniqueCode
-from .word_knowledge.word_interaction_history import 
+from .word_knowledge.word_interaction_history import WordInteractionHistory
 
 
 from .user_language import UserLanguage
@@ -60,9 +60,7 @@ from .exercise_outcome import ExerciseOutcome
 from .exercise_source import ExerciseSource
 
 # user logging
-from .user_acti
-
-WordInteractionHistoryitiy_data import UserActivityData
+from .user_activitiy_data import UserActivityData
 from .smartwatch.watch_event_type import WatchEventType
 from .smartwatch.watch_interaction_event import WatchInteractionEvent
 
