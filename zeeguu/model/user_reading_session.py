@@ -8,12 +8,13 @@ from zeeguu.constants import UMR_OPEN_ARTICLE_ACTION, UMR_OPEN_STARRED_ARTICLE_A
     UMR_ARTICLE_FOCUSED_ACTION, UMR_TRANSLATE_TEXT_ACTION, UMR_SPEAK_TEXT_ACTION, \
     UMR_OPEN_ALTERMENU_ACTION, UMR_CLOSE_ALTERMENU_ACTION, UMR_UNDO_TEXT_TRANSLATION_ACTION, \
     UMR_SEND_SUGGESTION_ACTION, UMR_CHANGE_ORIENTATION_ACTION, UMR_LIKE_ARTICLE_ACTION, \
-    UMR_ARTICLE_CLOSED_ACTION, UMR_ARTICLE_LOST_FOCUS_ACTION, UMR_ARTICLES_REQUESTED_FROM_ZEEGUU
+    UMR_ARTICLE_CLOSED_ACTION, UMR_ARTICLE_LOST_FOCUS_ACTION, UMR_ARTICLES_REQUESTED_FROM_ZEEGUU, \
+    UMR_USER_SCROLL_ACTION
 
 db = zeeguu.db
 
 # Parameter that controls after how much time (in minutes) the session is expired
-READING_SESSION_TIMEOUT = 5
+READING_SESSION_TIMEOUT = 2
 VERY_FAR_IN_THE_PAST = '2000-01-01T00:00:00'
 VERY_FAR_IN_THE_FUTURE = '9999-12-31T23:59:59'
 
@@ -27,7 +28,8 @@ INTERACTION_ACTIONS = [UMR_TRANSLATE_TEXT_ACTION,
                        UMR_SPEAK_TEXT_ACTION,
                        UMR_OPEN_ALTERMENU_ACTION,
                        UMR_CLOSE_ALTERMENU_ACTION, UMR_UNDO_TEXT_TRANSLATION_ACTION,
-                       UMR_SEND_SUGGESTION_ACTION, UMR_CHANGE_ORIENTATION_ACTION
+                       UMR_SEND_SUGGESTION_ACTION, UMR_CHANGE_ORIENTATION_ACTION,
+                       UMR_USER_SCROLL_ACTION
                        ]
 CLOSING_ACTIONS = [UMR_ARTICLE_CLOSED_ACTION,
                     UMR_ARTICLES_REQUESTED_FROM_ZEEGUU]
@@ -85,11 +87,17 @@ class UserReadingSession(db.Model):
             db_session = database session
 
             returns: the active reading_session record for the specific user and article or None if none is found
+
+            Note: if article_id is None, returns most recent session
         """
         query = cls.query
         query = query.filter(cls.user_id == user_id)
-        query = query.filter(cls.article_id == article_id)
         query = query.filter(cls.is_active == True)
+
+        #Some events do not have a url, therefore we don't know the article
+        #  in those cases, we continue the last open session
+        if article_id:
+            query = query.filter(cls.article_id == article_id)
 
         try:
             return query.one()
@@ -129,8 +137,8 @@ class UserReadingSession(db.Model):
             Parameters:
             user_id = user identifier
             article_id = article identifier
-            current_time = when this parameter is sent, instead of using the datetime.now() value for the current time
-                        we use the provided value as the system time (only used for filling in historical data)
+           self.read_session.article_idis sent, instead of using the datetime.now() value for the current time
+           self.read_session.article_idue as the system time (only used for filling in historical data)
         """
         reading_session = UserReadingSession(user_id, article_id, current_time)
         db_session.add(reading_session)
@@ -167,11 +175,16 @@ class UserReadingSession(db.Model):
             db_session = database session
 
             returns: The reading session or None if none is found
+
+            Note: If duration is zero, the session is deleted
         """
-        self.is_active = False
         time_diff = self.last_action_time - self.start_time
-        self.duration = time_diff.total_seconds() * 1000  # Convert to miliseconds
-        db_session.add(self)
+        if time_diff.total_seconds() == 0:
+                db_session.delete(self)
+        else:
+            self.is_active = False
+            self.duration = time_diff.total_seconds() * 1000  # Convert to miliseconds
+            db_session.add(self)
         db_session.commit()
         return self
 
@@ -189,6 +202,7 @@ class UserReadingSession(db.Model):
 
             returns: None
 
+            Note: If duration is zero, the session is deleted
         """
         query = cls.query
         query = query.filter(cls.user_id == user_id)
