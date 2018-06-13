@@ -189,7 +189,7 @@ class RSSFeed(db.Model):
         language = Language.find(language_code)
         return cls.query.filter(cls.language == language).all()
 
-    def get_articles(self, user, limit=None, after_date=None, most_recent_first=False, easiest_first=False):
+    def get_articles(self, limit=None, after_date=None, most_recent_first=False, easiest_first=False):
         """
 
             Articles for this feed from the article DB

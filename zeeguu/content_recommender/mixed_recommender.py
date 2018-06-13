@@ -42,7 +42,6 @@ def article_recommendations_for_user(user, count):
     :return:
 
     """
-
     subscribed_articles = get_subscribed_articles_for_user(user)
     filter_articles = get_filtered_articles_for_user(user)
     all_articles = get_user_articles_sources_languages(user, 1000)
@@ -189,7 +188,7 @@ def get_user_articles_sources_languages(user, limit=20000):
     if len(user_sources) > 0:
         for registration in user_sources:
             feed = registration.rss_feed
-            new_articles = feed.get_articles(user, limit=limit, most_recent_first=True)
+            new_articles = feed.get_articles(limit=limit, most_recent_first=True)
             all_articles.extend(new_articles)
 
     # If there are no sources available, get the articles based on the languages
