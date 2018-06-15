@@ -17,7 +17,7 @@ EXCLUDED_IDS = [13787, 14215, 14217, 14218, 14222, 14223, 14224, 14225, 14226, 1
 db_session = zeeguu.db.session
 
 #Clear table before starting
-# UserReadingSession.query.delete()
+UserReadingSession.query.delete()
 db_session.commit()
 
 data = UserActivityData.find()
