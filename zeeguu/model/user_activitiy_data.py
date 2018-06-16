@@ -117,7 +117,7 @@ class UserActivityData(db.Model):
         except:
             return None
 
-    def _find_url_in_extra_data(self):
+    def find_url_in_extra_data(self):
 
         """
             DB structure is a mess!
@@ -144,7 +144,8 @@ class UserActivityData(db.Model):
                     return None
                 return url.split('articleURL=')[-1]
 
-            except ValueError:  # Some json strings are truncated, therefore cannot be parsed correctly and throw an exception
+            except:  # Some json strings are truncated and some other times extra_event_data is an int
+                # therefore cannot be parsed correctly and throw an exception
                 return None
         else:  # The extra_data field is empty
             return None
@@ -160,7 +161,7 @@ class UserActivityData(db.Model):
 
         """
         try:
-            url = self._find_url_in_extra_data()
+            url = self.find_url_in_extra_data()
 
             if url:  # If url exists
                 return Article.find_or_create(db_session, url).id

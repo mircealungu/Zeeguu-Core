@@ -1,11 +1,14 @@
 """
 
- Recommends a mix of articles from all the sources
+ Recommends a mix of articles from all the languages,
+ sources, topics, filters, and searches.
 
 
 """
 from zeeguu import log
-from zeeguu.model import RSSFeedRegistration, UserArticle, Article, User, Bookmark
+import time
+from zeeguu.model import RSSFeedRegistration, UserArticle, Article, User, Bookmark, \
+    UserLanguage, TopicSubscription, TopicFilter, SearchSubscription, SearchFilter, ArticleWord
 
 
 def user_article_info(user: User, article: Article, with_content=False):
@@ -40,23 +43,166 @@ def article_recommendations_for_user(user, count):
 
     """
 
-    all_user_registrations = RSSFeedRegistration.feeds_for_user(user)
+    subscribed_articles = get_subscribed_articles_for_user(user)
+    filter_articles = get_filtered_articles_for_user(user)
+    all_articles = get_user_articles_sources_languages(user, 2500)
 
-    if len(all_user_registrations) == 0:
-        return []
+    # Get only the articles for the topics and searches subscribed
+    if len(subscribed_articles) > 0:
+        s = set(all_articles)
+        all_articles = [article for article in subscribed_articles if article in s]
 
-    per_feed_count = int(count / len(all_user_registrations)) + 1
+    # If there are any filters, filter out all these articles
+    if len(filter_articles) > 0:
+        s = set(all_articles)
+        all_articles = [article for article in s if article not in filter_articles]
 
-    all_articles = []
-    for registration in all_user_registrations:
-        feed = registration.rss_feed
-        log(f'Getting articles for {feed}')
-        new_articles = feed.get_articles(user, limit=per_feed_count, most_recent_first=True)
-        all_articles.extend(new_articles)
-        log(f'Added articles for {feed}')
+    if len(all_articles) < 3:
+        all_articles = get_user_articles_sources_languages(user, 20000)
+
+        # Get only the articles for the topics and searches subscribed
+        if len(subscribed_articles) > 0:
+            s = set(all_articles)
+            all_articles = [article for article in subscribed_articles if article in s]
+
+        # If there are any filters, filter out all these articles
+        if len(filter_articles) > 0:
+            s = set(all_articles)
+            all_articles = [article for article in s if article not in filter_articles]
 
     log('Sorting articles...')
     all_articles.sort(key=lambda each: each.published_time, reverse=True)
     log('Sorted articles')
 
     return [user_article_info(user, article) for article in all_articles[:count]]
+
+
+def article_search_for_user(user, count, search):
+    """
+
+
+    Retrieve the articles :param user: requested which fit the :param search:
+    profile, for the selected sources of the user.
+
+    :return:
+
+    """
+
+    all_articles = get_user_articles_sources_languages(user)
+    # Sort them, so the first 'count' articles will be the most recent ones
+    all_articles.sort(key=lambda each: each.published_time)
+
+    # We are just using the first and second word of the user's search now
+    search_articles = get_articles_for_search_term(search)
+
+    if search_articles is None:
+        final = []
+    else:
+        final = [article for article in search_articles if article in all_articles]
+    return [user_article_info(user, article) for article in final[:count]]
+
+
+def get_filtered_articles_for_user(user):
+    """
+
+    This method gets all topic and search filters for a user.
+    It then returns all the articles that are associated with these.
+    :param user:
+    :return:
+
+    """
+    user_filters = TopicFilter.all_for_user(user)
+    user_search_filters = SearchFilter.all_for_user(user)
+
+    filter_articles = []
+    if len(user_filters) > 0:
+        for filt in user_filters:
+            topic = filt.topic
+            new_articles = topic.all_articles()
+            filter_articles.extend(new_articles)
+
+    if len(user_search_filters) > 0:
+        for user_search_filter in user_search_filters:
+            search = user_search_filter.search.keywords
+            new_articles = get_articles_for_search_term(search)
+            if new_articles is not None:
+                filter_articles.extend(new_articles)
+
+    return filter_articles
+
+
+def get_subscribed_articles_for_user(user):
+    """
+
+    This method gets all the topic and search subscriptions for a user.
+    It then returns all the articles that are associated with these.
+
+    :param user:
+    :return:
+
+    """
+    user_topics = TopicSubscription.all_for_user(user)
+    user_searches = SearchSubscription.all_for_user(user)
+
+    subscribed_articles = []
+    if len(user_topics) > 0:
+        for sub in user_topics:
+            topic = sub.topic
+            new_articles = topic.all_articles()
+            subscribed_articles.extend(new_articles)
+
+    if len(user_searches) > 0:
+        for user_search in user_searches:
+            search = user_search.search.keywords
+            new_articles = get_articles_for_search_term(search)
+            if new_articles is not None:
+                subscribed_articles.extend(new_articles)
+
+    return subscribed_articles
+
+
+def get_user_articles_sources_languages(user, limit):
+    """
+
+    This method is used to get all the user articles for the sources if there are any
+    selected sources for the user, and it otherwise gets all the articles for the
+    current learning languages for the user.
+
+    :param user: the user for which the articles should be fetched
+    :return: a list of articles based on the parameters
+
+    """
+
+    user_sources = RSSFeedRegistration.feeds_for_user(user)
+    user_languages = UserLanguage.all_reading_for_user(user)
+    all_articles = []
+
+    # If there are sources, get the articles from the sources
+    if len(user_sources) > 0:
+        for registration in user_sources:
+            feed = registration.rss_feed
+            new_articles = feed.get_articles(user, limit=limit, most_recent_first=True)
+            all_articles.extend(new_articles)
+
+    # If there are no sources available, get the articles based on the languages
+    else:
+        for language in user_languages:
+            log(f'Getting articles for {language}')
+            new_articles = language.get_articles(limit=limit, most_recent_first=True)
+            all_articles.extend(new_articles)
+            log(f'Added articles for {language}')
+
+    return all_articles
+
+
+def get_articles_for_search_term(search_term):
+    search_terms = search_term.split()
+
+    if len(search_terms) > 1:
+        search_articles_first = ArticleWord.get_articles_for_word(search_terms[0])
+        search_articles_second = ArticleWord.get_articles_for_word(search_terms[1])
+        if search_articles_first is None or search_articles_second is None:
+            return []
+        return [article for article in search_articles_first if article in search_articles_second]
+
+    return ArticleWord.get_articles_for_word(search_terms[0])

@@ -1,4 +1,5 @@
 from sqlalchemy.orm.exc import NoResultFound
+from datetime import datetime
 
 import zeeguu
 
@@ -31,10 +32,19 @@ class Language(db.Model):
         self.name = name
 
     def __repr__(self):
-        return '<Language %r>' % (self.code)
+        return '<Language %r>' % self.code
 
     def __eq__(self, other):
         return self.code == other.code or self.name == other.name
+
+    def as_dictionary(self):
+
+        return dict(
+            id=self.id,
+            code=self.code,
+            language=self.name,
+
+        )
 
     @classmethod
     def default_learned(cls):
@@ -72,3 +82,42 @@ class Language(db.Model):
     @classmethod
     def all(cls):
         return cls.query.filter().all()
+
+    @classmethod
+    def find_by_id(cls, i):
+        return cls.query.filter(Language.id == i).one()
+
+    def get_articles(self, limit=None, after_date=None, most_recent_first=False, easiest_first=False):
+        """
+
+            Articles for this language from the article DB
+
+        :param limit:
+        :param after_date:
+        :param most_recent_first:
+        :param easiest_first:
+        :return:
+        """
+
+        from zeeguu.model import Article
+
+        if not after_date:
+            after_date = datetime(2001, 1, 1)
+
+        try:
+            q = (Article.query.
+                 filter(Article.language == self).
+                 filter(Article.broken == 0).
+                 filter(Article.published_time >= after_date).
+                 filter(Article.word_count > Article.MINIMUM_WORD_COUNT))
+
+            if most_recent_first:
+                q = q.order_by(Article.published_time.desc())
+            if easiest_first:
+                q = q.order_by(Article.fk_difficulty)
+
+            return q.limit(limit).all()
+
+        except Exception as e:
+            raise (e)
+            return None
