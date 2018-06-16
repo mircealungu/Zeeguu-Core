@@ -203,7 +203,7 @@ def get_user_articles_sources_languages(user, limit=20000):
 
 
 def get_articles_for_search_term(search_term):
-    search_terms = search_term.split()
+    search_terms = search_term.lower().split()
 
     if len(search_terms) > 1:
         search_articles_first = ArticleWord.get_articles_for_word(search_terms[0])
