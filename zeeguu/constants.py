@@ -34,4 +34,6 @@ WIH_WRONG_EX_MATCH = 10
 
 # time delta in which consecutive bookmarks are merged together
 TIMEDELTA = 120
+
 UMR_ARTICLES_REQUESTED_FROM_ZEEGUU = "UMR - ARTICLES REQUESTED FROM ZEEGUU"
+UMR_USER_SCROLL_ACTION = "UMR - SCROLL"

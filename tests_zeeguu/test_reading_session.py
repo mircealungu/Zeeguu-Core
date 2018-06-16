@@ -139,3 +139,15 @@ class UserReadingSessionTest(ModelTestMixIn, TestCase):
         article_id = self.read_session.article_id
         active_sessions = UserReadingSession.find_by_user_and_article(user_id, article_id)
         assert active_sessions
+
+    def test_find_most_recent_session_with_empty_article(self):
+        event = UMR_OPEN_ARTICLE_ACTION
+        user_id = self.read_session.user_id
+        article_id = None
+        self.read_session.last_action_time = self.TIMEOUT_MINUTES_IN_THE_PAST
+        resulting_reading_session = UserReadingSession.update_reading_session(db_session,
+                                                                                 event, 
+                                                                                 user_id, 
+                                                                                 article_id
+                                                                            )
+        assert resulting_reading_session == self.read_session
