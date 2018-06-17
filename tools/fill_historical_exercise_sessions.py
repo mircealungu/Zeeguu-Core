@@ -19,6 +19,9 @@ db_session.commit()
 data = Exercise.find()
 
 for user_exercise in data:
+
+    #Skip misleading records
+    if user_exercise.solving_speed < 2147483647 and user_exercise.solving_speed>0:
     
-    UserExerciseSession.update_exercise_session(user_exercise, db_session)
-    print(user_exercise.id)
+        UserExerciseSession.update_exercise_session(user_exercise, db_session)
+        print(user_exercise.id)
