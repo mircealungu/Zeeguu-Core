@@ -63,6 +63,9 @@ class UserArticle(zeeguu.db.Model):
     def __repr__(self):
         return f'{self.user} and {self.article}: Opened: {self.opened}, Starred: {self.starred}, Liked: {self.liked}'
 
+    def user_info_as_string(self):
+        return f'{self.user} Opened: {self.opened}, Starred: {self.starred}, Liked: {self.liked}'
+
     def set_starred(self, state=True):
         if state:
             self.starred = datetime.now()
@@ -85,6 +88,13 @@ class UserArticle(zeeguu.db.Model):
         if self.starred:
             return self.starred
         return None
+
+    @classmethod
+    def find_by_article(cls, article: Article):
+        try:
+            return cls.query.filter_by(article=article).all()
+        except NoResultFound:
+            return None
 
     @classmethod
     def find(cls, user: User, article: Article):

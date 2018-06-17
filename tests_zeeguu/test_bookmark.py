@@ -36,11 +36,10 @@ class BookmarkTest(ModelTestMixIn):
     def test_bookmarks_in_url(self):
         random_bookmark = BookmarkRule(self.user).bookmark
         url = random_bookmark.text.url
-        
+
         # each bookmark belongs to a random text / url so the
         # combo of user/url will always result in one bookmark
         assert 1 == len(Bookmark.find_all_for_user_and_url(self.user, url))
-
 
     def test_text_is_not_too_long(self):
         random_bookmark = BookmarkRule(self.user).bookmark
@@ -221,3 +220,6 @@ class BookmarkTest(ModelTestMixIn):
 
         result_bool, result_None = random_bookmarks[1].has_been_learned(also_return_time=True)
         assert not result_bool and result_None is None
+
+    def test_top_bookmarks(self):
+        assert (self.user.top_bookmarks())

@@ -18,30 +18,26 @@
 """
 
 import zeeguu
-from zeeguu.model import Article, Topic, Language
+from zeeguu.model import Article, Language, LocalizedTopic
 
 session = zeeguu.db.session
 
-topics = Topic.query.all()
 counter = 0
 
-languages = [Language.find("fr")]
+languages = Language.available_languages()
 
 for language in languages:
     articles = Article.query.filter(Article.language == language).all()
-    topics = [each for each in topics if each.language == language]
+    loc_topics = LocalizedTopic.all_for_language(language)
 
     for article in articles:
         counter += 1
-        for topic in topics:
-            if topic.matches_article(article):
-                article.add_topic(topic)
-                print(f" #{topic.name}: {article.url.as_string()}")
+        for loc_topic in loc_topics:
+            if loc_topic.matches_article(article):
+                article.add_topic(loc_topic.topic)
+                print(f" #{loc_topic.topic_translated}: {article.url.as_string()}")
         session.add(article)
         if counter == 1000:
             print("1k more done. comitting... ")
             session.commit()
             counter = 0
-
-    for topic in [each for each in topics if each.language == language]:
-        print(f'#{topic}: {len(topic.all_articles())}')

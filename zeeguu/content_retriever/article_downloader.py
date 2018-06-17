@@ -8,16 +8,24 @@
 from datetime import datetime
 
 import newspaper
+import re
 
 import zeeguu
 
 from zeeguu import model
 from zeeguu.content_retriever.content_cleaner import cleanup_non_content_bits
 from zeeguu.content_retriever.quality_filter import sufficient_quality
-from zeeguu.model import Url, RSSFeed, Topic
+from zeeguu.model import Url, RSSFeed, LocalizedTopic, ArticleWord
 from zeeguu.constants import SIMPLE_TIME_FORMAT
+import requests
 
 LOG_CONTEXT = "FEED RETRIEVAL"
+
+
+def _url_after_redirects(url):
+    # solve redirects and save the clean url
+    response = requests.get(url)
+    return response.url
 
 
 def download_from_feed(feed: RSSFeed, session, limit=1000):
@@ -50,17 +58,11 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
         if downloaded >= limit:
             break
 
-        url = feed_item['url']
-
-        # solve redirects and save the clean url
-        import requests
-        response = requests.get(url)
-        url = response.url
-
-        # drop all the query params from the urls and keep the canonical url
-        from urllib.parse import urlparse
-        o = urlparse(url)
-        url = o.scheme + "://" + o.netloc + o.path
+        try:
+            url = _url_after_redirects(feed_item['url'])
+        except requests.exceptions.TooManyRedirects:
+            zeeguu.log(f"Too many redirects for: {url}")
+            continue
 
         try:
             this_article_time = datetime.strptime(feed_item['published'], SIMPLE_TIME_FORMAT)
@@ -113,9 +115,14 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
                     session.commit()
                     downloaded += 1
 
-                    for each in Topic.query.all():
-                        if each.language == new_article.language and each.matches_article(new_article):
-                            new_article.add_topic(each)
+                    add_topics(new_article, session)
+                    add_searches(title, o, new_article, session)
+
+                    try:
+                        session.commit()
+                    except Exception as e:
+                        zeeguu.log(f'{LOG_CONTEXT}: Something went wrong when committing words/topic to article: {e}')
+
             except Exception as e:
                 # raise e
                 import sys
@@ -131,3 +138,27 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
         feed.last_crawled_time = last_retrieval_time_seen_this_crawl
     session.add(feed)
     session.commit()
+
+
+def add_topics(new_article, session):
+    for loc_topic in LocalizedTopic.query.all():
+        if loc_topic.language == new_article.language and loc_topic.matches_article(new_article):
+            new_article.add_topic(loc_topic.topic)
+            session.add(new_article)
+
+
+def add_searches(title, o, new_article, session):
+    # Map the words for the search
+    all_words = title.split()
+    all_words.append(re.split('; |, |\*|-|%20|/', o.path))
+    all_words.append(o.netloc.split('.'))
+    for word in all_words:
+        word.strip(":,\,,\",?,!,<,>").lower()
+        if word in ['www', '', ' '] or word.isdigit() or len(word) < 3 or len(word) > 25:
+            continue
+        else:
+            article_word_obj = ArticleWord.find_by_word(word)
+            if article_word_obj is None:
+                article_word_obj = ArticleWord(word)
+            article_word_obj.add_article(new_article)
+            session.add(article_word_obj)
