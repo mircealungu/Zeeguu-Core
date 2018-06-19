@@ -5,7 +5,7 @@ from zeeguu.model import Bookmark, UserArticle, Text, \
     UserWord, UserActivityData, Language, Exercise
 from zeeguu.model.bookmark import bookmark_exercise_mapping, Bookmark
 
-from zeeguu.model.word_knowledge.word_interaction_history import WordInteractionHistory
+from zeeguu.model.word_knowledge.word_interaction_history import WordInteractionHistory,WordInteractionEvent
 from zeeguu.constants import WIH_READ_NOT_CLICKED_IN_SENTENCE, WIH_READ_NOT_CLICKED_OUT_SENTENCE, \
     WIH_READ_CLICKED, UMR_USER_FEEDBACK_ACTION
 
@@ -103,7 +103,7 @@ def process_bookmarked_sentences(user_article, start_time=LONG_TIME_IN_THE_PAST,
 # ==============================READING================================
 # Fill reading sessions word history information
 for ua in UserArticle.query.all():
-    break
+
     if ua.opened == None or ua.article == None:
         continue
 
@@ -177,17 +177,3 @@ for bm_id, ex_id in bmex_mapping:
     wih = WordInteractionHistory.find_or_create(bm.user, userWord)
     wih.insert_event(word_interaction_event, ex.time)
     wih.save_to_db(session)
-
-# TODO: store last processed exercise id
-
-
-# go through bookmarks
-# for each bookmark extract user and textid
-# retrieve content of testid and create a set of words
-# for each word determine whether it has been translated (use bookmark)
-# apply unique labels for words translated and not translated
-
-# for each word determine whether it has a history otherwise create a new one
-# apply changes in history for the word
-
-# save and repeat for next bookmark
