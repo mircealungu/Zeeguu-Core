@@ -2,8 +2,8 @@ from datetime import datetime
 
 import zeeguu
 from zeeguu.model import Bookmark, UserArticle, Text, \
-    UserWord, UserActivityData, Language
-from zeeguu.model.bookmark import bookmark_exercise_mapping
+    UserWord, UserActivityData, Language, Exercise
+from zeeguu.model.bookmark import bookmark_exercise_mapping, Bookmark
 
 from zeeguu.model.word_knowledge.word_interaction_history import WordInteractionHistory
 from zeeguu.constants import WIH_READ_NOT_CLICKED_IN_SENTENCE, WIH_READ_NOT_CLICKED_OUT_SENTENCE, \
@@ -103,7 +103,7 @@ def process_bookmarked_sentences(user_article, start_time=LONG_TIME_IN_THE_PAST,
 # ==============================READING================================
 # Fill reading sessions word history information
 for ua in UserArticle.query.all():
-
+    break
     if ua.opened == None or ua.article == None:
         continue
 
@@ -162,8 +162,6 @@ bmex_mapping = data = session.query(bookmark_exercise_mapping).all()
 for bm_id, ex_id in bmex_mapping:
 
     try:
-        break
-        #todo: this always fails
         bm = Bookmark.query.filter(Bookmark.id == bm_id).one()
         ex = Exercise.query.filter(Exercise.id == ex_id).one()
     except:
