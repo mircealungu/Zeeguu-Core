@@ -13,7 +13,7 @@ env:
 
 install: "python3 setup.py install"
 
-script: coverage run --source zeeguu -m unittest discover
+script: ./run_tests.sh 
 
 after_success:
   coveralls
