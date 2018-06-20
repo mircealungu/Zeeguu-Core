@@ -88,8 +88,6 @@ def article_search_for_user(user, count, search):
     """
 
     all_articles = get_user_articles_sources_languages(user, 2500)
-    # Sort them, so the first 'count' articles will be the most recent ones
-    all_articles.sort(key=lambda each: each.published_time)
 
     # We are just using the first and second word of the user's search now
     search_articles = get_articles_for_search_term(search)
@@ -101,9 +99,11 @@ def article_search_for_user(user, count, search):
         final = [article for article in search_articles if article in s]
         if len(final) < 5:
             all_articles = get_user_articles_sources_languages(user)
-            all_articles.sort(key=lambda each: each.published_time)
             s = set(all_articles)
             final = [article for article in search_articles if article in s]
+
+    # Sort them, so the first 'count' articles will be the most recent ones
+    final.sort(key=lambda each: each.published_time)
 
     return [user_article_info(user, article) for article in final[:count]]
 
