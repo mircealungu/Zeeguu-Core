@@ -25,8 +25,8 @@ class UserExerciseSessionTest(ModelTestMixIn, TestCase):
         self.VERY_FAR_IN_THE_PAST = '2000-01-01T00:00:00'
         self.VERY_FAR_IN_THE_FUTURE = '2030-01-01T00:00:00'
         self.CURRENT_TIME = datetime.now()
-        self.TIMEOUT_MINUTES_IN_THE_PAST = datetime.now() - timedelta(minutes=self.exercise_session_timeout)
-        self.TWICE_TIMEOUT_MINUTES_IN_THE_PAST = datetime.now() - timedelta(minutes=self.exercise_session_timeout * 2)
+        self.TIMEOUT_SECONDS_IN_THE_PAST = datetime.now() - timedelta(seconds=self.exercise_session_timeout)
+        self.TWICE_TIMEOUT_SECONDS_IN_THE_PAST = datetime.now() - timedelta(seconds=self.exercise_session_timeout * 2)
         
 
     # One result scenario
@@ -42,12 +42,13 @@ class UserExerciseSessionTest(ModelTestMixIn, TestCase):
         assert resulting_exercise_session.is_active
 
     def test__is_same_exercise_session(self):
-        self.ex_session1.last_action_time = self.TIMEOUT_MINUTES_IN_THE_PAST
+        self.ex_session1.last_action_time = self.TIMEOUT_SECONDS_IN_THE_PAST
         assert (True == self.ex_session1._is_still_active())
 
     def test__is_not_same_exercise_session(self):
-        new_exercise_session = UserExerciseSession(self.ex_session1.user_id)
-        new_exercise_session.last_action_time = self.TWICE_TIMEOUT_MINUTES_IN_THE_PAST
+        new_exercise_session = UserExerciseSession(self.ex_session1.user_id, datetime.now())
+        new_exercise_session.last_action_time = self.TWICE_TIMEOUT_SECONDS_IN_THE_PAST
+        new_exercise_session.start_time = self.TWICE_TIMEOUT_SECONDS_IN_THE_PAST
         assert (False == new_exercise_session._is_still_active())
 
     def test__update_last_use(self):
@@ -61,14 +62,14 @@ class UserExerciseSessionTest(ModelTestMixIn, TestCase):
 
     # Scenario 1 = There is an active and still valid session
     def test__update_exercise_session_scenario1(self):
-        self.ex_session1.last_action_time = self.TIMEOUT_MINUTES_IN_THE_PAST
+        self.ex_session1.last_action_time = self.TIMEOUT_SECONDS_IN_THE_PAST
         self.exercises[0].time = self.CURRENT_TIME
         updated_session = UserExerciseSession.update_exercise_session(self.exercises[0], db_session)
         assert updated_session == self.ex_session1
 
     # Scenario2 = There is an active but no longer valid session
     def test__update_exercise_session_scenario2(self):
-        self.ex_session1.last_action_time = self.TWICE_TIMEOUT_MINUTES_IN_THE_PAST
+        self.ex_session1.last_action_time = self.TWICE_TIMEOUT_SECONDS_IN_THE_PAST
         self.exercises[0].time = self.CURRENT_TIME
         resulting_exercise_session = UserExerciseSession.update_exercise_session(self.exercises[0], db_session)
         assert resulting_exercise_session != self.ex_session1
