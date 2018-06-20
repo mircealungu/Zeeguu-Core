@@ -2,6 +2,7 @@ from zeeguu.model.user_activitiy_data import UserActivityData
 from zeeguu.model.user_reading_session import UserReadingSession
 
 import zeeguu
+from datetime import datetime
 
 '''
     Script that loops through all the exeuser_activity_data actions in the database, and recomputes the history of
@@ -37,9 +38,10 @@ for user_action in data:
                                                     user_action.find_or_create_article_id(db_session),
                                                     current_time = time
                                                 )
-            print(user_action.id)
+            print(str(datetime.now()) + " " + str(user_action.id))
         except:
             print (f"caught exception for {user_action.id} ...")
             import traceback
             print(traceback.format_exc())
+            db_session.rollback()
 
