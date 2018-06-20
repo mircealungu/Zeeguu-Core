@@ -30,10 +30,16 @@ for user_action in data:
         user = user_action.user_id
         time = user_action.time
 
-        UserReadingSession.update_reading_session(db_session, 
+        try: 
+            UserReadingSession.update_reading_session(db_session, 
                                                     user_action.event, 
                                                     user, 
                                                     user_action.find_or_create_article_id(db_session),
                                                     current_time = time
                                                 )
-        print(user_action.id)
+            print(user_action.id)
+        except:
+            print (f"caught exception for {user_action.id} ...")
+            import traceback
+            print(traceback.format_exc())
+
