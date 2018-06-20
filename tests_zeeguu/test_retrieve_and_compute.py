@@ -22,7 +22,7 @@ class TestRetrieveAndCompute(ModelTestMixIn):
         feed = RSSFeedRule().feed1
         download_from_feed(feed, zeeguu.db.session, 3)
 
-        articles = feed.get_articles(self.user, limit=2)
+        articles = feed.get_articles(limit=2)
 
         assert len(articles) == 2
         assert articles[0].fk_difficulty
@@ -38,7 +38,7 @@ class TestRetrieveAndCompute(ModelTestMixIn):
 
         download_from_feed(feed, zeeguu.db.session, 3)
 
-        article = feed.get_articles(self.user, limit=2)[0]
+        article = feed.get_articles(limit=2)[0]
 
         assert (topic in article.topics)
 
@@ -47,12 +47,16 @@ class TestRetrieveAndCompute(ModelTestMixIn):
 
         download_from_feed(feed, zeeguu.db.session, 3)
 
-        article = feed.get_articles(self.user, limit=2)[0]
+        article = feed.get_articles(limit=2)[0]
 
-        word = article.title.split()[2]
-        articleword = ArticleWord.find_by_word(word)
+        # Try two words, as one might be filtered out
+        word = article.title.split()[0]
+        word2 = article.title.split()[1]
 
-        assert (article in articleword.articles)
+        article_word = ArticleWord.find_by_word(word)
+        article_word_2 = ArticleWord.find_by_word(word2)
+
+        assert (article in article_word.articles or article in article_word_2.articles)
 
     def testSufficientQuality(self):
         u = "https://www.propublica.org/article/" \

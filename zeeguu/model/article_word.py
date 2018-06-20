@@ -51,14 +51,17 @@ class ArticleWord(db.Model):
     @classmethod
     def find_by_word(cls, word):
         try:
-            return cls.query.filter(cls.word == word).one()
+            return cls.query.filter(cls.word == word).one_or_none()
         except Exception as e:
+            print(e)
             return None
 
     @classmethod
     def get_articles_for_word(cls, word):
         try:
-            result = cls.query.filter(cls.word == word).one()
+            result = cls.query.filter(cls.word == word).one_or_none()
+            if result is None:
+                return None
             return result.articles
         except Exception as e:
             print(e)

@@ -42,10 +42,9 @@ def article_recommendations_for_user(user, count):
     :return:
 
     """
-
     subscribed_articles = get_subscribed_articles_for_user(user)
     filter_articles = get_filtered_articles_for_user(user)
-    all_articles = get_user_articles_sources_languages(user, 2500)
+    all_articles = get_user_articles_sources_languages(user, 1000)
 
     # Get only the articles for the topics and searches subscribed
     if len(subscribed_articles) > 0:
@@ -58,7 +57,7 @@ def article_recommendations_for_user(user, count):
         all_articles = [article for article in s if article not in filter_articles]
 
     if len(all_articles) < 3:
-        all_articles = get_user_articles_sources_languages(user, 20000)
+        all_articles = get_user_articles_sources_languages(user)
 
         # Get only the articles for the topics and searches subscribed
         if len(subscribed_articles) > 0:
@@ -88,7 +87,7 @@ def article_search_for_user(user, count, search):
 
     """
 
-    all_articles = get_user_articles_sources_languages(user)
+    all_articles = get_user_articles_sources_languages(user, 2500)
     # Sort them, so the first 'count' articles will be the most recent ones
     all_articles.sort(key=lambda each: each.published_time)
 
@@ -98,7 +97,14 @@ def article_search_for_user(user, count, search):
     if search_articles is None:
         final = []
     else:
-        final = [article for article in search_articles if article in all_articles]
+        s = set(all_articles)
+        final = [article for article in search_articles if article in s]
+        if len(final) < 5:
+            all_articles = get_user_articles_sources_languages(user)
+            all_articles.sort(key=lambda each: each.published_time)
+            s = set(all_articles)
+            final = [article for article in search_articles if article in s]
+
     return [user_article_info(user, article) for article in final[:count]]
 
 
@@ -161,7 +167,7 @@ def get_subscribed_articles_for_user(user):
     return subscribed_articles
 
 
-def get_user_articles_sources_languages(user, limit):
+def get_user_articles_sources_languages(user, limit=20000):
     """
 
     This method is used to get all the user articles for the sources if there are any
@@ -169,6 +175,7 @@ def get_user_articles_sources_languages(user, limit):
     current learning languages for the user.
 
     :param user: the user for which the articles should be fetched
+    :param limit: the amount of articles for each source or language
     :return: a list of articles based on the parameters
 
     """
@@ -181,7 +188,7 @@ def get_user_articles_sources_languages(user, limit):
     if len(user_sources) > 0:
         for registration in user_sources:
             feed = registration.rss_feed
-            new_articles = feed.get_articles(user, limit=limit, most_recent_first=True)
+            new_articles = feed.get_articles(limit=limit, most_recent_first=True)
             all_articles.extend(new_articles)
 
     # If there are no sources available, get the articles based on the languages
@@ -196,7 +203,7 @@ def get_user_articles_sources_languages(user, limit):
 
 
 def get_articles_for_search_term(search_term):
-    search_terms = search_term.split()
+    search_terms = search_term.lower().split()
 
     if len(search_terms) > 1:
         search_articles_first = ArticleWord.get_articles_for_word(search_terms[0])
