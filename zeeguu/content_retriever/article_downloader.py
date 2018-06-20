@@ -116,7 +116,7 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
                     downloaded += 1
 
                     add_topics(new_article, session)
-                    add_searches(title, o, new_article, session)
+                    add_searches(title, url, new_article, session)
 
                     try:
                         session.commit()
@@ -153,16 +153,19 @@ def add_searches(title, url, new_article, session):
     This method takes the relevant keywords from the title
     and URL, and tries to properly clean them.
     It finally adds the ArticleWord to the session, to be committed as a whole.
-    :param title:
-    :param url:
-    :param new_article:
-    :param session:
+    :param title: The title of the article
+    :param url: The url of the article
+    :param new_article: The actual new article
+    :param session: The session to which it should be added.
     """
 
     # Split the title, path and url netloc (sub domain)
     all_words = title.split()
-    all_words.append(re.split('; |, |\*|-|%20|/', url.path))
-    all_words.append(url.netloc.split('.')[0])
+    from urllib.parse import urlparse
+    # Parse the URL so we can call netloc and path without a lot of regex
+    parsed_url = urlparse(url)
+    all_words.append(re.split('; |, |\*|-|%20|/', parsed_url.path))
+    all_words.append(parsed_url.netloc.split('.')[0])
     for word in all_words:
         # Strip the unwanted characters
         word.strip('":;?!<>\'').lower()
