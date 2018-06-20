@@ -51,12 +51,13 @@ class TestRetrieveAndCompute(ModelTestMixIn):
 
         # Try two words, as one might be filtered out
         word = article.title.split()[0]
-        word2 = article.title.split()[1]
-
+        word.strip('":;?!<>\'').lower()
         article_word = ArticleWord.find_by_word(word)
-        article_word_2 = ArticleWord.find_by_word(word2)
 
-        assert (article in article_word.articles or article in article_word_2.articles)
+        if word in ['www', ''] or word.isdigit() or len(word) < 3 or len(word) > 25:
+            assert (article_word is None)
+        else:
+            assert (article in article_word.articles)
 
     def testSufficientQuality(self):
         u = "https://www.propublica.org/article/" \
