@@ -146,16 +146,30 @@ def add_topics(new_article, session):
             session.add(new_article)
 
 
-def add_searches(title, o, new_article, session):
-    # Map the words for the search
+def add_searches(title, url, new_article, session):
+
+    """
+    This method takes the relevant keywords from the title
+    and URL, and tries to properly clean them.
+    It finally adds the ArticleWord to the session, to be committed as a whole.
+    :param title:
+    :param url:
+    :param new_article:
+    :param session:
+    """
+
+    # Split the title, path and url netloc (sub domain)
     all_words = title.split()
-    all_words.append(re.split('; |, |\*|-|%20|/', o.path))
-    all_words.append(o.netloc.split('.'))
+    all_words.append(re.split('; |, |\*|-|%20|/', url.path))
+    all_words.append(url.netloc.split('.')[0])
     for word in all_words:
-        word.strip(":,\,,\",?,!,<,>").lower()
+        # Strip the unwanted characters
+        word.strip('":;?!<>\'').lower()
+        # Check if the word is of proper length, not only digits and not empty or www
         if word in ['www', '', ' '] or word.isdigit() or len(word) < 3 or len(word) > 25:
             continue
         else:
+            # Find or create the ArticleWord and add it to the session
             article_word_obj = ArticleWord.find_by_word(word)
             if article_word_obj is None:
                 article_word_obj = ArticleWord(word)

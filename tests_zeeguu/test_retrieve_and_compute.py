@@ -49,10 +49,14 @@ class TestRetrieveAndCompute(ModelTestMixIn):
 
         article = feed.get_articles(limit=2)[0]
 
-        word = article.title.split()[2]
-        articleword = ArticleWord.find_by_word(word)
+        # Try two words, as one might be filtered out
+        word = article.title.split()[0]
+        word2 = article.title.split()[1]
 
-        assert (article in articleword.articles)
+        article_word = ArticleWord.find_by_word(word)
+        article_word_2 = ArticleWord.find_by_word(word2)
+
+        assert (article in article_word.articles or article in article_word_2.articles)
 
     def testSufficientQuality(self):
         u = "https://www.propublica.org/article/" \
