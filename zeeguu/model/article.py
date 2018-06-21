@@ -90,6 +90,12 @@ class Article(db.Model):
         # somebody could vote that this article is broken
         self.broken += 1
 
+    def topics_as_string(self):
+        topics = ""
+        for topic in self.topics:
+            topics += topic.title + ", "
+        return topics
+
     def article_info(self, with_content=False):
         """
 
@@ -107,6 +113,7 @@ class Article(db.Model):
             summary=self.summary,
             language=self.language.code,
             authors=self.authors,
+            topics=self.topics_as_string(),
             metrics=dict(
                 difficulty=self.fk_difficulty / 100,
                 word_count=self.word_count
