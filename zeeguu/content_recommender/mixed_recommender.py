@@ -44,8 +44,8 @@ def recompute_recommender_cash_if_needed(user, session):
     :param session: Needed to store in the db
 
     """
-    articles_hash = reading_preferences_hash(user)
-    articles_hash_obj = ArticlesCache.check_if_hash_exists(articles_hash)
+    reading_pref_hash = reading_preferences_hash(user)
+    articles_hash_obj = ArticlesCache.check_if_hash_exists(reading_pref_hash)
 
     if articles_hash_obj is False:
         subscribed_articles = get_subscribed_articles_for_user(user)
@@ -76,7 +76,7 @@ def recompute_recommender_cash_if_needed(user, session):
                 all_articles = [article for article in s if article not in filter_articles]
 
         for article in all_articles:
-            cache_obj = ArticlesCache(article, articles_hash)
+            cache_obj = ArticlesCache(article, reading_pref_hash)
             session.add(cache_obj)
         session.commit()
 
@@ -91,8 +91,8 @@ def article_recommendations_for_user(user, count):
 
     """
 
-    articles_hash = reading_preferences_hash(user)
-    all_articles = ArticlesCache.get_articles_for_hash(articles_hash, count)
+    reading_pref_hash = reading_preferences_hash(user)
+    all_articles = ArticlesCache.get_articles_for_hash(reading_pref_hash, count)
 
     log('Sorting articles...')
     all_articles.sort(key=lambda each: each.published_time, reverse=True)
