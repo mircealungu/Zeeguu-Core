@@ -31,4 +31,4 @@ class FrequencyDifficultyEstimatorTest(ModelTestMixIn, TestCase):
         d1 = FrequencyDifficultyEstimator.estimate_difficulty(COMPLEX_TEXT, self.lan, self.user)
 
         assert d1['discrete'] == 'EASY'
-        assert d1['normalized'] >= 0.25
+        assert d1['normalized'] >= 0.20
