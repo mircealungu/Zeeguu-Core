@@ -93,7 +93,7 @@ class Article(db.Model):
     def topics_as_string(self):
         topics = ""
         for topic in self.topics:
-            topics += topic.title + ", "
+            topics += topic.title + " "
         return topics
 
     def article_info(self, with_content=False):
