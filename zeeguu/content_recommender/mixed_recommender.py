@@ -32,7 +32,7 @@ def user_article_info(user: User, article: Article, with_content=False):
     return ua_info
 
 
-def recompute_recommender_cash_if_needed(user, session):
+def recompute_recommender_cache_if_needed(user, session):
     """
 
             This method first checks if there is an existing hash for the
@@ -44,13 +44,27 @@ def recompute_recommender_cash_if_needed(user, session):
     :param session: Needed to store in the db
 
     """
-    articles_hash = reading_preferences_hash(user)
-    articles_hash_obj = ArticlesCache.check_if_hash_exists(articles_hash)
+    reading_preferences_hash_code = reading_preferences_hash(user)
+    articles_hash_obj = ArticlesCache.check_if_hash_exists(reading_preferences_hash_code)
 
     if articles_hash_obj is False:
-        subscribed_articles = get_subscribed_articles_for_user(user)
-        filter_articles = get_filtered_articles_for_user(user)
-        all_articles = get_user_articles_sources_languages(user, 1000)
+        recompute_recommender_cache(reading_preferences_hash_code, session, user)
+
+
+def recompute_recommender_cache(reading_preferences_hash_code, session, user):
+    subscribed_articles = get_subscribed_articles_for_user(user)
+    filter_articles = get_filtered_articles_for_user(user)
+    all_articles = get_user_articles_sources_languages(user, 1000)
+    # Get only the articles for the topics and searches subscribed
+    if len(subscribed_articles) > 0:
+        s = set(all_articles)
+        all_articles = [article for article in subscribed_articles if article in s]
+    # If there are any filters, filter out all these articles
+    if len(filter_articles) > 0:
+        s = set(all_articles)
+        all_articles = [article for article in s if article not in filter_articles]
+    if len(all_articles) < 10:
+        all_articles = get_user_articles_sources_languages(user)
 
         # Get only the articles for the topics and searches subscribed
         if len(subscribed_articles) > 0:
@@ -61,24 +75,10 @@ def recompute_recommender_cash_if_needed(user, session):
         if len(filter_articles) > 0:
             s = set(all_articles)
             all_articles = [article for article in s if article not in filter_articles]
-
-        if len(all_articles) < 10:
-            all_articles = get_user_articles_sources_languages(user)
-
-            # Get only the articles for the topics and searches subscribed
-            if len(subscribed_articles) > 0:
-                s = set(all_articles)
-                all_articles = [article for article in subscribed_articles if article in s]
-
-            # If there are any filters, filter out all these articles
-            if len(filter_articles) > 0:
-                s = set(all_articles)
-                all_articles = [article for article in s if article not in filter_articles]
-
-        for article in all_articles:
-            cache_obj = ArticlesCache(article, articles_hash)
-            session.add(cache_obj)
-        session.commit()
+    for article in all_articles:
+        cache_obj = ArticlesCache(article, reading_preferences_hash_code)
+        session.add(cache_obj)
+    session.commit()
 
 
 def article_recommendations_for_user(user, count):
