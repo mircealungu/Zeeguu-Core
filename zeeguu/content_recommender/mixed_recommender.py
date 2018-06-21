@@ -5,7 +5,6 @@
 
 
 """
-import time
 from zeeguu import log
 from zeeguu.model import RSSFeedRegistration, UserArticle, Article, User, Bookmark, \
     UserLanguage, TopicSubscription, TopicFilter, SearchSubscription, SearchFilter, ArticleWord, ArticlesCache
