@@ -51,6 +51,8 @@ class SearchSubscription(db.Model):
             new = cls(user, search)
             session.add(new)
             session.commit()
+            from zeeguu.content_recommender.mixed_recommender import add_hash
+            add_hash(user, session)
             return new
 
     @classmethod

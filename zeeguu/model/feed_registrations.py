@@ -37,6 +37,8 @@ class RSSFeedRegistration(db.Model):
             new = cls(user, feed)
             session.add(new)
             session.commit()
+            from zeeguu.content_recommender.mixed_recommender import add_hash
+            add_hash(user, session)
             return new
 
     @classmethod

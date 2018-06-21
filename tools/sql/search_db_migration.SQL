@@ -129,6 +129,17 @@ CREATE TABLE article_word_map (
 	FOREIGN KEY (word_id) REFERENCES article_word(id)
 );
 
+/** user_recommendations(id, article_id, content_hash)
+	foreign key for article_id */
+CREATE TABLE articles_cache (
+	id INT(11) AUTO_INCREMENT PRIMARY KEY,
+	article_id INT(11),
+	content_hash VARCHAR(256) CHARACTER SET utf8 COLLATE utf8_bin,
+	INDEX a_id (article_id),
+	INDEX ch_idx (content_hash),
+	FOREIGN KEY (article_id) REFERENCES article(id)
+);
+
 
 
 
