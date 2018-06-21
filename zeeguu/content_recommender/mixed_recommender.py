@@ -44,11 +44,11 @@ def recompute_recommender_cache_if_needed(user, session):
     :param session: Needed to store in the db
 
     """
-    reading_preferences_hash_code = reading_preferences_hash(user)
-    articles_hash_obj = ArticlesCache.check_if_hash_exists(reading_preferences_hash_code)
+    reading_pref_hash = reading_preferences_hash(user)
+    articles_hash_obj = ArticlesCache.check_if_hash_exists(reading_pref_hash)
 
     if articles_hash_obj is False:
-        recompute_recommender_cache(reading_preferences_hash_code, session, user)
+        recompute_recommender_cache(reading_pref_hash, session, user)
 
 
 def recompute_recommender_cache(reading_preferences_hash_code, session, user):
@@ -91,8 +91,8 @@ def article_recommendations_for_user(user, count):
 
     """
 
-    articles_hash = reading_preferences_hash(user)
-    all_articles = ArticlesCache.get_articles_for_hash(articles_hash, count)
+    reading_pref_hash = reading_preferences_hash(user)
+    all_articles = ArticlesCache.get_articles_for_hash(reading_pref_hash, count)
 
     log('Sorting articles...')
     all_articles.sort(key=lambda each: each.published_time, reverse=True)
