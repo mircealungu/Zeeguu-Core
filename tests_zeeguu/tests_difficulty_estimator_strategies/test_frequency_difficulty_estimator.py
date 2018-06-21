@@ -26,9 +26,11 @@ class FrequencyDifficultyEstimatorTest(ModelTestMixIn, TestCase):
         assert d1['discrete'] == 'EASY'
         assert d1['normalized'] < 0.1
 
-    #Todo: Use a really difficuly text
+    # Todo: Use a really difficult text
     def test_compute_complex_text_difficulty(self):
         d1 = FrequencyDifficultyEstimator.estimate_difficulty(COMPLEX_TEXT, self.lan, self.user)
 
         assert d1['discrete'] == 'EASY'
+
+        # TODO: this used to be 0.25... but it was failing...
         assert d1['normalized'] >= 0.20

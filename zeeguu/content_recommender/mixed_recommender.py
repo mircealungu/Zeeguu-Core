@@ -192,7 +192,7 @@ def get_subscribed_articles_for_user(user):
     return subscribed_articles
 
 
-def get_user_articles_sources_languages(user, limit=100000):
+def get_user_articles_sources_languages(user, limit=300000):
     """
 
     This method is used to get all the user articles for the sources if there are any

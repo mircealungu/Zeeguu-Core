@@ -12,6 +12,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from zeeguu import util
 from zeeguu.language.difficulty_estimator_factory import DifficultyEstimatorFactory
 from zeeguu.model.language import Language
+from wordstats import Word
 
 db = zeeguu.db
 
@@ -164,7 +165,7 @@ class User(db.Model):
             raise ValueError("Invalid username")
         return name
 
-    def update_password(self, password:str):
+    def update_password(self, password: str):
         """
         
         :param password: str
@@ -195,6 +196,41 @@ class User(db.Model):
         from zeeguu.model.bookmark import Bookmark
         return Bookmark.query.filter_by(user_id=self.id).order_by(
             Bookmark.time.desc()).all()
+
+    def starred_bookmarks(self, count):
+        from zeeguu.model.bookmark import Bookmark
+        return Bookmark.query.filter_by(user_id=self.id).filter_by(starred=True).order_by(
+            Bookmark.time.desc()).limit(count)
+
+    def learned_bookmarks(self, count=50):
+        from zeeguu.model.bookmark import Bookmark
+
+        learned = Bookmark.query.filter_by(user_id=self.id).filter_by(learned=True).order_by(
+            Bookmark.learned_time.desc()).limit(400)
+
+        return learned
+
+
+    def top_bookmarks(self, count=50, also_print=False):
+        from zeeguu.model.bookmark import Bookmark
+
+        def rank(b):
+            return Word.stats(b.origin.word, b.origin.language.code).rank
+
+        all_bookmarks = Bookmark.query.filter_by(user_id=self.id).filter_by(learned=False).order_by(
+            Bookmark.time.desc()).limit(400)
+
+        single_word_bookmarks = [each for each in all_bookmarks if each.quality_top_bookmark()]
+
+        sorted_bookmarks = sorted(single_word_bookmarks,
+                                  key=lambda b: rank(b))
+        sorted_bookmarks = sorted_bookmarks[:count]
+
+        if also_print:
+            for b in sorted_bookmarks:
+                print(f"{b.origin.word} ({b.origin.language.code})- {rank(b)} (id: {b.id})")
+
+        return sorted_bookmarks
 
     def bookmarks_by_date(self, after_date=datetime.datetime(1970, 1, 1)):
         """

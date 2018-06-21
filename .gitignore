@@ -13,3 +13,5 @@ testing_default.cfg
 *.ipynb_checkpoints*
 *.ipynb
 *.pytest_cache
+
+*.log

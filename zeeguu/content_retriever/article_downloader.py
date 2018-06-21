@@ -17,8 +17,15 @@ from zeeguu.content_retriever.content_cleaner import cleanup_non_content_bits
 from zeeguu.content_retriever.quality_filter import sufficient_quality
 from zeeguu.model import Url, RSSFeed, LocalizedTopic, ArticleWord
 from zeeguu.constants import SIMPLE_TIME_FORMAT
+import requests
 
 LOG_CONTEXT = "FEED RETRIEVAL"
+
+
+def _url_after_redirects(url):
+    # solve redirects and save the clean url
+    response = requests.get(url)
+    return response.url
 
 
 def download_from_feed(feed: RSSFeed, session, limit=1000):
@@ -51,17 +58,11 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
         if downloaded >= limit:
             break
 
-        url = feed_item['url']
-
-        # solve redirects and save the clean url
-        import requests
-        response = requests.get(url)
-        url = response.url
-
-        # drop all the query params from the urls and keep the canonical url
-        from urllib.parse import urlparse
-        o = urlparse(url)
-        url = o.scheme + "://" + o.netloc + o.path
+        try:
+            url = _url_after_redirects(feed_item['url'])
+        except requests.exceptions.TooManyRedirects:
+            zeeguu.log(f"Too many redirects for: {url}")
+            continue
 
         try:
             this_article_time = datetime.strptime(feed_item['published'], SIMPLE_TIME_FORMAT)
