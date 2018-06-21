@@ -32,7 +32,7 @@ def user_article_info(user: User, article: Article, with_content=False):
     return ua_info
 
 
-def add_hash(user, session):
+def recompute_recommender_cash_if_needed(user, session):
     """
 
             This method first checks if there is an existing hash for the
@@ -44,7 +44,7 @@ def add_hash(user, session):
     :param session: Needed to store in the db
 
     """
-    articles_hash = get_articles_hash(user)
+    articles_hash = reading_preferences_hash(user)
     articles_hash_obj = ArticlesCache.check_if_hash_exists(articles_hash)
 
     if articles_hash_obj is False:
@@ -91,7 +91,7 @@ def article_recommendations_for_user(user, count):
 
     """
 
-    articles_hash = get_articles_hash(user)
+    articles_hash = reading_preferences_hash(user)
     all_articles = ArticlesCache.get_articles_for_hash(articles_hash, count)
 
     log('Sorting articles...')
@@ -240,7 +240,7 @@ def get_articles_for_search_term(search_term):
     return ArticleWord.get_articles_for_word(search_terms[0])
 
 
-def get_articles_hash(user):
+def reading_preferences_hash(user):
     """
 
             Method to retrieve the hash, as this is done several times.
