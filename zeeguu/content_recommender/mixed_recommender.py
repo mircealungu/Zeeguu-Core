@@ -75,6 +75,10 @@ def recompute_recommender_cache(reading_preferences_hash_code, session, user):
         if len(filter_articles) > 0:
             s = set(all_articles)
             all_articles = [article for article in s if article not in filter_articles]
+
+    # Sort the articles here, so when fetching the first 20, they are not from one language.
+    all_articles.sort(key=lambda each: each.published_time, reverse=True)
+
     for article in all_articles:
         cache_obj = ArticlesCache(article, reading_preferences_hash_code)
         session.add(cache_obj)
@@ -93,10 +97,6 @@ def article_recommendations_for_user(user, count):
 
     reading_pref_hash = reading_preferences_hash(user)
     all_articles = ArticlesCache.get_articles_for_hash(reading_pref_hash, count)
-
-    log('Sorting articles...')
-    all_articles.sort(key=lambda each: each.published_time, reverse=True)
-    log('Sorted articles')
 
     return [user_article_info(user, article) for article in all_articles]
 
