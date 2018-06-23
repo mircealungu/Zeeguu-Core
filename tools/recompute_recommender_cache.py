@@ -2,23 +2,14 @@
 
 """
 
-   Script that goes through all the feeds that are
-   available in the DB and retrieves the newest articles
-   in order to populate the DB with them.
-
-   The DB is populated by saving Article objects in the
-   articles table.
-
-   Before this script checking whether there were new items
-   in a given feed was done while serving the request for
-   items to read. That was too slow.
+   Script that goes updates the ArticlesCache
 
    To be called from a cron job.
 
 """
 
 import zeeguu
-from zeeguu.content_recommender.mixed_recommender import reading_preferences_hash, recompute_recommender_cache
+from zeeguu.content_recommender.mixed_recommender import reading_preferences_hash, recompute_recommender_cache_if_needed
 from zeeguu.model import User, ArticlesCache
 
 session = zeeguu.db.session
@@ -46,7 +37,10 @@ def recompute_for_users(existing_hashes):
     """
 
         recomputes only those caches that are already in the table
-        and belong to a user.
+        and belong to a user. if multiple users have the same preferences
+        the computation is donne only for the first because this is how
+        recompute_recommender_cache_if_needed does.
+
 
         in theory, the recomputing should be doable independent of users
         in practice, the recompute_recommender_cache takes the user as input.
@@ -55,6 +49,10 @@ def recompute_for_users(existing_hashes):
         content_hash
         to do this their ids would need to be comma separated
 
+        OTOH, in the future we might still want to have a per-user cache
+        because the recommendations might be different for each user
+        since every user has different language levels!!!
+
     :param existing_hashes:
     :return:
     """
@@ -62,8 +60,7 @@ def recompute_for_users(existing_hashes):
         try:
             reading_pref_hash = reading_preferences_hash(user)
             if reading_pref_hash in existing_hashes:
-                ArticlesCache.query.filter_by(content_hash=reading_pref_hash).delete()
-                recompute_recommender_cache(reading_pref_hash, session, user)
+                recompute_recommender_cache_if_needed(user, session)
                 print(f"Success for {user}")
         except Exception as e:
             print(f"Failed for user {user}")
