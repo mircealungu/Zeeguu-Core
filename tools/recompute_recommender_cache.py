@@ -2,7 +2,7 @@
 
 """
 
-   Script that goes updates the ArticlesCache
+   Script that updates the ArticlesCache
 
    To be called from a cron job.
 
