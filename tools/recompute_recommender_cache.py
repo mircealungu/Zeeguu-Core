@@ -41,6 +41,13 @@ def recompute_for_users(existing_hashes):
         the computation is donne only for the first because this is how
         recompute_recommender_cache_if_needed does.
 
+        To think about:
+        - what happens when this script is triggered simultaneously
+        with triggering recompute_recommender_cache_if_needed from
+        the UI? will there end up be duplicated recommendations?
+        should we add a uninque constraint on (hash x article)?
+
+        Note:
 
         in theory, the recomputing should be doable independent of users
         in practice, the recompute_recommender_cache takes the user as input.
