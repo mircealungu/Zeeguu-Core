@@ -28,8 +28,9 @@ for user in all_users:
             dbs.add(user)
             dbs.commit()
             print (f"... now we have {user.name} - {user.email}")
-        except:
-            print (f"failed for the {i}th time... will try again")
+        except Exception as e:
+            print (f"failed for {user.name} the {i}th time... will try again")
+            print (e)
 
         break
 
