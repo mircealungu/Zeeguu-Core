@@ -210,7 +210,6 @@ class User(db.Model):
 
         return learned
 
-
     def top_bookmarks(self, count=50, also_print=False):
         from zeeguu.model.bookmark import Bookmark
 
@@ -370,6 +369,14 @@ class User(db.Model):
     @classmethod
     def find_by_id(cls, id):
         return User.query.filter(User.id == id).one()
+
+    @classmethod
+    def all_recent_user_ids(cls, days=90):
+        from zeeguu.model import UserActivityData
+        sometime_ago = datetime.datetime.now() - datetime.timedelta(days=days)
+        recent_activities = UserActivityData.query.filter(UserActivityData.time > sometime_ago).all()
+        user_ids = set([each.user_id for each in recent_activities])
+        return user_ids
 
     @classmethod
     def exists(cls, user):
