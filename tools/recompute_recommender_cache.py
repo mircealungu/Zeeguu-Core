@@ -33,7 +33,7 @@ def clean_the_cache():
     session.commit()
 
 
-def recompute_for_users(existing_hashes):
+def recompute_for_users():
     """
 
         recomputes only those caches that are already in the table
@@ -63,16 +63,21 @@ def recompute_for_users(existing_hashes):
     :param existing_hashes:
     :return:
     """
-    for user in User.query.all():
+    already_done=[]
+    for user_id in User.all_recent_user_ids():
         try:
+            user = User.find_by_id(user_id)
             reading_pref_hash = reading_preferences_hash(user)
-            if reading_pref_hash in existing_hashes:
+            if reading_pref_hash not in already_done:
                 recompute_recommender_cache_if_needed(user, session)
-                print(f"Success for {user}")
+                print(f"Success for {reading_pref_hash} and {user}")
+                already_done.append(reading_pref_hash)
+            else:
+                print(f"nno need to do for {user}. hash {reading_pref_hash} already done")
         except Exception as e:
             print(f"Failed for user {user}")
 
 
-existing_hashes = hashes_of_existing_cached_preferences()
+#existing_hashes = hashes_of_existing_cached_preferences()
 clean_the_cache()
-recompute_for_users(existing_hashes)
+recompute_for_users()
