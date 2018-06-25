@@ -33,7 +33,7 @@ class ArticlesCache(db.Model):
         self.content_hash = hash
 
     def __repr__(self):
-        return f'<Hash {self.hash}>'
+        return f'<Hash {self.content_hash}>'
 
     @staticmethod
     def calculate_hash(topics, filters, searches, search_filters, languages=None, sources=None):
