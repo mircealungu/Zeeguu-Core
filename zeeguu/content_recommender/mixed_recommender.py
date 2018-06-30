@@ -128,7 +128,7 @@ def article_search_for_user(user, count, search):
             final = [article for article in search_articles if article in s]
 
     # Sort them, so the first 'count' articles will be the most recent ones
-    final.sort(key=lambda each: each.published_time)
+    final.sort(key=lambda each: each.published_time, reverse=True)
 
     return [user_article_info(user, article) for article in final[:count]]
 
