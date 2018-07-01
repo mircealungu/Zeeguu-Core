@@ -168,7 +168,7 @@ def add_searches(title, url, new_article, session):
     all_words.append(parsed_url.netloc.split('.')[0])
     for word in all_words:
         # Strip the unwanted characters
-        word.strip('":;?!<>\'').lower()
+        word = word.strip('":;?!<>\'').lower()
         # Check if the word is of proper length, not only digits and not empty or www
         if word in ['www', '', ' '] or word.isdigit() or len(word) < 3 or len(word) > 25:
             continue
