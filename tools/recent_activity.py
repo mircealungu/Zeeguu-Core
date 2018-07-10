@@ -1,3 +1,5 @@
+#!/usr/local/bin/python3.6
+
 from zeeguu.model import UserActivityData
 
 all_events = UserActivityData.find(event_filter='UMR - USER FEEDBACK')
@@ -10,7 +12,9 @@ nicer = {
     '"finished_difficulty_easy"': "EASY",
     '"not_finished_for_other"': "Not Finished - OTHER",
     '"not_finished_for_boring"': "Not Finished - BORINNG",
+    '"read_later"':"Read Later",
     '"not_finished_for_too_difficult"': "Not Finished - TOO DIFFICULT"
+    
 }
 
 prev_user = ''
@@ -23,4 +27,7 @@ for each in all_events:
             print(each.time)
             prev_user = each.user.name
 
-        print("  " + nicer[each.extra_data] + " " + each.value)
+        nice = each.extra_data
+        if nicer.get(each.extra_data):
+            nice = nicer[each.extra_data]
+        print("  " + nice + " " + each.value)
