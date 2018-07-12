@@ -168,7 +168,7 @@ def add_searches(title, url, new_article, session):
     all_words.append(parsed_url.netloc.split('.')[0])
     for word in all_words:
         # Strip the unwanted characters
-        word = word.strip('":;?!<>\'').lower()
+        word = strip_article_title_word(word)
         # Check if the word is of proper length, not only digits and not empty or www
         if word in ['www', '', ' '] or word.isdigit() or len(word) < 3 or len(word) > 25:
             continue
@@ -179,3 +179,13 @@ def add_searches(title, url, new_article, session):
                 article_word_obj = ArticleWord(word)
             article_word_obj.add_article(new_article)
             session.add(article_word_obj)
+
+
+def strip_article_title_word(word:str):
+    """
+
+        Used when tokenizing the titles of articles
+        in order to index them for search
+
+    """
+    return word.strip('":;?!<>\'').lower()

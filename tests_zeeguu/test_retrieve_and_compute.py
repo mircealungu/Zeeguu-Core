@@ -6,7 +6,7 @@ from tests_zeeguu.rules.language_rule import LanguageRule
 from tests_zeeguu.rules.rss_feed_rule import RSSFeedRule
 from tests_zeeguu.rules.user_rule import UserRule
 from zeeguu.content_retriever.content_cleaner import cleanup_non_content_bits
-from zeeguu.content_retriever.article_downloader import download_from_feed
+from zeeguu.content_retriever.article_downloader import download_from_feed, strip_article_title_word
 from zeeguu.content_retriever.quality_filter import sufficient_quality
 from zeeguu.model import Topic, LocalizedTopic, ArticleWord
 
@@ -50,8 +50,7 @@ class TestRetrieveAndCompute(ModelTestMixIn):
         article = feed.get_articles(limit=2)[0]
 
         # Try two words, as one might be filtered out
-        word = article.title.split()[0]
-        word.strip('":;?!<>\'').lower()
+        word = strip_article_title_word(article.title.split()[0])
         article_word = ArticleWord.find_by_word(word)
 
         if word in ['www', ''] or word.isdigit() or len(word) < 3 or len(word) > 25:
