@@ -16,7 +16,7 @@ class BookmarkTest(ModelTestMixIn):
         super().setUp()
 
         self.user_rule = UserRule()
-        self.user_rule.add_bookmarks(random.randint(1, 3))
+        self.user_rule.add_bookmarks(random.randint(3, 5))
         self.user = self.user_rule.user
 
     def test_add_new_exercise(self):
