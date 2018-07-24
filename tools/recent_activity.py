@@ -23,7 +23,7 @@ for each in all_events:
     if each.user_id != 1534:
         if prev_user != each.user.name:
             print (" ")
-            print(each.user.name)
+            print(each.user.name.encode('utf-8'))
             print(each.time)
             prev_user = each.user.name
 
