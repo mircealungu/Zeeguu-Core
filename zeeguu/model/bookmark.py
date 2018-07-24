@@ -281,13 +281,24 @@ class Bookmark(db.Model):
         learned_datetime = str(self.learned_time.date()) if self.learned else ''
 
         created_day = "today" if self.time.date() == datetime.now().date() else ''
+ 
+        bookmark_title = ""
+        url = self.text.url.as_string()
+        try:
+            from zeeguu.model import Article
+            article = Article.find(url)
+            bookmark_title = article.title
+        except Exception as e:
+            print (e)
+            print ("could not find article title for " + url)
+
 
         result = dict(
             id=self.id,
             to=translation_word,
             from_lang=self.origin.language.code,
             to_lang=self.translation.language.code,
-            title=self.text.url.title,
+            title=bookmark_title,
             url=self.text.url.as_string(),
             origin_importance=word_info.importance,
             learned_datetime=learned_datetime,
