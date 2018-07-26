@@ -163,8 +163,14 @@ class UserReadingSession(db.Model):
             self.last_action_time += timedelta(minutes=READING_SESSION_TIMEOUT)
         else:
             self.last_action_time = current_time
-        db_session.add(self)
-        db_session.commit()
+        
+        try:
+            db_session.add(self)
+            db_session.commit()
+        except: 
+            import traceback
+            traceback.print_exc()
+            print(self.id)
         return self
 
     def _close_reading_session(self, db_session):
