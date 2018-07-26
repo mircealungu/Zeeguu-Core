@@ -3,7 +3,6 @@ import zeeguu
 
 from datetime import datetime, timedelta
 from zeeguu.model.user import User
-from zeeguu.model.exercise import Exercise
 
 db = zeeguu.db
 
@@ -12,6 +11,7 @@ EXERCISE_SESSION_TIMEOUT = 21
 
 VERY_FAR_IN_THE_PAST = '2000-01-01T00:00:00'
 VERY_FAR_IN_THE_FUTURE = '9999-12-31T23:59:59'
+
 
 class UserExerciseSession(db.Model):
     """
@@ -47,7 +47,7 @@ class UserExerciseSession(db.Model):
         self.last_action_time = current_time
 
         duration = self.last_action_time - self.start_time
-        self.duration = duration.total_seconds()*1000
+        self.duration = duration.total_seconds() * 1000
 
     @classmethod
     def get_exercise_session_timeout(cls):
@@ -113,7 +113,7 @@ class UserExerciseSession(db.Model):
             returns: The new exercise session
         """
 
-        #If the user left the exercise open for very long, we set the duration of the session to the timeout value
+        # If the user left the exercise open for very long, we set the duration of the session to the timeout value
         time_difference = current_time - start_time
         if time_difference > timedelta(seconds=EXERCISE_SESSION_TIMEOUT):
             start_time = current_time - timedelta(seconds=EXERCISE_SESSION_TIMEOUT)
@@ -135,9 +135,9 @@ class UserExerciseSession(db.Model):
             returns: The exercise session
         """
 
-        #Update duration
+        # Update duration
         current_session_length = current_time - self.start_time
-        self.duration = current_session_length.total_seconds() * 1000 #Convert to miliseconds
+        self.duration = current_session_length.total_seconds() * 1000  # Convert to miliseconds
 
         self.last_action_time = current_time
         db_session.add(self)
@@ -176,12 +176,13 @@ class UserExerciseSession(db.Model):
         user_id = exercise.find_user_id(db.session)
         if user_id:
             current_time = exercise.time
-            start_time = current_time - timedelta(minutes=(exercise.solving_speed/60000))
+            start_time = current_time - timedelta(minutes=(exercise.solving_speed / 60000))
 
             most_recent_exercise_session = cls._find_most_recent_session(user_id, db_session)
 
             if most_recent_exercise_session:
-                if most_recent_exercise_session._is_still_active(current_time):  # Verify if the session is not expired (according to session timeout)
+                if most_recent_exercise_session._is_still_active(
+                        current_time):  # Verify if the session is not expired (according to session timeout)
                     return most_recent_exercise_session._update_last_action_time(db_session, current_time=current_time)
                 else:  # If the session is expired, close it and create a new one
                     most_recent_exercise_session._close_exercise_session(db_session)
