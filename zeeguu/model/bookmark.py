@@ -267,7 +267,7 @@ class Bookmark(db.Model):
         words = self.split_words_from_context()
         return len(words)
 
-    def json_serializable_dict(self, with_context=True):
+    def json_serializable_dict(self, with_context=True, with_title=False):
         try:
             translation_word = self.translation.word
         except AttributeError as e:
@@ -283,14 +283,15 @@ class Bookmark(db.Model):
         created_day = "today" if self.time.date() == datetime.now().date() else ''
  
         bookmark_title = ""
-        url = self.text.url.as_string()
-        try:
-            from zeeguu.model import Article
-            article = Article.find(url)
-            bookmark_title = article.title
-        except Exception as e:
-            print (e)
-            print ("could not find article title for " + url)
+        if with_title:
+            url = self.text.url.as_string()
+            try:
+                from zeeguu.model import Article
+                article = Article.find(url)
+                bookmark_title = article.title
+            except Exception as e:
+                print (e)
+                print ("could not find article title for " + url)
 
 
         result = dict(
