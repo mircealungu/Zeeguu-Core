@@ -259,19 +259,28 @@ class User(db.Model):
         return bookmarks_by_date, sorted_dates
 
     def bookmarks_by_day(self, with_context,
-                         after_date=datetime.datetime(2010, 1, 1)):
+                         after_date=datetime.datetime(2010, 1, 1), max=42, with_title=False):
         bookmarks_by_date, sorted_dates = self.bookmarks_by_date(after_date)
 
+        print ('in the new bookmarks_y_day with max 50')
         dates = []
+        total_bookmarks = 0
         for date in sorted_dates:
             bookmarks = []
             for bookmark in bookmarks_by_date[date]:
-                bookmarks.append(bookmark.json_serializable_dict(with_context))
+                bookmarks.append(bookmark.json_serializable_dict(with_context, with_title))
+                total_bookmarks += 1
+                print (total_bookmarks)
             date_entry = dict(
                 date=date.strftime("%A, %d %B %Y"),
                 bookmarks=bookmarks
             )
             dates.append(date_entry)
+
+            if total_bookmarks > max:
+                print ("we have already 50 bookmarks. be done with it!")
+                return dates
+
         return dates
 
     def bookmarks_by_url_by_date(self, n_days=365):
