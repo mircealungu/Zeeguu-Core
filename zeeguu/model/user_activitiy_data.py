@@ -11,6 +11,7 @@ from zeeguu.model.user_reading_session import UserReadingSession
 
 db = zeeguu.db
 
+
 def _is_valid_url(a: str):
     return urlparse(a).netloc is not ''
 
@@ -30,21 +31,32 @@ class UserActivityData(db.Model):
     value = db.Column(db.String(255))
     extra_data = db.Column(db.String(4096))
 
-    def __init__(self, user, time, event, value, extra_data):
+    # question... should article_id be a FK? or just a number?
+    # if it's a FK what do we do about those types of events
+    # that are not associated with a given ID?
+    # let's say that we'll leave the thing NULL / None for those
+    article_id = db.Column(db.Integer, db.ForeignKey(Article.id))
+    article = db.relationship(Article)
+
+    def __init__(self, user, time, event, value, extra_data, article_id: int = None):
         self.user = user
         self.time = time
         self.event = event
         self.value = value
         self.extra_data = extra_data
+        self.article_id = article_id
 
     def data_as_dictionary(self):
-        return dict(
+        data = dict(
             user_id=self.user_id,
             time=self.time.strftime("%Y-%m-%dT%H:%M:%S"),
             event=self.event,
             value=self.value,
             extra_data=self.extra_data
         )
+        if self.article_id:
+            data['article_id'] = self.article_id
+        return data
 
     def is_like(self):
         return self.event == UMR_LIKE_ARTICLE_ACTION
@@ -187,21 +199,30 @@ class UserActivityData(db.Model):
         event = data['event']
         value = data['value']
 
+        article_id = None
+        if data['article_id'] != '':
+            article_id = int(data['article_id'])
+
         extra_data = data['extra_data']
 
-        zeeguu.log(f'{event} value[:42]: {value[:42]} extra_data[:42]: {extra_data[:42]}')
+        zeeguu.log(f'{event} value[:42]: {value[:42]} extra_data[:42]: {extra_data[:42]} art_id: {article_id}')
 
         new_entry = UserActivityData(user,
                                      time,
                                      event,
                                      value,
-                                     extra_data)
+                                     extra_data,
+                                     article_id)
+
         session.add(new_entry)
         session.commit()
+
+        if not article_id:
+            article_id = new_entry.find_or_create_article_id(session)
 
         UserReadingSession.update_reading_session(session,
                                                   event,
                                                   user.id,
-                                                  new_entry.find_or_create_article_id(session),
+                                                  article_id,
                                                   current_time=time
                                                   )
