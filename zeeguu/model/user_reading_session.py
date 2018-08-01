@@ -2,14 +2,10 @@ import sqlalchemy
 import zeeguu
 
 from datetime import datetime, timedelta
-from zeeguu.model.user import User
-from zeeguu.model.article import Article
-from zeeguu.constants import UMR_OPEN_ARTICLE_ACTION, UMR_OPEN_STARRED_ARTICLE_ACTION, \
-    UMR_ARTICLE_FOCUSED_ACTION, UMR_TRANSLATE_TEXT_ACTION, UMR_SPEAK_TEXT_ACTION, \
-    UMR_OPEN_ALTERMENU_ACTION, UMR_CLOSE_ALTERMENU_ACTION, UMR_UNDO_TEXT_TRANSLATION_ACTION, \
-    UMR_SEND_SUGGESTION_ACTION, UMR_CHANGE_ORIENTATION_ACTION, UMR_LIKE_ARTICLE_ACTION, \
-    UMR_ARTICLE_CLOSED_ACTION, UMR_ARTICLE_LOST_FOCUS_ACTION, UMR_ARTICLES_REQUESTED_FROM_ZEEGUU, \
-    UMR_USER_SCROLL_ACTION
+
+from zeeguu.model import User, Article
+
+from zeeguu.constants import *
 
 db = zeeguu.db
 
@@ -71,6 +67,17 @@ class UserReadingSession(db.Model):
         self.start_time = current_time
         self.last_action_time = current_time
         self.duration = 0
+
+    def human_readable_duration(self):
+        return (str(round(self.duration / 1000 / 60, 1)) + "min")
+
+    def human_readable_date(self):
+        return str(datetime.date(self.start_time))
+
+    def events_in_this_session(self):
+        from zeeguu.model import UserActivityData
+        return UserActivityData.query.filter(UserActivityData.time > self.start_time).filter(
+            UserActivityData.time < self.last_action_time).all()
 
     @staticmethod
     def get_reading_session_timeout():
@@ -288,7 +295,7 @@ class UserReadingSession(db.Model):
 
     @classmethod
     def find_by_user(cls,
-                     user,
+                     user_id,
                      from_date: str = VERY_FAR_IN_THE_PAST,
                      to_date: str = VERY_FAR_IN_THE_FUTURE,
                      is_active: bool = None):
@@ -299,7 +306,7 @@ class UserReadingSession(db.Model):
             return: object or None if not found
         """
         query = cls.query
-        query = query.filter(cls.user_id == user)
+        query = query.filter(cls.user_id == user_id)
         query = query.filter(cls.start_time >= from_date)
         query = query.filter(cls.start_time <= to_date)
 

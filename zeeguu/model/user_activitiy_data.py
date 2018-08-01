@@ -6,7 +6,7 @@ import zeeguu
 from zeeguu.model import Article
 
 from zeeguu.model.user import User
-from zeeguu.constants import JSON_TIME_FORMAT
+from zeeguu.constants import JSON_TIME_FORMAT, UMR_LIKE_ARTICLE_ACTION, UMR_USER_FEEDBACK_ACTION
 from zeeguu.model.user_reading_session import UserReadingSession
 
 db = zeeguu.db
@@ -45,6 +45,12 @@ class UserActivityData(db.Model):
             value=self.value,
             extra_data=self.extra_data
         )
+
+    def is_like(self):
+        return self.event == UMR_LIKE_ARTICLE_ACTION
+
+    def is_feedback(self):
+        return self.event == UMR_USER_FEEDBACK_ACTION
 
     def _extra_data_filter(self, attribute_name: str):
         """
