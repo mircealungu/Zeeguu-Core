@@ -36,7 +36,7 @@ for user_action in data:
             UserReadingSession.update_reading_session(db_session,
                                                       user_action.event,
                                                       user,
-                                                      user_action.find_or_create_article_id(db_session),
+                                                      user_action.get_article_id(db_session),
                                                       current_time=time
                                                       )
             print(str(datetime.now()) + " " + str(user_action.id))

@@ -2,12 +2,17 @@ import json
 from datetime import datetime
 from urllib.parse import urlparse
 
+from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
+
 import zeeguu
 from zeeguu.model import Article
 
 from zeeguu.model.user import User
 from zeeguu.constants import JSON_TIME_FORMAT, UMR_LIKE_ARTICLE_ACTION, UMR_USER_FEEDBACK_ACTION
 from zeeguu.model.user_reading_session import UserReadingSession
+
+from urllib.parse import urlparse
 
 db = zeeguu.db
 
@@ -20,30 +25,39 @@ class UserActivityData(db.Model):
     __table_args__ = dict(mysql_collate="utf8_bin")
     __tablename__ = 'user_activity_data'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
-    user_id = db.Column(db.Integer, db.ForeignKey(User.id))
-    user = db.relationship(User)
+    user_id = Column(Integer, ForeignKey(User.id))
+    user = relationship(User)
 
-    time = db.Column(db.DateTime)
+    time = Column(DateTime)
 
-    event = db.Column(db.String(255))
-    value = db.Column(db.String(255))
-    extra_data = db.Column(db.String(4096))
+    event = Column(String(255))
+    value = Column(String(255))
+    extra_data = Column(String(4096))
 
-    # question... should article_id be a FK? or just a number?
-    # if it's a FK what do we do about those types of events
-    # that are not associated with a given ID?
-    # let's say that we'll leave the thing NULL / None for those
-    article_id = db.Column(db.Integer, db.ForeignKey(Article.id))
-    article = db.relationship(Article)
+    # article_id is a FK
+    # for those user_activity_data that are not about article
+    # interactions, the FK is NULL
+    # since the older versions of the DB didn't have the
+    # article_id a NULL there might be due to the old DB...
+    # thus we add an extra column has_article_id which
+    # is set in the new version of the DB and null in the old
+    # Once the DB is fully ported, the has_article_id can be
+    # dropped and the corresponding code with it.
 
-    def __init__(self, user, time, event, value, extra_data, article_id: int = None):
+    has_article_id = Column(Boolean)
+
+    article_id = Column(Integer, ForeignKey(Article.id))
+    article = relationship(Article)
+
+    def __init__(self, user, time, event, value, extra_data, has_article_id, article_id: int = None):
         self.user = user
         self.time = time
         self.event = event
         self.value = value
         self.extra_data = extra_data
+        self.has_article_id = has_article_id
         self.article_id = article_id
 
     def data_as_dictionary(self):
@@ -147,8 +161,14 @@ class UserActivityData(db.Model):
             returns: url if found or None otherwise
         """
 
+        def _extract_canonical_url(url: str):
+
+            o = urlparse(url)
+
+            return o.scheme + "://" + o.netloc + o.path
+
         if _is_valid_url(self.value):
-            return self.value.split('articleURL=')[-1]
+            return _extract_canonical_url(self.value.split('articleURL=')[-1])
 
         if self.extra_data and self.extra_data != '{}' and self.extra_data != 'null':
             try:
@@ -160,7 +180,7 @@ class UserActivityData(db.Model):
                     url = extra_event_data['url']
                 else:  # There is no url
                     return None
-                return url.split('articleURL=')[-1]
+                return _extract_canonical_url(url.split('articleURL=')[-1])
 
             except:  # Some json strings are truncated and some other times extra_event_data is an int
                 # therefore cannot be parsed correctly and throw an exception
@@ -168,16 +188,17 @@ class UserActivityData(db.Model):
         else:  # The extra_data field is empty
             return None
 
-    def find_or_create_article_id(self, db_session):
+    def _ugly_but_historically_relevant_find_or_create_article_id(self, db_session):
         """
             Finds or creates an article_id
 
             return: article ID or NONE
 
-            NOTE: When the article cannot be downloaded anymore, 
+            NOTE: When the article cannot be downloaded anymore,
             either because the article is no longer available or the newspaper.parser() fails
 
         """
+
         try:
             url = self.find_url_in_extra_data()
 
@@ -191,19 +212,42 @@ class UserActivityData(db.Model):
 
             return None
 
+    def get_article_id(self, db_session):
+        """
+
+            returns the article_id for those events that have it.
+
+            for those that don't have it, falls back on the old
+            way of getting this information which is needed for
+            the events in the DB before 2018-08-10
+
+        :param db_session: needed for the old way which creates
+        the article if it's not there already
+
+        :return: article ID or None
+
+        """
+        if self.article_id is not None:
+            return self.article_id
+
+        return self._ugly_but_historically_relevant_find_or_create_article_id(db_session)
+
     @classmethod
     def create_from_post_data(cls, session, data, user):
+
         _time = data['time']
         time = datetime.strptime(_time, JSON_TIME_FORMAT)
 
         event = data['event']
         value = data['value']
 
+        extra_data = data['extra_data']
+
         article_id = None
+        has_article_id = False
         if data['article_id'] != '':
             article_id = int(data['article_id'])
-
-        extra_data = data['extra_data']
+            has_article_id = True
 
         zeeguu.log(f'{event} value[:42]: {value[:42]} extra_data[:42]: {extra_data[:42]} art_id: {article_id}')
 
@@ -212,17 +256,16 @@ class UserActivityData(db.Model):
                                      event,
                                      value,
                                      extra_data,
+                                     has_article_id,
                                      article_id)
 
         session.add(new_entry)
         session.commit()
 
-        if not article_id:
-            article_id = new_entry.find_or_create_article_id(session)
-
-        UserReadingSession.update_reading_session(session,
-                                                  event,
-                                                  user.id,
-                                                  article_id,
-                                                  current_time=time
-                                                  )
+        if has_article_id:
+            UserReadingSession.update_reading_session(session,
+                                                      event,
+                                                      user.id,
+                                                      article_id,
+                                                      current_time=time
+                                                      )
