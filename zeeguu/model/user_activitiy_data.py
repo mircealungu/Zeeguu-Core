@@ -3,6 +3,7 @@ from datetime import datetime
 
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
+from zeeguu.model.user_reading_session import ALL_ARTICLE_INTERACTION_ACTIONS
 
 import zeeguu
 
@@ -13,10 +14,6 @@ from zeeguu.constants import JSON_TIME_FORMAT, UMR_LIKE_ARTICLE_ACTION, UMR_USER
 from urllib.parse import urlparse
 
 db = zeeguu.db
-
-
-def _is_valid_url(a: str):
-    return urlparse(a).netloc is not ''
 
 
 class UserActivityData(db.Model):
@@ -159,9 +156,6 @@ class UserActivityData(db.Model):
             returns: url if found or None otherwise
         """
 
-        if _is_valid_url(self.value):
-            return Url.extract_canonical_url(self.value)
-
         if self.extra_data and self.extra_data != '{}' and self.extra_data != 'null':
             try:
                 extra_event_data = json.loads(self.extra_data)
@@ -180,29 +174,28 @@ class UserActivityData(db.Model):
         else:  # The extra_data field is empty
             return None
 
-    def _ugly_but_historically_relevant_find_or_create_article_id(self, db_session):
+    def _find_article_in_value_or_extra_data(self, db_session):
         """
             Finds or creates an article_id
 
-            return: article ID or NONE
+            return: articleID or NONE
 
             NOTE: When the article cannot be downloaded anymore,
             either because the article is no longer available or the newspaper.parser() fails
 
         """
 
-        try:
-            url = self.find_url_in_extra_data()
+        if self.event in ALL_ARTICLE_INTERACTION_ACTIONS:
 
-            if url:  # If url exists
-                return Article.find_or_create(db_session, url).id
-            else:  # If url is empty
-                return None
-        except Exception as e:  # When the article cannot be downloaded anymore, either because the article is no longer available or the newspaper.parser() fails
-            import traceback
-            traceback.print_exc()
+            if self.value.startswith('http'):
+                url = self.value
+            else:
+                url = self.find_url_in_extra_data()
 
-            return None
+            if url:
+                return Article.find_or_create(db_session, url, sleep_a_bit=True).id
+
+        return None
 
     def get_article_id(self, db_session):
         """
@@ -222,7 +215,7 @@ class UserActivityData(db.Model):
         if self.article_id is not None:
             return self.article_id
 
-        return self._ugly_but_historically_relevant_find_or_create_article_id(db_session)
+        return self._find_article_in_value_or_extra_data(db_session)
 
     @classmethod
     def create_from_post_data(cls, session, data, user):
@@ -234,6 +227,8 @@ class UserActivityData(db.Model):
         value = data['value']
 
         extra_data = data['extra_data']
+        if extra_data == '{}':
+            extra_data = ''
 
         article_id = None
         has_article_id = False

@@ -15,12 +15,12 @@ from langdetect import detect
 db = zeeguu.db
 
 article_topic_map = Table('article_topic_map',
-                              db.Model.metadata,
-                              Column('article_id', Integer,
-                                     ForeignKey('article.id')),
-                              Column('topic_id', Integer,
-                                     ForeignKey('topic.id'))
-                              )
+                          db.Model.metadata,
+                          Column('article_id', Integer,
+                                 ForeignKey('article.id')),
+                          Column('topic_id', Integer,
+                                 ForeignKey('topic.id'))
+                          )
 
 
 class Article(db.Model):
@@ -148,7 +148,7 @@ class Article(db.Model):
         session.add(ua)
 
     @classmethod
-    def find_or_create(cls, session, _url, language=None):
+    def find_or_create(cls, session, _url, language=None, sleep_a_bit=False):
         """
 
             If not found, download and extract all
@@ -171,6 +171,15 @@ class Article(db.Model):
             art.download()
             art.parse()
 
+            if art.text == '':
+                raise Exception("Newspaper got empty article from: " + url)
+
+            if sleep_a_bit:
+                import time
+                print("GOT: " + url)
+                print("sleeping for one second... so we don't annoy our friendly servers")
+                time.sleep(1)
+
             if not language:
                 if art.meta_lang == '':
                     art.meta_lang = detect(art.text)
@@ -178,18 +187,22 @@ class Article(db.Model):
                 language = Language.find_or_create(art.meta_lang)
 
             # Create new article and save it to DB
+            url_object = Url.find_or_create(session, url)
+
             new_article = Article(
-                Url.find_or_create(session, url),
+                url_object,
                 art.title,
                 ', '.join(art.authors),
-                art.text,
+                art.text[0:32000],  # any article longer than this will be truncated...
                 art.summary,
                 None,
                 None,
                 language
             )
             session.add(new_article)
+
             session.commit()
+
             return new_article
         except sqlalchemy.exc.IntegrityError or sqlalchemy.exc.DatabaseError:
             for i in range(10):
@@ -203,9 +216,6 @@ class Article(db.Model):
                     time.sleep(0.3)
                     continue
                 break
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
 
     @classmethod
     def find(cls, url: str):
@@ -245,4 +255,3 @@ class Article(db.Model):
             return True
         except NoResultFound:
             return False
-
