@@ -8,6 +8,7 @@ import time
 import random
 
 from urllib.parse import urlparse
+from urllib.request import Request, urlopen
 
 db = zeeguu.db
 
@@ -123,12 +124,22 @@ class Url(db.Model):
     @classmethod
     def extract_canonical_url(cls, url: str):
 
+        if not hasattr(cls, 'canonical_url_cache'):
+            cls.canonical_url_cache = {}
+
+        cached = cls.canonical_url_cache.get(url, None)
+        if cached:
+            return cached
+
         without_zeeguu_prefix = url.split('articleURL=')[-1]
 
-        import urllib.request
-        res = urllib.request.urlopen(without_zeeguu_prefix)
+        req = Request(without_zeeguu_prefix, headers={'User-Agent': 'Mozilla/5.0'})
+        res = urlopen(req)
         final = res.geturl()
 
         o = urlparse(final)
 
-        return o.scheme + "://" + o.netloc + o.path
+        canonical_url = o.scheme + "://" + o.netloc + o.path
+
+        cls.canonical_url_cache[url] = canonical_url
+        return canonical_url
