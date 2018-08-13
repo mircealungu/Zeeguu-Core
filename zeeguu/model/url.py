@@ -104,7 +104,7 @@ class Url(db.Model):
                         session.rollback()
                         domain = DomainName.find_or_create(session, _url)
                         path = Url.get_path(_url)
-                        print(f"after rollback trying to find again: {domain} + {path}")
+                        print(f"after rollback trying to find again: {domain.domain_name} + {path}")
                         u = cls.query.filter(cls.path == path).filter(cls.domain == domain).first()
                         print("Found url after recovering from race")
                         return u
@@ -133,7 +133,7 @@ class Url(db.Model):
 
         without_zeeguu_prefix = url.split('articleURL=')[-1]
 
-        req = Request(without_zeeguu_prefix, headers={'User-Agent': 'Mozilla/5.0'})
+        req = Request(without_zeeguu_prefix, headers={'User-Agent': 'Chrome/35.0.1916.47'})
         res = urlopen(req)
         final = res.geturl()
 
