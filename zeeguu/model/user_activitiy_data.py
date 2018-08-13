@@ -1,16 +1,14 @@
 import json
 from datetime import datetime
-from urllib.parse import urlparse
 
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 
 import zeeguu
-from zeeguu.model import Article
 
-from zeeguu.model.user import User
-from zeeguu.constants import JSON_TIME_FORMAT, UMR_LIKE_ARTICLE_ACTION, UMR_USER_FEEDBACK_ACTION
+from zeeguu.model import Article, User, Url
 from zeeguu.model.user_reading_session import UserReadingSession
+from zeeguu.constants import JSON_TIME_FORMAT, UMR_LIKE_ARTICLE_ACTION, UMR_USER_FEEDBACK_ACTION
 
 from urllib.parse import urlparse
 
@@ -161,14 +159,8 @@ class UserActivityData(db.Model):
             returns: url if found or None otherwise
         """
 
-        def _extract_canonical_url(url: str):
-
-            o = urlparse(url)
-
-            return o.scheme + "://" + o.netloc + o.path
-
         if _is_valid_url(self.value):
-            return _extract_canonical_url(self.value.split('articleURL=')[-1])
+            return Url.extract_canonical_url(self.value)
 
         if self.extra_data and self.extra_data != '{}' and self.extra_data != 'null':
             try:
@@ -180,7 +172,7 @@ class UserActivityData(db.Model):
                     url = extra_event_data['url']
                 else:  # There is no url
                     return None
-                return _extract_canonical_url(url.split('articleURL=')[-1])
+                return Url.extract_canonical_url(url)
 
             except:  # Some json strings are truncated and some other times extra_event_data is an int
                 # therefore cannot be parsed correctly and throw an exception

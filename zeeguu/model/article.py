@@ -148,7 +148,7 @@ class Article(db.Model):
         session.add(ua)
 
     @classmethod
-    def find_or_create(cls, session, url, language=None):
+    def find_or_create(cls, session, _url, language=None):
         """
 
             If not found, download and extract all
@@ -159,6 +159,8 @@ class Article(db.Model):
         """
         from zeeguu.model import Url, Article, Language
         import newspaper
+
+        url = Url.extract_canonical_url(_url)
 
         try:
             found = cls.find(url)

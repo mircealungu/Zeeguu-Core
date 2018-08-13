@@ -1,10 +1,8 @@
 import json
 
 from zeeguu.model.user_activitiy_data import UserActivityData
-from zeeguu.model.user_reading_session import UserReadingSession
 
 import zeeguu
-from datetime import datetime
 
 '''
     Script that loops through all the exeuser_activity_data actions in the database
@@ -24,6 +22,7 @@ def fill_in_article_id(self, session):
         if isinstance(d, dict):
             d.pop('url', None)
             d.pop('title', None)
+            d.pop('articleURL',None)
             return json.dumps(d)
         return data
 
@@ -33,6 +32,8 @@ def fill_in_article_id(self, session):
         self.article_id = found_article_id
         self.has_article_id = True
         self.extra_data = _remove_url_and_title(self.extra_data)
+        if self.value.startswith('http'):
+            self.value = ''
 
     session.add(self)
     session.commit()

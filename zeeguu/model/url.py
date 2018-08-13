@@ -7,6 +7,8 @@ import zeeguu
 import time
 import random
 
+from urllib.parse import urlparse
+
 db = zeeguu.db
 
 from zeeguu.model.domain_name import DomainName
@@ -97,11 +99,11 @@ class Url(db.Model):
             except sqlalchemy.exc.IntegrityError or sqlalchemy.exc.DatabaseError:
                 for i in range(10):
                     try:
-                        print ("doing a rollback")
+                        print("doing a rollback")
                         session.rollback()
                         domain = DomainName.find_or_create(session, _url)
                         path = Url.get_path(_url)
-                        print (f"after rollback trying to find again: {domain} + {path}")
+                        print(f"after rollback trying to find again: {domain} + {path}")
                         u = cls.query.filter(cls.path == path).filter(cls.domain == domain).first()
                         print("Found url after recovering from race")
                         return u
@@ -117,3 +119,16 @@ class Url(db.Model):
         return (cls.query.filter(cls.path == Url.get_path(url))
                 .filter(cls.domain == d)
                 .one())
+
+    @classmethod
+    def extract_canonical_url(cls, url: str):
+
+        without_zeeguu_prefix = url.split('articleURL=')[-1]
+
+        import urllib.request
+        res = urllib.request.urlopen(without_zeeguu_prefix)
+        final = res.geturl()
+
+        o = urlparse(final)
+
+        return o.scheme + "://" + o.netloc + o.path
