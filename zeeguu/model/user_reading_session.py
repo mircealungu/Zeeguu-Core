@@ -29,7 +29,8 @@ INTERACTION_ACTIONS = [UMR_TRANSLATE_TEXT_ACTION,
                        UMR_CHANGE_ORIENTATION_ACTION,
                        UMR_USER_SCROLL_ACTION,
                        UMR_STAR_ARTICLE_ACTION,
-                       UMR_LIKE_ARTICLE_ACTION
+                       UMR_LIKE_ARTICLE_ACTION,
+                       UMR_USER_FEEDBACK_ACTION
                        ]
 
 CLOSING_ACTIONS = [UMR_ARTICLE_CLOSED_ACTION,
