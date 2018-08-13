@@ -46,7 +46,7 @@ class UserActivityData(db.Model):
     article_id = Column(Integer, ForeignKey(Article.id))
     article = relationship(Article)
 
-    def __init__(self, user, time, event, value, extra_data, has_article_id, article_id: int = None):
+    def __init__(self, user, time, event, value, extra_data, has_article_id: Boolean = False, article_id: int = None):
         self.user = user
         self.time = time
         self.event = event
@@ -91,6 +91,7 @@ class UserActivityData(db.Model):
 
     @classmethod
     def _filter_by_extra_value(cls, events, extra_filter, extra_value):
+        # TODO: To delete this... i don't think it's ever used
         """
 
             required by .find()
@@ -112,7 +113,7 @@ class UserActivityData(db.Model):
     def find(cls,
              user: User = None,
              extra_filter: str = None,
-             extra_value: str = None,
+             extra_value: str = None,  # TODO: to delete this, i don't think it's ever used.
              event_filter: str = None,
              only_latest=False):
         """
