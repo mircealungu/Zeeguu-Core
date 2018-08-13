@@ -3,11 +3,12 @@
 #    and computes the article_id for each entry.
 #
 #    NOTE: It deletes and recreates the table
-
+import json
 
 import zeeguu
 from zeeguu.model.user_activitiy_data import UserActivityData
-from zeeguu.model.user_reading_session import CLOSING_ACTIONS, OPENING_ACTIONS, INTERACTION_ACTIONS
+from zeeguu.model.user_reading_session import CLOSING_ACTIONS, OPENING_ACTIONS, INTERACTION_ACTIONS, \
+    UMR_USER_FEEDBACK_ACTION, UMR_UNFOLLOW_FEED, UMR_ARTICLE_LOST_FOCUS_ACTION
 
 db_session = zeeguu.db.session
 
@@ -20,9 +21,14 @@ def _fill_in_article_id(self, session):
     if article_id:
         self.article_id = article_id
         self.has_article_id = True
-        self.extra_data = ''  # extra data is not needed for any of these events...
+
         if self.value.startswith('http'):
             self.value = ''
+
+        if self.event in [UMR_USER_FEEDBACK_ACTION, UMR_UNFOLLOW_FEED]:
+            self.value = self.extra_data
+
+        self.extra_data = ''
 
     session.add(self)
 
@@ -32,7 +38,7 @@ previous_action = {}  # tracks the previous action of a given user; key is user
 commit_batch_size = 500  # committing is slow; better don't do it for every object
 
 all_data = UserActivityData.find()
-data = [each for each in all_data if each.id > 77420]
+data = [each for each in all_data if each.id > 95700]
 
 processed_count = 0
 for user_action in data:
@@ -61,6 +67,7 @@ for user_action in data:
             # open event. not nice!
             print(e)
             import traceback
+
             print(traceback.format_exc())
             previous_action[user_action.user] = None
             continue
@@ -68,7 +75,8 @@ for user_action in data:
         # if we got here, it means that we have no URL info in our
         # but if the previous user action has one, and it's not a closing
         # we can safely assume that it's the same here!
-        if not user_action.has_article_id:
+        if not user_action.has_article_id and (
+                user_action.event in INTERACTION_ACTIONS or user_action.event == UMR_ARTICLE_LOST_FOCUS_ACTION):
 
             previous_action_of_this_user = previous_action.get(user_action.user, None)
 
