@@ -178,7 +178,7 @@ class Article(db.Model):
                 import time
                 from random import randint
                 print("GOT: " + url)
-                sleep_time = randint(1,9)
+                sleep_time = randint(3,33)
                 print(f"sleeping for {sleep_time}s... so we don't annoy our friendly servers")
                 time.sleep(sleep_time)
 
