@@ -2,13 +2,16 @@
 #    Script that loops through all the exeuser_activity_data actions in the database
 #    and computes the article_id for each entry.
 #
-#    NOTE: It deletes and recreates the table
+#    It skips those entries on which the has_article_id is not NULL
+#    this means that it can be interruped and restarted if needed
+#    
+#    Normally this has to be used on zeeguu_2018-08-14.sql and then not needed anymore
+
 import json
 
 import zeeguu
 from zeeguu.model.user_activitiy_data import UserActivityData
-from zeeguu.model.user_reading_session import CLOSING_ACTIONS, OPENING_ACTIONS, INTERACTION_ACTIONS, \
-    UMR_USER_FEEDBACK_ACTION, UMR_UNFOLLOW_FEED, UMR_ARTICLE_LOST_FOCUS_ACTION
+from zeeguu.model.user_reading_session import * 
 
 db_session = zeeguu.db.session
 
@@ -37,8 +40,8 @@ previous_action = {}  # tracks the previous action of a given user; key is user
 
 commit_batch_size = 500  # committing is slow; better don't do it for every object
 
-all_data = UserActivityData.find()
-data = [each for each in all_data if each.id > 95700]
+all_data = UserActivityData.query.all()
+data = [each for each in all_data if each.id > 0]
 
 processed_count = 0
 for user_action in data:
@@ -46,7 +49,7 @@ for user_action in data:
 
     if user_action.has_article_id is None:
 
-        print(f"{processed_count} : {user_action.id} : {user_action.user.name} : {user_action.event}")
+        print(f"{processed_count} : {user_action.id} : {user_action.user.name} : {user_action.event}".encode('utf-8'))
 
         try:
 

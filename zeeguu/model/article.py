@@ -176,9 +176,11 @@ class Article(db.Model):
 
             if sleep_a_bit:
                 import time
+                from random import randint
                 print("GOT: " + url)
-                print("sleeping for one second... so we don't annoy our friendly servers")
-                time.sleep(1)
+                sleep_time = randint(1,9)
+                print(f"sleeping for {sleep_time}s... so we don't annoy our friendly servers")
+                time.sleep(sleep_time)
 
             if not language:
                 if art.meta_lang == '':
