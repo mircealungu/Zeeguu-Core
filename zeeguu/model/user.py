@@ -45,13 +45,15 @@ class User(db.Model):
     cohort_id = Column(Integer, ForeignKey(Cohort.id))
     cohort = relationship(Cohort)
 
-    def __init__(self, email, name, password, learned_language=None, native_language=None, invitation_code=None):
+    def __init__(self, email, name, password, learned_language=None, native_language=None, invitation_code=None,
+                 cohort=None):
         self.email = email
         self.name = name
         self.update_password(password)
         self.learned_language = learned_language or Language.default_learned()
         self.native_language = native_language or Language.default_native_language()
         self.invitation_code = invitation_code
+        self.cohort = cohort
         # Add the learned language to user languages and set reading_news to True
         # so that the user has articles in the reader when opening it for the first time.
         from zeeguu.model import UserLanguage
