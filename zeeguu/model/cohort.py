@@ -56,3 +56,8 @@ class Cohort(zeeguu.db.Model):
     def get_teachers(self):
         from zeeguu.model.teacher_cohort_map import TeacherCohortMap
         return TeacherCohortMap.get_teachers_for(self)
+
+    @classmethod
+    def exists_with_invite_code(cls, code: str):
+        all_matching = cls.query.filter_by(inv_code=code).all()
+        return len(all_matching) > 0
