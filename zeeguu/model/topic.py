@@ -35,7 +35,19 @@ class Topic(db.Model):
     def all_articles(self):
         from zeeguu.model import Article
 
-        return Article.query.filter(Article.topics.any(id=self.id)).all()
+        if hasattr(Topic, 'cached_articles') and (self.cached_articles.get(self.id, None)):
+            return Topic.cached_articles[self.id]
+
+        if not hasattr(Topic, 'cached_articles'):
+            Topic.cached_articles = {}
+
+        print("computing and caching the articles for topic: "+ self.title)
+        Topic.cached_articles[self.id] = Article.query.filter(Article.topics.any(id=self.id)).all()
+
+        return Topic.cached_articles[self.id]
+
+    def clear_all_articles_cache(self):
+        Topic.cached_articles[self.id] = None
 
     @classmethod
     def find(cls, name: str):
