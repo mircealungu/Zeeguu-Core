@@ -143,15 +143,19 @@ def get_filtered_articles_for_user(user):
 
     """
     user_filters = TopicFilter.all_for_user(user)
+    print ("got topic filters")
     user_search_filters = SearchFilter.all_for_user(user)
+    print("got search filters")
 
     filter_articles = []
     if len(user_filters) > 0:
         for filt in user_filters:
+            print ("geting articles for " + filt)
             topic = filt.topic
             new_articles = topic.all_articles()
             filter_articles.extend(new_articles)
 
+    print("now doing search filters")
     if len(user_search_filters) > 0:
         for user_search_filter in user_search_filters:
             search = user_search_filter.search.keywords
