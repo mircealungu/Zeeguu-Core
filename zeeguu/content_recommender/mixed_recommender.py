@@ -226,7 +226,7 @@ def get_user_articles_sources_languages(user, limit=300000):
             log(f'Getting articles for {language}')
             new_articles = language.get_articles(limit=limit, most_recent_first=True)
             all_articles.extend(new_articles)
-            log(f'Added articles for {language}')
+            log(f'Added {len(new_articles)} articles for {language}')
 
     return all_articles
 
