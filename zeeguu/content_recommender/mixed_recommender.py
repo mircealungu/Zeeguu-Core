@@ -6,7 +6,7 @@
 
 """
 from zeeguu import log
-from zeeguu.model import RSSFeedRegistration, UserArticle, Article, User, Bookmark, \
+from zeeguu.model import UserArticle, Article, User, Bookmark, \
     UserLanguage, TopicSubscription, TopicFilter, SearchSubscription, SearchFilter, ArticleWord, ArticlesCache
 from sortedcontainers import SortedList
 
