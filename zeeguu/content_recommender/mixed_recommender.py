@@ -202,7 +202,6 @@ def filter_subscribed_articles(subscribed_articles, user_filters, user_languages
 
 
 def get_subscribed_articles_list(search_subscriptions, topic_subscriptions):
-
     subscribed_articles = SortedList(key=lambda x: -x.id)
     if not topic_subscriptions and not search_subscriptions:
 
@@ -277,6 +276,7 @@ def reading_preferences_hash(user):
     sources = [rss_feed_id.rss_feed for rss_feed_id in user_source_subscriptions]
 
     languages = UserLanguage.all_reading_for_user(user)
+
     user_search_filters = SearchFilter.all_for_user(user)
 
     search_filters = [search_id.search for search_id in user_search_filters]
@@ -284,7 +284,6 @@ def reading_preferences_hash(user):
 
     searches = [search_id.search for search_id in user_searches]
 
-    articles_hash = ArticlesCache.calculate_hash(topics, filters, searches, search_filters, languages=languages,
-                                                 sources=sources)
+    articles_hash = ArticlesCache.calculate_hash(topics, filters, searches, search_filters, languages)
 
     return articles_hash
