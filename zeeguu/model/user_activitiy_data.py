@@ -11,8 +11,6 @@ from zeeguu.model import Article, User, Url
 from zeeguu.model.user_reading_session import UserReadingSession
 from zeeguu.constants import JSON_TIME_FORMAT, UMR_LIKE_ARTICLE_ACTION, UMR_USER_FEEDBACK_ACTION
 
-from urllib.parse import urlparse
-
 db = zeeguu.db
 
 

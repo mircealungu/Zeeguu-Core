@@ -37,6 +37,10 @@ class ArticlesCache(db.Model):
 
     @staticmethod
     def calculate_hash(topics, filters, searches, search_filters, languages=None, sources=None):
+
+        def _join_ids(a_list: list):
+            return ','.join([str(l.id) for l in a_list])
+
         """
 
          This method is to calculate the hash with all the content filters.
@@ -45,39 +49,12 @@ class ArticlesCache(db.Model):
         :return:
 
         """
-        id_list = []
-        if sources is None:
-            base_string = "l"
-            for lan in languages:
-                id_list.append(str(lan.id))
-            id_list.sort()
-            base_string += ''.join(id_list) + "t"
-            id_list = []
-        else:
-            base_string = "s"
-            for source in sources:
-                id_list.append(str(source.id))
-            id_list.sort()
-            base_string += ''.join(id_list) + "t"
-            id_list = []
-        for topic in topics:
-            id_list.append(str(topic.id))
-        id_list.sort()
-        base_string += ''.join(id_list) + "f"
-        id_list = []
-        for filter in filters:
-            id_list.append(str(filter.id))
-        id_list.sort()
-        base_string += ''.join(id_list) + "s"
-        for search in searches:
-            id_list.append(str(search.id))
-        id_list.sort()
-        base_string += ''.join(id_list) + "sf"
-        for search_filter in search_filters:
-            id_list.append(str(search_filter.id))
-        id_list.sort()
-        base_string += ''.join(id_list)
-        return base_string
+
+        return ("lan: " +
+                " top: " + _join_ids(topics) +
+                " sear: " + _join_ids(searches) +
+                " filt: " + _join_ids(filters) +
+                " sear-filt: " + _join_ids(search_filters))
 
     @classmethod
     def get_articles_for_hash(cls, hash, limit):

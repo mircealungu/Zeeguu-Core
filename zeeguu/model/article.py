@@ -96,6 +96,12 @@ class Article(db.Model):
             topics += topic.title + " "
         return topics
 
+    def contains_any_of(self, keywords: list):
+        for each in keywords:
+            if self.title.find(each)>=0:
+                return True
+        return False
+
     def article_info(self, with_content=False):
         """
 
