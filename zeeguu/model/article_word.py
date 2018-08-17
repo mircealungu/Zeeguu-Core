@@ -27,8 +27,7 @@ class ArticleWord(db.Model):
 
     articles = relationship(Article,
                             secondary="article_word_map",
-                            backref=backref('words'),
-                            uselist=False)
+                            backref=backref('words'))
 
     def __init__(self, word):
         self.word = word
@@ -52,7 +51,7 @@ class ArticleWord(db.Model):
     @classmethod
     def find_by_word(cls, word):
         try:
-            return cls.query.filter(cls.word == word).one_or_none()
+            return cls.query.filter(cls.word == word).onget_articles_for_worde_or_none()
         except Exception as e:
             print(e)
             return None
@@ -60,13 +59,11 @@ class ArticleWord(db.Model):
     @classmethod
     def get_articles_for_word(cls, word):
         try:
-            result = cls.query.filter(cls.word.like(word + "%")).all()
+            article_words = cls.query.filter(cls.word.like(word + "%")).all()
 
             all_articles = []
-            for each in result:
-                print(each)
-                print(each.articles)
-                all_articles.append(each.articles)
+            for article_word in article_words:
+                all_articles += article_word.articles
 
             return all_articles
 

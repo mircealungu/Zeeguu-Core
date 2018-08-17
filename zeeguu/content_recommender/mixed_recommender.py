@@ -82,7 +82,8 @@ def recompute_recommender_cache(reading_preferences_hash_code, session, user, ar
             cache_obj = ArticlesCache(art, reading_preferences_hash_code)
             session.add(cache_obj)
         except StopIteration as e:
-            print("couldn't find even ten...")
+            print("could not find as many results as we wanted")
+            break
         finally:
             session.commit()
     print("cached all these things...")
@@ -203,6 +204,7 @@ def filter_subscribed_articles(subscribed_articles, user_filters, user_languages
 
 def get_subscribed_articles_list(search_subscriptions, topic_subscriptions):
     subscribed_articles = SortedList(key=lambda x: -x.id)
+
     if not topic_subscriptions and not search_subscriptions:
 
         print("no user topics or searches... we considerall the possible articles ... actually 2K should suffice")
@@ -245,16 +247,16 @@ def get_user_articles_sources_languages(user, limit=1000):
 
 
 def get_articles_for_search_term(search_term):
+
     search_terms = search_term.lower().split()
 
-    if len(search_terms) > 1:
-        search_articles_first = ArticleWord.get_articles_for_word(search_terms[0])
-        search_articles_second = ArticleWord.get_articles_for_word(search_terms[1])
-        if search_articles_first is None or search_articles_second is None:
-            return []
-        return [article for article in search_articles_first if article in search_articles_second]
+    individual_term_results = []
 
-    return ArticleWord.get_articles_for_word(search_terms[0])
+    for each in search_terms:
+        individual_term_results.append(set(ArticleWord.get_articles_for_word(each)))
+
+    return individual_term_results[0].intersection(*individual_term_results[1:])
+
 
 
 def reading_preferences_hash(user):
