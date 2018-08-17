@@ -51,7 +51,7 @@ class ArticleWord(db.Model):
     @classmethod
     def find_by_word(cls, word):
         try:
-            return cls.query.filter(cls.word == word).onget_articles_for_worde_or_none()
+            return cls.query.filter(cls.word == word).one_or_none()
         except Exception as e:
             print(e)
             return None

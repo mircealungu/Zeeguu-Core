@@ -117,7 +117,6 @@ class Language(db.Model):
         :return:
         """
 
-        print(f"getting articles for language {self.name}")
         from zeeguu.model import Article
 
         if not after_date:
@@ -135,7 +134,7 @@ class Language(db.Model):
             if easiest_first:
                 q = q.order_by(Article.fk_difficulty)
 
-            return q.all()
+            return q.limit(10000)
 
         except Exception as e:
             raise (e)
