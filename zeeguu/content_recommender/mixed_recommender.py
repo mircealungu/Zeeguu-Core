@@ -272,9 +272,6 @@ def reading_preferences_hash(user):
     user_topic_subscriptions = TopicSubscription.all_for_user(user)
     topics = [topic_id.topic for topic_id in user_topic_subscriptions]
 
-    user_source_subscriptions = RSSFeedRegistration.feeds_for_user(user)
-    sources = [rss_feed_id.rss_feed for rss_feed_id in user_source_subscriptions]
-
     languages = UserLanguage.all_reading_for_user(user)
 
     user_search_filters = SearchFilter.all_for_user(user)
