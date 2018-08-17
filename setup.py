@@ -50,6 +50,7 @@ setuptools.setup(
                         "newspaper3k",
                         "Faker",
                         "nltk",
-                        "langdetect"
+                        "langdetect",
+                        "sortedcontainers"
                       )
 )
