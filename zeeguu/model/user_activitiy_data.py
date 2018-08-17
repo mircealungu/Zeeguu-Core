@@ -11,6 +11,7 @@ from zeeguu.model.user_reading_session import UserReadingSession
 
 db = zeeguu.db
 
+
 def _is_valid_url(a: str):
     return urlparse(a).netloc is not ''
 
@@ -198,10 +199,10 @@ class UserActivityData(db.Model):
                                      extra_data)
         session.add(new_entry)
         session.commit()
-
-        UserReadingSession.update_reading_session(session,
-                                                  event,
-                                                  user.id,
-                                                  new_entry.find_or_create_article_id(session),
-                                                  current_time=time
-                                                  )
+        if data.get('article_id', None):
+            UserReadingSession.update_reading_session(session,
+                                                      event,
+                                                      user.id,
+                                                      new_entry.find_or_create_article_id(session),
+                                                      current_time=time
+                                                      )

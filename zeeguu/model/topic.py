@@ -32,19 +32,24 @@ class Topic(db.Model):
             title=self.title,
         )
 
-    def all_articles(self):
+    def all_articles(self, limit=2000):
+
         from zeeguu.model import Article
 
         if hasattr(Topic, 'cached_articles') and (self.cached_articles.get(self.id, None)):
-            return Topic.cached_articles[self.id]
+            print (f"Topic: getting the cached articles for topic: {self.title}")
+            all_ids = Topic.cached_articles[self.id]
+            return Article.query.filter(Article.id.in_(all_ids)).all()
 
         if not hasattr(Topic, 'cached_articles'):
             Topic.cached_articles = {}
 
-        print("computing and caching the articles for topic: "+ self.title)
-        Topic.cached_articles[self.id] = Article.query.filter(Article.topics.any(id=self.id)).all()
+        print("computing and caching the articles for topic: " + self.title)
+        Topic.cached_articles[self.id] = [each.id for each in
+                                          Article.query.order_by(Article.published_time.desc()).filter(Article.topics.any(id=self.id)).limit(limit)]
 
-        return Topic.cached_articles[self.id]
+        all_ids = Topic.cached_articles[self.id]
+        return Article.query.filter(Article.id.in_(all_ids)).all()
 
     def clear_all_articles_cache(self):
         Topic.cached_articles[self.id] = None
