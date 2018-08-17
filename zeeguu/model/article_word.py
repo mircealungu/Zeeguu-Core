@@ -8,12 +8,12 @@ from sqlalchemy import Column, Integer, String, ForeignKey, Table
 db = zeeguu.db
 
 article_word_map = Table('article_word_map',
-                              db.Model.metadata,
-                              Column('word_id', Integer,
-                                     ForeignKey('article_word.id')),
-                              Column('article_id', Integer,
-                                     ForeignKey('article.id'))
-                              )
+                         db.Model.metadata,
+                         Column('word_id', Integer,
+                                ForeignKey('article_word.id')),
+                         Column('article_id', Integer,
+                                ForeignKey('article.id'))
+                         )
 
 
 class ArticleWord(db.Model):
@@ -26,8 +26,9 @@ class ArticleWord(db.Model):
     from zeeguu.model.article import Article
 
     articles = relationship(Article,
-                          secondary="article_word_map",
-                          backref=backref('words'))
+                            secondary="article_word_map",
+                            backref=backref('words'),
+                            uselist=False)
 
     def __init__(self, word):
         self.word = word
@@ -59,10 +60,16 @@ class ArticleWord(db.Model):
     @classmethod
     def get_articles_for_word(cls, word):
         try:
-            result = cls.query.filter(cls.word == word).one_or_none()
-            if result is None:
-                return None
-            return result.articles
+            result = cls.query.filter(cls.word.like(word + "%")).all()
+
+            all_articles = []
+            for each in result:
+                print(each)
+                print(each.articles)
+                all_articles.append(each.articles)
+
+            return all_articles
+
         except Exception as e:
             print(e)
             return None
