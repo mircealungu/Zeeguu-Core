@@ -23,5 +23,10 @@ from zeeguu.model import RSSFeed
 
 session = zeeguu.db.session
 
+counter = 0
 for feed in RSSFeed.query.all():
+    counter += 1
+    print(f"{counter}: DOWNLOADING {feed.title}".encode('utf-8'))
     download_from_feed(feed, zeeguu.db.session)
+    print(f"{counter}: FINISHED DOWNLOADING {feed.title}".encode('utf-8'))
+
