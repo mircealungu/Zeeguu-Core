@@ -47,7 +47,6 @@ def recompute_recommender_cache_if_needed(user, session):
     """
 
     reading_pref_hash = reading_preferences_hash(user)
-    print(f"pref hash: {reading_pref_hash}")
 
     articles_hash_obj = ArticlesCache.check_if_hash_exists(reading_pref_hash)
 
@@ -72,13 +71,11 @@ def recompute_recommender_cache(reading_preferences_hash_code, session, user, ar
     """
     all_articles = find_articles_for_user(user)
 
-    print("caching the stuff... ")
     count = 0
     while count < article_limit:
         count += 1
         try:
             art = next(all_articles)
-            print(art)
             cache_obj = ArticlesCache(art, reading_preferences_hash_code)
             session.add(cache_obj)
         except StopIteration as e:
@@ -86,7 +83,6 @@ def recompute_recommender_cache(reading_preferences_hash_code, session, user, ar
             break
         finally:
             session.commit()
-    print("cached all these things...")
 
 
 def article_recommendations_for_user(user, count):
@@ -110,6 +106,7 @@ def article_recommendations_for_user(user, count):
     reading_pref_hash = reading_preferences_hash(user)
     recompute_recommender_cache_if_needed(user, zeeguu.db.session)
     all_articles = ArticlesCache.get_articles_for_hash(reading_pref_hash, count)
+    all_articles = [each for each in all_articles if not each.broken]
 
     return [user_article_info(user, article) for article in all_articles]
 
@@ -158,29 +155,19 @@ def find_articles_for_user(user):
     """
 
     user_languages = UserLanguage.all_reading_for_user(user)
-    print(user_languages)
 
     topic_subscriptions = TopicSubscription.all_for_user(user)
-    print(topic_subscriptions)
 
     search_subscriptions = SearchSubscription.all_for_user(user)
-    print(search_subscriptions)
-
-    user_search_filters = SearchFilter.all_for_user(user)
-    print(user_search_filters)
-
-    user_filters = TopicFilter.all_for_user(user)
-    print(user_filters)
 
     subscribed_articles = get_subscribed_articles_list(search_subscriptions, topic_subscriptions)
 
-    subscribed_articles = filter_subscribed_articles(subscribed_articles, user_filters, user_languages,
-                                                     user_search_filters)
+    subscribed_articles = filter_subscribed_articles(subscribed_articles, user_languages, user)
 
     return subscribed_articles
 
 
-def filter_subscribed_articles(subscribed_articles, user_filters, user_languages, user_search_filters):
+def filter_subscribed_articles(subscribed_articles, user_languages, user):
     """
     :param subscribed_articles:
     :param user_filters:
@@ -191,14 +178,21 @@ def filter_subscribed_articles(subscribed_articles, user_filters, user_languages
             a generator which retrieves articles as needed
 
     """
+
+    user_search_filters = SearchFilter.all_for_user(user)
+
+    user_filters = TopicFilter.all_for_user(user)
+
     keywords_to_avoid = []
     for user_search_filter in user_search_filters:
         keywords_to_avoid.append(user_search_filter.search.keywords)
 
-    subscribed_articles = (each for each in subscribed_articles if
-                           (each.language in user_languages)
-                           and (each.topics not in user_filters)
-                           and not (each.contains_any_of(keywords_to_avoid)))
+    subscribed_articles = (art for art in subscribed_articles if
+                           (art.language in user_languages)
+                           and not art.broken
+                           and (UserLanguage.appropriate_level(art, user))
+                           and (art.topics not in user_filters)
+                           and not (art.contains_any_of(keywords_to_avoid)))
     return subscribed_articles
 
 
@@ -207,8 +201,7 @@ def get_subscribed_articles_list(search_subscriptions, topic_subscriptions):
 
     if not topic_subscriptions and not search_subscriptions:
 
-        print("no user topics or searches... we considerall the possible articles ... actually 2K should suffice")
-        subscribed_articles.update([each for each in Article.query.order_by(Article.published_time.desc()).limit(2000)])
+        return (each for each in Article.query.order_by(Article.published_time.desc()).limit(10000))
     else:
 
         for sub in topic_subscriptions:
@@ -247,7 +240,6 @@ def get_user_articles_sources_languages(user, limit=1000):
 
 
 def get_articles_for_search_term(search_term):
-
     search_terms = search_term.lower().split()
 
     individual_term_results = []
@@ -256,7 +248,6 @@ def get_articles_for_search_term(search_term):
         individual_term_results.append(set(ArticleWord.get_articles_for_word(each)))
 
     return individual_term_results[0].intersection(*individual_term_results[1:])
-
 
 
 def reading_preferences_hash(user):
@@ -274,7 +265,7 @@ def reading_preferences_hash(user):
     user_topic_subscriptions = TopicSubscription.all_for_user(user)
     topics = [topic_id.topic for topic_id in user_topic_subscriptions]
 
-    languages = UserLanguage.all_reading_for_user(user)
+    user_languages = UserLanguage.all_user_languages__reading_for_user(user)
 
     user_search_filters = SearchFilter.all_for_user(user)
 
@@ -283,6 +274,6 @@ def reading_preferences_hash(user):
 
     searches = [search_id.search for search_id in user_searches]
 
-    articles_hash = ArticlesCache.calculate_hash(topics, filters, searches, search_filters, languages)
+    articles_hash = ArticlesCache.calculate_hash(topics, filters, searches, search_filters, user_languages)
 
     return articles_hash

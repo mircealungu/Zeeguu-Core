@@ -84,3 +84,30 @@ class UserLanguage(db.Model):
         result = cls.query.filter(cls.user == user).filter(cls.reading_news == True).all()
 
         return [language_id.language for language_id in result]
+
+    @classmethod
+    def all_user_languages__reading_for_user(cls, user):
+        result = cls.query.filter(cls.user == user).filter(cls.reading_news == True).all()
+
+        return result
+
+    @classmethod
+    def appropriate_level(cls, article, user):
+        """
+
+            ensures that the
+
+        :param article:
+        :param user:
+        :return:
+        """
+        declared_level = user.level(article.language)
+
+        # we have no info about appropriate level...
+        if not declared_level:
+            return True
+
+        lower_margin = (declared_level - 1) * 10
+        upper_margin = (declared_level + 1) * 10
+
+        return (lower_margin <= article.fk_difficulty <= upper_margin)

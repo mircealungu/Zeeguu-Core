@@ -36,7 +36,7 @@ class ArticlesCache(db.Model):
         return f'<Hash {self.content_hash}>'
 
     @staticmethod
-    def calculate_hash(topics, filters, searches, search_filters, languages):
+    def calculate_hash(topics, filters, searches, search_filters, user_languages):
 
         def _join_ids(a_list: list):
             return ','.join([str(l.id) for l in a_list])
@@ -50,7 +50,12 @@ class ArticlesCache(db.Model):
 
         """
 
-        return ("lan: " + _join_ids(languages) +
+        result = "lan: "
+
+        for each in user_languages:
+            result += f"{each.language.id}-{each.user.level(each.language)}"
+
+        return (result +
                 " top: " + _join_ids(topics) +
                 " sear: " + _join_ids(searches) +
                 " filt: " + _join_ids(filters) +

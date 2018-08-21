@@ -371,6 +371,30 @@ class User(db.Model):
     def word_count(self):
         return len(self.user_words())
 
+    def level(self, language: Language):
+        """
+
+            the level that the system considers for this user
+            TODO: must think better about this...
+
+        :param language:
+        :return:
+        """
+        from zeeguu.model import UserLanguage
+
+        lang_info = UserLanguage.with_language_id(language.id, self)
+
+        declared_level = None
+
+        if lang_info.declared_level:
+            declared_level = lang_info.declared_level
+
+        # if there's cohort info, it has priority...
+        if self.cohort.language == language and self.cohort.declared_level:
+            declared_level = self.cohort.declared_level
+
+        return declared_level
+
     @classmethod
     def find_all(cls):
         return User.query.all()
