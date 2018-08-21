@@ -390,8 +390,9 @@ class User(db.Model):
             declared_level = lang_info.declared_level
 
         # if there's cohort info, it has priority...
-        if self.cohort.language == language and self.cohort.declared_level:
-            declared_level = self.cohort.declared_level
+        if self.cohort.language:
+            if self.cohort.language == language and self.cohort.declared_level:
+                declared_level = self.cohort.declared_level
 
         return declared_level
 
