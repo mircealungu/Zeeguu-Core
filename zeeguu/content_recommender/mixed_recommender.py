@@ -179,6 +179,9 @@ def filter_subscribed_articles(subscribed_articles, user_languages, user):
 
     """
 
+    def _article_matches_user_topic_filters(article, filters):
+        return not set(article.topics).isdisjoint([each.topic for each in filters])
+
     user_search_filters = SearchFilter.all_for_user(user)
 
     user_filters = TopicFilter.all_for_user(user)
@@ -191,7 +194,7 @@ def filter_subscribed_articles(subscribed_articles, user_languages, user):
                            (art.language in user_languages)
                            and not art.broken
                            and (UserLanguage.appropriate_level(art, user))
-                           and (art.topics not in user_filters)
+                           and not _article_matches_user_topic_filters(art, user_filters)
                            and not (art.contains_any_of(keywords_to_avoid)))
     return subscribed_articles
 
