@@ -6,6 +6,7 @@ from zeeguu.model.user import User
 import sqlalchemy
 
 import zeeguu
+
 db = zeeguu.db
 
 
@@ -60,8 +61,8 @@ class TopicFilter(db.Model):
         return cls.query.filter(cls.user == user).all()
 
     @classmethod
-    def all_for_user_as_list(cls,user):
-        return [topic_id for topic_id in cls.query.filter(cls.user == user).all()]
+    def all_for_user_as_list(cls, user):
+        return [topic_id for topic_id in cls.all_for_user()]
 
     @classmethod
     def with_id(cls, i):

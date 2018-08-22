@@ -73,4 +73,4 @@ class Topic(db.Model):
 
     @classmethod
     def get_all_topics(cls):
-        return Topic.query.all()
+        return Topic.query.order_by(Topic.title).all()
