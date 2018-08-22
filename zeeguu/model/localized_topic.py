@@ -44,11 +44,9 @@ class LocalizedTopic(db.Model):
 
     def matches_article(self, article):
         keywords = self.keywords.strip().split(" ")
-        if not keywords:
-            return False
         
         for keyword in keywords:
-            if keyword in article.url.as_string() or keyword in article.title:
+            if keyword != '' and (keyword in article.url.as_string() or keyword in article.title):
                 return True
 
         return False
