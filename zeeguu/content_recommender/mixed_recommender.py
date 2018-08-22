@@ -203,8 +203,8 @@ def get_subscribed_articles_list(search_subscriptions, topic_subscriptions):
     subscribed_articles = SortedList(key=lambda x: -x.id)
 
     if not topic_subscriptions and not search_subscriptions:
-
         return (each for each in Article.query.order_by(Article.published_time.desc()).limit(10000))
+
     else:
 
         for sub in topic_subscriptions:
