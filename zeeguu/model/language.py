@@ -81,7 +81,7 @@ class Language(db.Model):
 
     @classmethod
     def all(cls):
-        return cls.query.filter().all()
+        return cls.query.filter().order_by(Language.name).all()
 
     @classmethod
     def find_by_id(cls, i):
