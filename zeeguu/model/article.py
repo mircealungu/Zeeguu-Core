@@ -263,3 +263,7 @@ class Article(db.Model):
             return True
         except NoResultFound:
             return False
+
+    @classmethod
+    def with_title_containing(cls, needle):
+        return cls.query.filter(cls.title.like(f"%{needle}%")).all()
