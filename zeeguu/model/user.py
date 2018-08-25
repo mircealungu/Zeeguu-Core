@@ -45,13 +45,15 @@ class User(db.Model):
     cohort_id = Column(Integer, ForeignKey(Cohort.id))
     cohort = relationship(Cohort)
 
-    def __init__(self, email, name, password, learned_language=None, native_language=None, invitation_code=None):
+    def __init__(self, email, name, password, learned_language=None, native_language=None, invitation_code=None,
+                 cohort=None):
         self.email = email
         self.name = name
         self.update_password(password)
         self.learned_language = learned_language or Language.default_learned()
         self.native_language = native_language or Language.default_native_language()
         self.invitation_code = invitation_code
+        self.cohort = cohort
         # Add the learned language to user languages and set reading_news to True
         # so that the user has articles in the reader when opening it for the first time.
         from zeeguu.model import UserLanguage
@@ -99,12 +101,22 @@ class User(db.Model):
         return '<User %r>' % (self.email)
 
     def details_as_dictionary(self):
-        return dict(
+        from zeeguu.model import UserLanguage
+
+        result = dict(
             email=self.email,
             name=self.name,
             learned_language=self.learned_language.code,
             native_language=self.native_language.code
         )
+
+        for each in UserLanguage.query.filter_by(user=self):
+            result[each.language.code + "_min"] = each.declared_level_min
+            result[each.language.code + "_max"] = each.declared_level_max
+            result[each.language.code + "_reading"] = each.reading_news
+            result[each.language.code + "_exercises"] = each.doing_exercises
+
+        return result
 
     def preferred_difficulty_estimator(self):
         """
@@ -262,7 +274,6 @@ class User(db.Model):
                          after_date=datetime.datetime(2010, 1, 1), max=42, with_title=False):
         bookmarks_by_date, sorted_dates = self.bookmarks_by_date(after_date)
 
-        print ('in the new bookmarks_y_day with max 50')
         dates = []
         total_bookmarks = 0
         for date in sorted_dates:
@@ -270,7 +281,6 @@ class User(db.Model):
             for bookmark in bookmarks_by_date[date]:
                 bookmarks.append(bookmark.json_serializable_dict(with_context, with_title))
                 total_bookmarks += 1
-                print (total_bookmarks)
             date_entry = dict(
                 date=date.strftime("%A, %d %B %Y"),
                 bookmarks=bookmarks
@@ -278,7 +288,7 @@ class User(db.Model):
             dates.append(date_entry)
 
             if total_bookmarks > max:
-                print ("we have already 50 bookmarks. be done with it!")
+                print("we have already 50 bookmarks. be done with it!")
                 return dates
 
         return dates
@@ -370,6 +380,49 @@ class User(db.Model):
 
     def word_count(self):
         return len(self.user_words())
+
+    def levels_for(self, language: Language):
+        """
+
+            the level that the system considers for this user
+
+            TODO: must think better about this...
+
+        :param language:
+
+        :return: pair of level_min and level_max for this user
+
+        """
+        from zeeguu.model import UserLanguage
+
+        lang_info = UserLanguage.with_language_id(language.id, self)
+
+        # default values, for when there's no corresponding setting
+        declared_level_min = -1
+        declared_level_max = 11
+
+        # start from user's levels if they exist
+        if lang_info.declared_level_min:
+            declared_level_min = lang_info.declared_level_min
+
+        if lang_info.declared_level_max:
+            declared_level_max = lang_info.declared_level_max
+
+        # If there's cohort info, consider it
+        if self.cohort:
+            if self.cohort.language:
+                if self.cohort.language == language:
+                    if self.cohort.declared_level_min:
+                        # min will be the max between the teacher's min and the student's min
+                        # this means that if the teacher says 5 is min, the student can't reduce it...
+                        # otoh, if the teacher says 5 is the min but the student wants 7 that will work
+                        declared_level_min = max(declared_level_min, self.cohort.declared_level_min)
+
+                    if self.cohort.declared_level_max:
+                        # a student is limited to the upper limit of his cohort
+                        declared_level_max = min(declared_level_max, self.cohort.declared_level_max)
+
+        return max(declared_level_min, 0), min(declared_level_max, 10)
 
     @classmethod
     def find_all(cls):

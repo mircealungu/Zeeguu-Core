@@ -15,12 +15,16 @@ class Cohort(zeeguu.db.Model):
     language_id = db.Column(db.Integer, db.ForeignKey(Language.id))
     max_students = db.Column(db.Integer)
     language = relationship(Language, foreign_keys=[language_id])
+    declared_level_min = Column(Integer)
+    declared_level_max = Column(Integer)
 
-    def __init__(self, inv_code, name, language, max_students):
+    def __init__(self, inv_code, name, language, max_students, level_min=0, level_max=10):
         self.inv_code = inv_code
         self.name = name
         self.language = language
         self.max_students = max_students
+        self.declared_level_min = level_min
+        self.declared_level_max = level_max
 
     @classmethod
     def find(cls, id):
@@ -56,3 +60,8 @@ class Cohort(zeeguu.db.Model):
     def get_teachers(self):
         from zeeguu.model.teacher_cohort_map import TeacherCohortMap
         return TeacherCohortMap.get_teachers_for(self)
+
+    @classmethod
+    def exists_with_invite_code(cls, code: str):
+        all_matching = cls.query.filter_by(inv_code=code).all()
+        return len(all_matching) > 0

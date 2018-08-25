@@ -27,7 +27,7 @@ for each in all_events:
             print(each.time)
             prev_user = each.user.name
 
-        nice = each.extra_data
-        if nicer.get(each.extra_data):
-            nice = nicer[each.extra_data]
+        nice = each.value
+        if nicer.get(each.value):
+            nice = nicer[each.value]
         print("  " + nice + " " + each.value)

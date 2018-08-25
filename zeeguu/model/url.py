@@ -7,6 +7,9 @@ import zeeguu
 import time
 import random
 
+from urllib.parse import urlparse
+from urllib.request import Request, urlopen
+
 db = zeeguu.db
 
 from zeeguu.model.domain_name import DomainName
@@ -97,11 +100,11 @@ class Url(db.Model):
             except sqlalchemy.exc.IntegrityError or sqlalchemy.exc.DatabaseError:
                 for i in range(10):
                     try:
-                        print ("doing a rollback")
+                        print("doing a rollback")
                         session.rollback()
                         domain = DomainName.find_or_create(session, _url)
                         path = Url.get_path(_url)
-                        print (f"after rollback trying to find again: {domain} + {path}")
+                        print(f"after rollback trying to find again: {domain.domain_name} + {path}")
                         u = cls.query.filter(cls.path == path).filter(cls.domain == domain).first()
                         print("Found url after recovering from race")
                         return u
@@ -117,3 +120,26 @@ class Url(db.Model):
         return (cls.query.filter(cls.path == Url.get_path(url))
                 .filter(cls.domain == d)
                 .one())
+
+    @classmethod
+    def extract_canonical_url(cls, url: str):
+
+        if not hasattr(cls, 'canonical_url_cache'):
+            cls.canonical_url_cache = {}
+
+        cached = cls.canonical_url_cache.get(url, None)
+        if cached:
+            return cached
+
+        without_zeeguu_prefix = url.split('articleURL=')[-1]
+
+        req = Request(without_zeeguu_prefix, headers={'User-Agent': 'Chrome/35.0.1916.47'})
+        res = urlopen(req)
+        final = res.geturl()
+
+        o = urlparse(final)
+
+        canonical_url = o.scheme + "://" + o.netloc + o.path
+
+        cls.canonical_url_cache[url] = canonical_url
+        return canonical_url

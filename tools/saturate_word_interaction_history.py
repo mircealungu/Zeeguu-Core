@@ -19,16 +19,17 @@ LONG_TIME_IN_THE_PAST = "2000-01-01T00:00:00"
 session = zeeguu.db.session
 
 
-def extract_words_from_text(text, language:Language, stem: bool = True):  # Tokenize the words and create a set of unique words
+def extract_words_from_text(text, language: Language,
+                            stem: bool = True):  # Tokenize the words and create a set of unique words
     words = re.findall(r'(?u)\w+', text)
     words = [w.lower() for w in words]
-
 
     if stem:
         stemmer = SnowballStemmer(language.name.lower())
         words = [stemmer.stem(w) for w in words]
 
     return set(words)
+
 
 def get_fully_read_timestamps(user_article):
     """
@@ -40,12 +41,12 @@ def get_fully_read_timestamps(user_article):
         return: list of timestamps
     """
 
-    url = user_article.article.url.as_string()
+
 
     query = UserActivityData.query.filter(UserActivityData.user_id == user_article.user_id)
     query = query.filter(UserActivityData.event == UMR_USER_FEEDBACK_ACTION)
-    query = query.filter(UserActivityData.value == url)
-    query = query.filter(UserActivityData.extra_data.like("%finished%"))
+    query = query.filter(UserActivityData.article_id == user_article.id)
+    query = query.filter(UserActivityData.value.like("%finished%"))
 
     full_read_activity_results = query.all()
 
@@ -158,12 +159,11 @@ for ua in UserArticle.query.all():
 # words encountered in exercises
 bmex_mapping = data = session.query(bookmark_exercise_mapping).all()
 
-
 for bm_id, ex_id in bmex_mapping:
 
     try:
         break
-        #todo: this always fails
+        # todo: this always fails
         bm = Bookmark.query.filter(Bookmark.id == bm_id).one()
         ex = Exercise.query.filter(Exercise.id == ex_id).one()
     except:

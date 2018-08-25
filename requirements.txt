@@ -13,3 +13,4 @@ newspaper3k
 Faker
 nltk
 langdetect
+sortedcontainers

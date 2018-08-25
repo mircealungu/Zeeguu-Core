@@ -6,8 +6,9 @@
 
 """
 from zeeguu import log
-from zeeguu.model import RSSFeedRegistration, UserArticle, Article, User, Bookmark, \
+from zeeguu.model import UserArticle, Article, User, Bookmark, \
     UserLanguage, TopicSubscription, TopicFilter, SearchSubscription, SearchFilter, ArticleWord, ArticlesCache
+from sortedcontainers import SortedList
 
 
 def user_article_info(user: User, article: Article, with_content=False):
@@ -44,45 +45,45 @@ def recompute_recommender_cache_if_needed(user, session):
     :param session: Needed to store in the db
 
     """
+
     reading_pref_hash = reading_preferences_hash(user)
+    print(f"Pref hash: {reading_pref_hash}")
+
     articles_hash_obj = ArticlesCache.check_if_hash_exists(reading_pref_hash)
 
     if articles_hash_obj is False:
+        print("recomputing recommender cache!")
         recompute_recommender_cache(reading_pref_hash, session, user)
 
+    print("no need to recomputed recommender cache!")
 
-def recompute_recommender_cache(reading_preferences_hash_code, session, user):
-    subscribed_articles = get_subscribed_articles_for_user(user)
-    filter_articles = get_filtered_articles_for_user(user)
-    all_articles = get_user_articles_sources_languages(user, 1000)
-    # Get only the articles for the topics and searches subscribed
-    if len(subscribed_articles) > 0:
-        s = set(all_articles)
-        all_articles = [article for article in subscribed_articles if article in s]
-    # If there are any filters, filter out all these articles
-    if len(filter_articles) > 0:
-        s = set(all_articles)
-        all_articles = [article for article in s if article not in filter_articles]
-    if len(all_articles) < 10:
-        all_articles = get_user_articles_sources_languages(user)
 
-        # Get only the articles for the topics and searches subscribed
-        if len(subscribed_articles) > 0:
-            s = set(all_articles)
-            all_articles = [article for article in subscribed_articles if article in s]
+def recompute_recommender_cache(reading_preferences_hash_code, session, user, article_limit=42):
+    """
 
-        # If there are any filters, filter out all these articles
-        if len(filter_articles) > 0:
-            s = set(all_articles)
-            all_articles = [article for article in s if article not in filter_articles]
+    :param reading_preferences_hash_code:
+    :param session:
+    :param user:
 
-    # Sort the articles here, so when fetching the first 20, they are not from one language.
-    all_articles.sort(key=lambda each: each.published_time, reverse=True)
+    :param article_limit: set to something low ... say 42 when working in real time... ti's
+    a bit slow otherwise. however, when caching offline you can save
 
-    for article in all_articles:
-        cache_obj = ArticlesCache(article, reading_preferences_hash_code)
-        session.add(cache_obj)
-    session.commit()
+    :return:
+    """
+    all_articles = find_articles_for_user(user)
+
+    count = 0
+    while count < article_limit:
+        count += 1
+        try:
+            art = next(all_articles)
+            cache_obj = ArticlesCache(art, reading_preferences_hash_code)
+            session.add(cache_obj)
+        except StopIteration as e:
+            print("could not find as many results as we wanted")
+            break
+        finally:
+            session.commit()
 
 
 def article_recommendations_for_user(user, count):
@@ -91,12 +92,22 @@ def article_recommendations_for_user(user, count):
             Retrieve :param count articles which are equally distributed
             over all the feeds to which the :param user is registered to.
 
+            Fails if no language is selected.
+
     :return:
 
     """
 
+    import zeeguu
+
+    user_languages = UserLanguage.all_reading_for_user(user)
+    if not user_languages:
+        return []
+
     reading_pref_hash = reading_preferences_hash(user)
+    recompute_recommender_cache_if_needed(user, zeeguu.db.session)
     all_articles = ArticlesCache.get_articles_for_hash(reading_pref_hash, count)
+    all_articles = [each for each in all_articles if not each.broken]
 
     return [user_article_info(user, article) for article in all_articles]
 
@@ -133,36 +144,7 @@ def article_search_for_user(user, count, search):
     return [user_article_info(user, article) for article in final[:count]]
 
 
-def get_filtered_articles_for_user(user):
-    """
-
-    This method gets all topic and search filters for a user.
-    It then returns all the articles that are associated with these.
-    :param user:
-    :return:
-
-    """
-    user_filters = TopicFilter.all_for_user(user)
-    user_search_filters = SearchFilter.all_for_user(user)
-
-    filter_articles = []
-    if len(user_filters) > 0:
-        for filt in user_filters:
-            topic = filt.topic
-            new_articles = topic.all_articles()
-            filter_articles.extend(new_articles)
-
-    if len(user_search_filters) > 0:
-        for user_search_filter in user_search_filters:
-            search = user_search_filter.search.keywords
-            new_articles = get_articles_for_search_term(search)
-            if new_articles is not None:
-                filter_articles.extend(new_articles)
-
-    return filter_articles
-
-
-def get_subscribed_articles_for_user(user):
+def find_articles_for_user(user):
     """
 
     This method gets all the topic and search subscriptions for a user.
@@ -172,27 +154,71 @@ def get_subscribed_articles_for_user(user):
     :return:
 
     """
-    user_topics = TopicSubscription.all_for_user(user)
-    user_searches = SearchSubscription.all_for_user(user)
 
-    subscribed_articles = []
-    if len(user_topics) > 0:
-        for sub in user_topics:
-            topic = sub.topic
-            new_articles = topic.all_articles()
-            subscribed_articles.extend(new_articles)
+    user_languages = UserLanguage.all_reading_for_user(user)
 
-    if len(user_searches) > 0:
-        for user_search in user_searches:
-            search = user_search.search.keywords
-            new_articles = get_articles_for_search_term(search)
-            if new_articles is not None:
-                subscribed_articles.extend(new_articles)
+    topic_subscriptions = TopicSubscription.all_for_user(user)
+
+    search_subscriptions = SearchSubscription.all_for_user(user)
+
+    subscribed_articles = get_subscribed_articles_list(search_subscriptions, topic_subscriptions)
+
+    subscribed_articles = filter_subscribed_articles(subscribed_articles, user_languages, user)
 
     return subscribed_articles
 
 
-def get_user_articles_sources_languages(user, limit=300000):
+def filter_subscribed_articles(subscribed_articles, user_languages, user):
+    """
+    :param subscribed_articles:
+    :param user_filters:
+    :param user_languages:
+    :param user_search_filters:
+    :return:
+
+            a generator which retrieves articles as needed
+
+    """
+
+    def _article_matches_user_topic_filters(article, filters):
+        return not set(article.topics).isdisjoint([each.topic for each in filters])
+
+    user_search_filters = SearchFilter.all_for_user(user)
+
+    user_filters = TopicFilter.all_for_user(user)
+
+    keywords_to_avoid = []
+    for user_search_filter in user_search_filters:
+        keywords_to_avoid.append(user_search_filter.search.keywords)
+
+    subscribed_articles = (art for art in subscribed_articles if
+                           (art.language in user_languages)
+                           and not art.broken
+                           and (UserLanguage.appropriate_level(art, user))
+                           and not _article_matches_user_topic_filters(art, user_filters)
+                           and not (art.contains_any_of(keywords_to_avoid)))
+    return subscribed_articles
+
+
+def get_subscribed_articles_list(search_subscriptions, topic_subscriptions):
+    subscribed_articles = SortedList(key=lambda x: -x.id)
+
+    if not topic_subscriptions and not search_subscriptions:
+        return (each for each in Article.query.order_by(Article.published_time.desc()).limit(10000))
+
+    else:
+
+        for sub in topic_subscriptions:
+            subscribed_articles.update(sub.topic.all_articles())
+
+        for user_search in search_subscriptions:
+            search = user_search.search.keywords
+            subscribed_articles.update(get_articles_for_search_term(search))
+
+    return subscribed_articles
+
+
+def get_user_articles_sources_languages(user, limit=1000):
     """
 
     This method is used to get all the user articles for the sources if there are any
@@ -205,24 +231,14 @@ def get_user_articles_sources_languages(user, limit=300000):
 
     """
 
-    user_sources = RSSFeedRegistration.feeds_for_user(user)
     user_languages = UserLanguage.all_reading_for_user(user)
     all_articles = []
 
-    # If there are sources, get the articles from the sources
-    if len(user_sources) > 0:
-        for registration in user_sources:
-            feed = registration.rss_feed
-            new_articles = feed.get_articles(limit=limit, most_recent_first=True)
-            all_articles.extend(new_articles)
-
-    # If there are no sources available, get the articles based on the languages
-    else:
-        for language in user_languages:
-            log(f'Getting articles for {language}')
-            new_articles = language.get_articles(limit=limit, most_recent_first=True)
-            all_articles.extend(new_articles)
-            log(f'Added articles for {language}')
+    for language in user_languages:
+        log(f'Getting articles for {language}')
+        new_articles = language.get_articles(most_recent_first=True)
+        all_articles.extend(new_articles)
+        log(f'Added {len(new_articles)} articles for {language}')
 
     return all_articles
 
@@ -230,14 +246,12 @@ def get_user_articles_sources_languages(user, limit=300000):
 def get_articles_for_search_term(search_term):
     search_terms = search_term.lower().split()
 
-    if len(search_terms) > 1:
-        search_articles_first = ArticleWord.get_articles_for_word(search_terms[0])
-        search_articles_second = ArticleWord.get_articles_for_word(search_terms[1])
-        if search_articles_first is None or search_articles_second is None:
-            return []
-        return [article for article in search_articles_first if article in search_articles_second]
+    individual_term_results = []
 
-    return ArticleWord.get_articles_for_word(search_terms[0])
+    for each in search_terms:
+        individual_term_results.append(set(ArticleWord.get_articles_for_word(each)))
+
+    return individual_term_results[0].intersection(*individual_term_results[1:])
 
 
 def reading_preferences_hash(user):
@@ -251,21 +265,19 @@ def reading_preferences_hash(user):
     """
     user_filter_subscriptions = TopicFilter.all_for_user(user)
     filters = [topic_id.topic for topic_id in user_filter_subscriptions]
+
     user_topic_subscriptions = TopicSubscription.all_for_user(user)
     topics = [topic_id.topic for topic_id in user_topic_subscriptions]
-    user_source_subscriptions = RSSFeedRegistration.feeds_for_user(user)
-    sources = [rss_feed_id.rss_feed for rss_feed_id in user_source_subscriptions]
-    languages = UserLanguage.all_reading_for_user(user)
+
+    user_languages = UserLanguage.all_user_languages__reading_for_user(user)
+
     user_search_filters = SearchFilter.all_for_user(user)
+
     search_filters = [search_id.search for search_id in user_search_filters]
     user_searches = SearchSubscription.all_for_user(user)
+
     searches = [search_id.search for search_id in user_searches]
 
-    # This is done because the articles are retrieved for sources if there are any sources,
-    # the languages don't have any effect when there are sources selected.
-    if len(user_source_subscriptions) > 0:
-        articles_hash = ArticlesCache.calculate_hash(topics, filters, searches, search_filters, sources=sources)
-    else:
-        articles_hash = ArticlesCache.calculate_hash(topics, filters, searches, search_filters, languages=languages)
+    articles_hash = ArticlesCache.calculate_hash(topics, filters, searches, search_filters, user_languages)
 
     return articles_hash

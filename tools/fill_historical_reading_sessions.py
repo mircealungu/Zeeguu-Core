@@ -24,6 +24,8 @@ db_session.commit()
 all_data = UserActivityData.find()
 data = [each for each in all_data if each.id > 77420]
 
+count = 0
+
 for user_action in data:
     # Special case that causes a DB exception because of non supported symbols from the article
     if user_action.id not in EXCLUDED_IDS:
@@ -36,11 +38,12 @@ for user_action in data:
             UserReadingSession.update_reading_session(db_session,
                                                       user_action.event,
                                                       user,
-                                                      user_action.find_or_create_article_id(db_session),
+                                                      user_action.get_article_id(db_session),
                                                       current_time=time
                                                       )
-            print(str(datetime.now()) + " " + str(user_action.id))
-        except:
+            count += 1
+            print(str(count) + " " + str(datetime.now()) + " " + str(user_action.id))
+        except Exception as e:
             print(f"caught exception for {user_action.id} ...")
             import traceback
 

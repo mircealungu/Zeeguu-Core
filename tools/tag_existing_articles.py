@@ -2,18 +2,10 @@
 
 """
 
-   Script that goes through all the feeds that are
-   available in the DB and retrieves the newest articles
-   in order to populate the DB with them.
-
-   The DB is populated by saving Article objects in the
-   articles table.
-
-   Before this script checking whether there were new items
-   in a given feed was done while serving the request for
-   items to read. That was too slow.
-
-   To be called from a cron job.
+    goes through all the articles in the DB 
+    by language and associates them with the
+    corresponding topics
+    
 
 """
 

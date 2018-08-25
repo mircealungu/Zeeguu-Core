@@ -81,13 +81,31 @@ class Language(db.Model):
 
     @classmethod
     def all(cls):
-        return cls.query.filter().all()
+        return cls.query.filter().order_by(Language.name).all()
 
     @classmethod
     def find_by_id(cls, i):
         return cls.query.filter(Language.id == i).one()
 
-    def get_articles(self, limit=None, after_date=None, most_recent_first=False, easiest_first=False):
+    def get_articles(self, after_date=None, most_recent_first=False, easiest_first=False):
+        from zeeguu.model import Article
+
+        if hasattr(Language, 'cached_articles') and (self.cached_articles.get(self.id, None)):
+            print(f"found {len(Language.cached_articles[self.id])} cached articles for {self.name}")
+            all_ids = Language.cached_articles[self.id]
+            return Article.query.filter(Article.id.in_(all_ids)).all()
+
+        if not hasattr(Language, 'cached_articles'):
+            Language.cached_articles = {}
+
+        print("computing and caching the articles for language: " + self.name)
+        Language.cached_articles[self.id] = [each.id for each in
+                                             self._get_articles(after_date, most_recent_first, easiest_first)]
+
+        all_ids = Language.cached_articles[self.id]
+        return Article.query.filter(Article.id.in_(all_ids)).all()
+
+    def _get_articles(self, after_date=None, most_recent_first=False, easiest_first=False):
         """
 
             Articles for this language from the article DB
@@ -116,7 +134,7 @@ class Language(db.Model):
             if easiest_first:
                 q = q.order_by(Article.fk_difficulty)
 
-            return q.limit(limit).all()
+            return q.limit(10000)
 
         except Exception as e:
             raise (e)
