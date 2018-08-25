@@ -387,21 +387,33 @@ class User(db.Model):
 
         lang_info = UserLanguage.with_language_id(language.id, self)
 
-        declared_level_min = 0
-        declared_level_max = 10
+        # default values, for when there's no corresponding setting
+        declared_level_min = -1
+        declared_level_max = 11
 
+        # start from user's levels if they exist
         if lang_info.declared_level_min:
             declared_level_min = lang_info.declared_level_min
+
+        if lang_info.declared_level_max:
             declared_level_max = lang_info.declared_level_max
 
-        # If there's cohort info, it has priority...
+        # If there's cohort info, consider it
         if self.cohort:
             if self.cohort.language:
-                if self.cohort.language == language and self.cohort.declared_level_min:
-                    declared_level_min = self.cohort.declared_level_min
-                    declared_level_max = self.cohort.declared_level_max
+                if self.cohort.language == language:
+                    if self.cohort.declared_level_min:
+                        # min will be the max between the teacher's min and the student's min
+                        # this means that if the teacher says 5 is min, the student can't reduce it...
+                        # otoh, if the teacher says 5 is the min but the student wants 7 that will work
+                        declared_level_min = max(declared_level_min, self.cohort.declared_level_min)
 
-        return declared_level_min, declared_level_max
+                    if self.cohort.declared_level_max:
+
+                        # a student is limited to the upper limit of his cohort
+                        declared_level_max = min(declared_level_max, self.cohort.declared_level_max)
+
+        return max(declared_level_min, 0), min(declared_level_max, 10)
 
     @classmethod
     def find_all(cls):
