@@ -371,31 +371,37 @@ class User(db.Model):
     def word_count(self):
         return len(self.user_words())
 
-    def level(self, language: Language):
+    def levels_for(self, language: Language):
         """
 
             the level that the system considers for this user
+
             TODO: must think better about this...
 
         :param language:
-        :return:
+
+        :return: pair of level_min and level_max for this user
+
         """
         from zeeguu.model import UserLanguage
 
         lang_info = UserLanguage.with_language_id(language.id, self)
 
-        declared_level = None
+        declared_level_min = 0
+        declared_level_max = 10
 
-        if lang_info.declared_level:
-            declared_level = lang_info.declared_level
+        if lang_info.declared_level_min:
+            declared_level_min = lang_info.declared_level_min
+            declared_level_max = lang_info.declared_level_max
 
-        # if there's cohort info, it has priority...
+        # If there's cohort info, it has priority...
         if self.cohort:
             if self.cohort.language:
-                if self.cohort.language == language and self.cohort.declared_level:
-                    declared_level = self.cohort.declared_level
+                if self.cohort.language == language and self.cohort.declared_level_min:
+                    declared_level_min = self.cohort.declared_level_min
+                    declared_level_max = self.cohort.declared_level_max
 
-        return declared_level
+        return declared_level_min, declared_level_max
 
     @classmethod
     def find_all(cls):

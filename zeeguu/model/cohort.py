@@ -15,14 +15,16 @@ class Cohort(zeeguu.db.Model):
     language_id = db.Column(db.Integer, db.ForeignKey(Language.id))
     max_students = db.Column(db.Integer)
     language = relationship(Language, foreign_keys=[language_id])
-    declared_level = Column(Integer)
+    declared_level_min = Column(Integer)
+    declared_level_max = Column(Integer)
 
-    def __init__(self, inv_code, name, language, max_students, level=None):
+    def __init__(self, inv_code, name, language, max_students, level_min=0, level_max=10):
         self.inv_code = inv_code
         self.name = name
         self.language = language
         self.max_students = max_students
-        self.level = None
+        self.declared_level_min = level_min
+        self.declared_level_max = level_max
 
     @classmethod
     def find(cls, id):

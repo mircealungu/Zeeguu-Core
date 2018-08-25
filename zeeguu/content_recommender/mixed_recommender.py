@@ -47,6 +47,7 @@ def recompute_recommender_cache_if_needed(user, session):
     """
 
     reading_pref_hash = reading_preferences_hash(user)
+    print(f"Pref hash: {reading_pref_hash}")
 
     articles_hash_obj = ArticlesCache.check_if_hash_exists(reading_pref_hash)
 

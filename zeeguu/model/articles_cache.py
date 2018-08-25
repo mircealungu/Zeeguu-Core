@@ -53,7 +53,8 @@ class ArticlesCache(db.Model):
         result = "lan: "
 
         for each in user_languages:
-            result += f"{each.language.id}-{each.user.level(each.language)}"
+            level_min, level_max = each.user.levels_for(each.language)
+            result += f"{each.language.id}-{level_min}:{level_max}"
 
         return (result +
                 " top: " + _join_ids(topics) +
