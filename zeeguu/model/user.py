@@ -101,12 +101,22 @@ class User(db.Model):
         return '<User %r>' % (self.email)
 
     def details_as_dictionary(self):
-        return dict(
+        from zeeguu.model import UserLanguage
+
+        result = dict(
             email=self.email,
             name=self.name,
             learned_language=self.learned_language.code,
             native_language=self.native_language.code
         )
+
+        for each in UserLanguage.query.filter_by(user=self):
+            result[each.language.code + "_min"] = each.declared_level_min
+            result[each.language.code + "_max"] = each.declared_level_max
+            result[each.language.code + "_reading"] = each.reading_news
+            result[each.language.code + "_exercises"] = each.doing_exercises
+
+        return result
 
     def preferred_difficulty_estimator(self):
         """
@@ -409,7 +419,6 @@ class User(db.Model):
                         declared_level_min = max(declared_level_min, self.cohort.declared_level_min)
 
                     if self.cohort.declared_level_max:
-
                         # a student is limited to the upper limit of his cohort
                         declared_level_max = min(declared_level_max, self.cohort.declared_level_max)
 
