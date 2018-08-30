@@ -73,7 +73,7 @@ class UserExerciseSession(db.Model):
         except sqlalchemy.orm.exc.MultipleResultsFound:
             # Close all open sessions except last one
             query.order_by(cls.last_action_time)
-            open_sessions = query.all()
+            open_sessions = query.with_for_update().all()
             for exercise_session in open_sessions[:-1]:
                 exercise_session._close_exercise_session(db_session)
 
