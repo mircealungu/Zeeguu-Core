@@ -107,8 +107,8 @@ class FleschKincaidDifficultyEstimator(DifficultyEstimatorStrategy):
     @classmethod
     def grade_difficulty(cls, score: int):
         if score < 0:
-            return 1
+            return 100
         elif score > 100:
             return 0
         else:
-            return int(round(1 - (score * 0.01), 2) * 100)
+            return int(round(100 - score))
