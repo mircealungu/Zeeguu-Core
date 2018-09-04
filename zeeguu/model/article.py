@@ -9,8 +9,8 @@ import zeeguu
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, UnicodeText, Table
 
 from zeeguu.constants import JSON_TIME_FORMAT
-from zeeguu.language.difficulty_estimator_factory import DifficultyEstimatorFactory
 from langdetect import detect
+from zeeguu.language.difficulty_estimator_factory import DifficultyEstimatorFactory
 
 db = zeeguu.db
 
@@ -76,11 +76,12 @@ class Article(db.Model):
         self.broken = broken
 
         fk_estimator = DifficultyEstimatorFactory.get_difficulty_estimator("fk")
-        fk_difficulty = fk_estimator.estimate_difficulty(self.content, self.language, None)['normalized']
+        fk_difficulty = fk_estimator.estimate_difficulty(self.content, self.language, None)['grade']
 
         # easier to store integer in the DB
         # otherwise we have to use Decimal, and it's not supported on all dbs
-        self.fk_difficulty = int(fk_difficulty * 100)
+
+        self.fk_difficulty = fk_difficulty
         self.word_count = len(self.content.split())
 
     def __repr__(self):
