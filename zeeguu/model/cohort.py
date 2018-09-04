@@ -1,5 +1,5 @@
 import zeeguu
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, Boolean
 from sqlalchemy.orm import relationship
 from zeeguu.model.language import Language
 
@@ -17,6 +17,7 @@ class Cohort(zeeguu.db.Model):
     language = relationship(Language, foreign_keys=[language_id])
     declared_level_min = Column(Integer)
     declared_level_max = Column(Integer)
+    is_cohort_of_teachers = Column(Boolean)
 
     def __init__(self, inv_code, name, language, max_students, level_min=0, level_max=10):
         self.inv_code = inv_code
@@ -25,6 +26,7 @@ class Cohort(zeeguu.db.Model):
         self.max_students = max_students
         self.declared_level_min = level_min
         self.declared_level_max = level_max
+        self.is_cohort_of_teachers = False  # by default a cohort is a student cohort!
 
     @classmethod
     def find(cls, id):
@@ -41,7 +43,9 @@ class Cohort(zeeguu.db.Model):
         return len(users_in_cohort)
 
     def cohort_still_has_capacity(self):
-        if (self.get_current_student_count() < self.max_students):
+        # +10 here is just an approximation, because in the UI we
+        # ask the teacher to give us an approximate number
+        if (self.get_current_student_count() < self.max_students + 10):
             return True
         return False
 
