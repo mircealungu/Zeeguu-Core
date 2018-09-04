@@ -3,9 +3,11 @@ from datetime import datetime
 import zeeguu
 from zeeguu.model import Bookmark, UserArticle, Text, \
     UserWord, UserActivityData, Language, Exercise
-from zeeguu.model.bookmark import bookmark_exercise_mapping
 
-from zeeguu.model.word_knowledge.word_interaction_history import WordInteractionHistory, WordInteractionEvent
+from zeeguu.model.bookmark import bookmark_exercise_mapping, Bookmark
+
+from zeeguu.model.word_knowledge.word_interaction_history import WordInteractionHistory,WordInteractionEvent
+
 from zeeguu.constants import WIH_READ_NOT_CLICKED_IN_SENTENCE, WIH_READ_NOT_CLICKED_OUT_SENTENCE, \
     WIH_READ_CLICKED, UMR_USER_FEEDBACK_ACTION
 
@@ -179,5 +181,6 @@ for bm_id, ex_id in bmex_mapping:
     userWord = UserWord.find_or_create(session, word, bm.origin.language)
     wih = WordInteractionHistory.find_or_create(bm.user, userWord)
     wih.insert_event(word_interaction_event, ex.time)
+
     wih.save_to_db(session)
 
