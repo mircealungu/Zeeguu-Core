@@ -197,7 +197,7 @@ class Bookmark(db.Model):
 
         return bad_quality
 
-    def update_fit_for_study(self, session):
+    def update_fit_for_study(self, session = None):
         """
             Called when something happened to the bookmark,
              that requires it's "fit for study" status to be
@@ -206,7 +206,8 @@ class Bookmark(db.Model):
         :return:
         """
         self.fit_for_study = self._fit_for_study()
-        session.add(self)
+        if session:
+            session.add(self)
 
     @time_this
     def _fit_for_study(self):
@@ -281,7 +282,7 @@ class Bookmark(db.Model):
         learned_datetime = str(self.learned_time.date()) if self.learned else ''
 
         created_day = "today" if self.time.date() == datetime.now().date() else ''
- 
+
         bookmark_title = ""
         if with_title:
             url = self.text.url.as_string()
@@ -290,9 +291,8 @@ class Bookmark(db.Model):
                 article = Article.find(url)
                 bookmark_title = article.title
             except Exception as e:
-                print (e)
-                print ("could not find article title for " + url)
-
+                print(e)
+                print("could not find article title for " + url)
 
         result = dict(
             id=self.id,
@@ -305,7 +305,7 @@ class Bookmark(db.Model):
             learned_datetime=learned_datetime,
             origin_rank=word_info.rank if word_info.rank != 100000 else '',
             starred=self.starred if self.starred is not None else False,
-            created_day= created_day
+            created_day=created_day
         )
         result["from"] = self.origin.word
         if with_context:
