@@ -2,14 +2,15 @@ from datetime import datetime
 
 import zeeguu
 from zeeguu.model import Bookmark, UserArticle, Text, \
-    UserWord, UserActivityData, Language
+    UserWord, UserActivityData, Language, Exercise
 from zeeguu.model.bookmark import bookmark_exercise_mapping
 
-from zeeguu.model.word_knowledge.word_interaction_history import WordInteractionHistory
+from zeeguu.model.word_knowledge.word_interaction_history import WordInteractionHistory, WordInteractionEvent
 from zeeguu.constants import WIH_READ_NOT_CLICKED_IN_SENTENCE, WIH_READ_NOT_CLICKED_OUT_SENTENCE, \
     WIH_READ_CLICKED, UMR_USER_FEEDBACK_ACTION
 
-import re
+from zeeguu.util.text import split_words_from_text
+
 from nltk.stem.snowball import SnowballStemmer
 
 LOG_CONTEXT = "FEED RETRIEVAL"
@@ -20,13 +21,11 @@ session = zeeguu.db.session
 
 
 def extract_words_from_text(text, language:Language, stem: bool = True):  # Tokenize the words and create a set of unique words
-    words = re.findall(r'(?u)\w+', text)
-    words = [w.lower() for w in words]
-
+    words = split_words_from_text(text)
 
     if stem:
         stemmer = SnowballStemmer(language.name.lower())
-        words = [stemmer.stem(w) for w in words]
+        words = [stemmer.stem(w.lower()) for w in words]
 
     return set(words)
 
@@ -162,8 +161,6 @@ bmex_mapping = data = session.query(bookmark_exercise_mapping).all()
 for bm_id, ex_id in bmex_mapping:
 
     try:
-        break
-        #todo: this always fails
         bm = Bookmark.query.filter(Bookmark.id == bm_id).one()
         ex = Exercise.query.filter(Exercise.id == ex_id).one()
     except:
@@ -173,23 +170,14 @@ for bm_id, ex_id in bmex_mapping:
     language = bm.origin.language
     word_interaction_event = WordInteractionEvent.encodeExerciseResult(ex.outcome_id, ex.source_id)
 
-    word = extract_words_from_text(bm.origin.word, bm.origin.language).pop()
+    word_list = extract_words_from_text(bm.origin.word, bm.origin.language)
+    if len(word_list) == 0:
+        continue
+
+    word = word_list.pop()
 
     userWord = UserWord.find_or_create(session, word, bm.origin.language)
     wih = WordInteractionHistory.find_or_create(bm.user, userWord)
     wih.insert_event(word_interaction_event, ex.time)
     wih.save_to_db(session)
 
-# TODO: store last processed exercise id
-
-
-# go through bookmarks
-# for each bookmark extract user and textid
-# retrieve content of testid and create a set of words
-# for each word determine whether it has been translated (use bookmark)
-# apply unique labels for words translated and not translated
-
-# for each word determine whether it has a history otherwise create a new one
-# apply changes in history for the word
-
-# save and repeat for next bookmark
