@@ -34,7 +34,6 @@ from .session import Session
 from .unique_code import UniqueCode
 from .word_knowledge.word_interaction_history import WordInteractionHistory
 
-
 from .user_language import UserLanguage
 
 from .article import Article
