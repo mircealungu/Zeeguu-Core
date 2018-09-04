@@ -10,7 +10,6 @@ from sqlalchemy import Column, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.exc import NoResultFound
 from zeeguu import util
-from zeeguu.language.difficulty_estimator_factory import DifficultyEstimatorFactory
 from zeeguu.model.language import Language
 from wordstats import Word
 
