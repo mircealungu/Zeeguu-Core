@@ -120,7 +120,7 @@ class UserReadingSession(db.Model):
         except sqlalchemy.orm.exc.MultipleResultsFound:
             query.order_by(UserReadingSession.last_action_time)
             # Close all open sessions except last one
-            open_sessions = query.all()
+            open_sessions = query.with_for_update().all()
             for reading_session in open_sessions[:-1]:
                 reading_session._close_reading_session(db_session)
             return open_sessions[-1]
@@ -228,7 +228,7 @@ class UserReadingSession(db.Model):
         query = cls.query
         query = query.filter(cls.user_id == user_id)
         query = query.filter(cls.is_active == True)
-        reading_sessions = query.all()
+        reading_sessions = query.with_for_update().all()
         for reading_session in reading_sessions:
             time_diff = reading_session.last_action_time - reading_session.start_time
             # If the duration is zero, we delete the session
