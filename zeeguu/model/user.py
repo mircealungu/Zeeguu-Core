@@ -200,7 +200,7 @@ class User(db.Model):
             filter_by(user_id=self.id). \
             filter(Bookmark.time >= after_date). \
             filter(Bookmark.time <= before_date). \
-            order_by(Bookmark.time.desc()).all()
+            order_by(Bookmark.time).all()
 
     def all_bookmarks_fit_for_study(self):
         from zeeguu.model.bookmark import Bookmark
