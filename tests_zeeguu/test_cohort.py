@@ -43,4 +43,7 @@ class CohortTest(ModelTestMixIn, TestCase):
 
     def test_cohort_still_has_capacity_false(self):
         self.cohort.max_students = 2
-        self.assertFalse(self.cohort.cohort_still_has_capacity())
+
+        # still_has_capacity allows an overflow of 10 so there
+        # still will be capacity
+        self.assertTrue(self.cohort.cohort_still_has_capacity())
