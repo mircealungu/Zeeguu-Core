@@ -9,7 +9,7 @@ mysqlclient
 regex 
 feedparser
 requests
-newspaper3k
+newspaper3k==0.2.7
 Faker
 nltk
 langdetect
