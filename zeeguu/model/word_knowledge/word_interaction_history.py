@@ -3,10 +3,11 @@ import json
 from sqlalchemy.orm.exc import NoResultFound
 
 import zeeguu
-
 from sqlalchemy import Column, Integer, UnicodeText
 
 from zeeguu.model import User, UserWord, Language
+from sys import platform
+
 
 db = zeeguu.db
 
@@ -111,7 +112,10 @@ class WordInteractionHistory(db.Model):
         """
 
         # json can't serialize timestamps, so we simply
-        seconds_since_epoch = int(timestamp.strftime("%s"))
+        if platform == "win32":
+            seconds_since_epoch = int(timestamp.timestamp())
+        else:
+            seconds_since_epoch = int(timestamp.strftime("%s"))
 
         # Don't add event if it already occurs
         if self.time_exists(timestamp):
@@ -177,7 +181,10 @@ class WordInteractionHistory(db.Model):
 
             return: True or False
         """
-        return int(timestamp.strftime("%s")) in [ih.seconds_since_epoch for ih in self.interaction_history]
+        if platform == "win32":
+            return int(timestamp.timestamp()) in [ih.seconds_since_epoch for ih in self.interaction_history]
+        else:
+            return int(timestamp.strftime("%s")) in [ih.seconds_since_epoch for ih in self.interaction_history]
 
     def reify_interaction_history(self):
         """
