@@ -2,8 +2,7 @@ from typing import Type
 
 from zeeguu.language.difficulty_estimator_strategy import DifficultyEstimatorStrategy
 from zeeguu.language.strategies.default_difficulty_estimator import DefaultDifficultyEstimator
-from zeeguu.language.strategies.flesch_kincaid_difficulty_estimator import \
-    FleschKincaidDifficultyEstimator
+from zeeguu.language.strategies.flesch_kincaid_difficulty_estimator import FleschKincaidDifficultyEstimator
 from zeeguu.language.strategies.frequency_difficulty_estimator import FrequencyDifficultyEstimator
 
 
