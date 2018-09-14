@@ -31,13 +31,13 @@ class UserPreferenceTest(ModelTestMixIn):
 
     def test_text_difficulty_with_preference(self):
 
-        # with the default estimator (Frequency) the difficulty is EASY
+
         difficulty = self.user.text_difficulty(self.text, self.english)
         assert difficulty['discrete'] == 'MEDIUM'
 
         # setting a preference for this user
-        p = UserPreference.set_difficulty_estimator(self.db.session, self.user, "frequency")
+        p = UserPreference.set_difficulty_estimator(self.db.session, self.user, "fk")
 
         # with fk difficulty for the example text is MEDIUM
         difficulty = self.user.text_difficulty(self.text, self.english)
-        assert difficulty['discrete'] == 'EASY'
+        assert difficulty['discrete'] == 'MEDIUM'

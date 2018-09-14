@@ -98,7 +98,7 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
 
                 quality_article = sufficient_quality(art, skipped_due_to_low_quality)
                 if quality_article:
-                    from zeeguu.language.difficulty_estimator_factory import DifficultyEstimatorFactory
+                    from zeeguu.difficulty_estimation.difficulty_estimator_factory import DifficultyEstimatorFactory
 
                     # Create new article and save it to DB
                     new_article = zeeguu.model.Article(

@@ -1,6 +1,6 @@
 import random
 
-from wordstats.loading_from_hermit import load_language_from_hermit
+from wordstats.file_handling.loading_from_hermit import load_language_from_hermit
 
 from tests_zeeguu.model_test_mixin import ModelTestMixIn
 from tests_zeeguu.rules.language_rule import LanguageRule

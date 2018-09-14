@@ -3,11 +3,11 @@ from unittest import TestCase
 from tests_zeeguu.model_test_mixin import ModelTestMixIn
 from tests_zeeguu.rules.language_rule import LanguageRule
 from tests_zeeguu.rules.user_rule import UserRule
-from zeeguu.language.difficulty_estimator_factory import DifficultyEstimatorFactory
-from zeeguu.language.strategies.default_difficulty_estimator import DefaultDifficultyEstimator
-from zeeguu.language.strategies.frequency_difficulty_estimator import FrequencyDifficultyEstimator
+from zeeguu.difficulty_estimation.difficulty_estimator_factory import DifficultyEstimatorFactory
+from zeeguu.difficulty_estimation.strategies.default_difficulty_estimator import DefaultDifficultyEstimator
+from zeeguu.difficulty_estimation.strategies.frequency_difficulty_estimator import FrequencyDifficultyEstimator
 
-SIMPLE_TEXT = "Das ist "
+SIMPLE_TEXT = "Das ist mein Leben."
 COMPLEX_TEXT = "Alle hatten in sein Lachen eingestimmt, hauptsächlich aus Ehrerbietung " \
                "gegen das Familienoberhaupt"
 
@@ -19,18 +19,14 @@ class FrequencyDifficultyEstimatorTest(ModelTestMixIn, TestCase):
         self.lan = LanguageRule().de
         self.user = UserRule().user
 
-    def test_compute_very_simple_text_difficulty(self):
-        estimator = DifficultyEstimatorFactory.get_difficulty_estimator("frequency")
-        d1 = estimator.estimate_difficulty(SIMPLE_TEXT, self.lan, self.user)
+    def test_compute_text_difficulty(self):
+        estimator = DifficultyEstimatorFactory.get_difficulty_estimator("frequency", self.lan, self.user)
 
-        assert d1['discrete'] == 'EASY'
-        assert d1['normalized'] < 0.1
+        simple_text_difficulty = estimator.estimate_difficulty(SIMPLE_TEXT)
+        complex_text_difficulty = estimator.estimate_difficulty(COMPLEX_TEXT)
 
-    # Todo: Use a really difficult text
-    def test_compute_complex_text_difficulty(self):
-        d1 = FrequencyDifficultyEstimator.estimate_difficulty(COMPLEX_TEXT, self.lan, self.user)
+        print(simple_text_difficulty)
+        print(complex_text_difficulty)
 
-        assert d1['discrete'] == 'EASY'
-
-        # TODO: this used to be 0.25... but it was failing...
-        assert d1['normalized'] >= 0.20
+        assert simple_text_difficulty['discrete'] == 'EASY'
+        assert complex_text_difficulty['discrete'] == 'HARD'

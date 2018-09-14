@@ -1,12 +1,12 @@
 from zeeguu import model
-from zeeguu.language.difficulty_estimator_strategy import DifficultyEstimatorStrategy
+from zeeguu.difficulty_estimation.difficulty_estimator_strategy import DifficultyEstimatorStrategy
 
 
 class DefaultDifficultyEstimator(DifficultyEstimatorStrategy):
 
     # The default estimator always returns a difficulty of zero
     @classmethod
-    def estimate_difficulty(cls, text: str, language: 'model.Language', user: 'model.User'):
+    def estimate_difficulty(cls, text: str):
         '''
         The default difficulty estimator. Used when no matching estimator was found by the factory.
         :param text: See DifficultyEstimatorStrategy

@@ -9,7 +9,7 @@ import zeeguu
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, UnicodeText, Table
 
 from zeeguu.constants import JSON_TIME_FORMAT
-from zeeguu.language.difficulty_estimator_factory import DifficultyEstimatorFactory
+from zeeguu.difficulty_estimation.difficulty_estimator_factory import DifficultyEstimatorFactory
 from langdetect import detect
 
 db = zeeguu.db
@@ -75,8 +75,8 @@ class Article(db.Model):
         self.language = language
         self.broken = broken
 
-        fk_estimator = DifficultyEstimatorFactory.get_difficulty_estimator("fk")
-        fk_difficulty = fk_estimator.estimate_difficulty(self.content, self.language, None)['grade']
+        fk_estimator = DifficultyEstimatorFactory.get_difficulty_estimator("fk", self.language)
+        fk_difficulty = fk_estimator.estimate_difficulty(self.content)['grade']
 
         # easier to store integer in the DB
         # otherwise we have to use Decimal, and it's not supported on all dbs
@@ -98,7 +98,7 @@ class Article(db.Model):
 
     def contains_any_of(self, keywords: list):
         for each in keywords:
-            if self.title.find(each)>=0:
+            if self.title.find(each) >= 0:
                 return True
         return False
 
@@ -184,7 +184,7 @@ class Article(db.Model):
                 import time
                 from random import randint
                 print("GOT: " + url)
-                sleep_time = randint(3,33)
+                sleep_time = randint(3, 33)
                 print(f"sleeping for {sleep_time}s... so we don't annoy our friendly servers")
                 time.sleep(sleep_time)
 

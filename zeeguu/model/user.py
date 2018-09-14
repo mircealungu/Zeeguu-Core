@@ -10,7 +10,7 @@ from sqlalchemy import Column, ForeignKey, Integer
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.exc import NoResultFound
 from zeeguu import util
-from zeeguu.language.difficulty_estimator_factory import DifficultyEstimatorFactory
+from zeeguu.difficulty_estimation.difficulty_estimator_factory import DifficultyEstimatorFactory
 from zeeguu.model.language import Language
 from wordstats import Word
 
@@ -133,8 +133,8 @@ class User(db.Model):
 
     def text_difficulty(self, text, language):
 
-        estimator = DifficultyEstimatorFactory.get_difficulty_estimator(self.preferred_difficulty_estimator())
-        return estimator.estimate_difficulty(text, language, self)
+        estimator = DifficultyEstimatorFactory.get_difficulty_estimator(self.preferred_difficulty_estimator(), language, self)
+        return estimator.estimate_difficulty(text)
 
     def set_learned_language(self, code):
         self.learned_language = Language.find(code)

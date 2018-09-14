@@ -2,7 +2,7 @@ import nltk
 import pyphen
 from numpy import math
 
-from zeeguu.language.difficulty_estimator_strategy import DifficultyEstimatorStrategy
+from zeeguu.difficulty_estimation.difficulty_estimator_strategy import DifficultyEstimatorStrategy
 from zeeguu.util.text import split_words_from_text
 from zeeguu.model import Language
 from collections import Counter
@@ -10,17 +10,21 @@ from collections import Counter
 
 class FleschKincaidDifficultyEstimator(DifficultyEstimatorStrategy):
     """
-    The Flesch-Kincaid readability index is a classic readability index.
-    Wikipedia : https://en.wikipedia.org/wiki/Flesch–Kincaid_readability_tests
+
+
+        The Flesch-Kincaid readability index is a classic readability index.
+        Wikipedia : https://en.wikipedia.org/wiki/Flesch–Kincaid_readability_tests
+
+
     """
 
-    AVERAGE_SYLLABLE_LENGTH = 2.5  # Simplifies the syllable counting
     CUSTOM_NAMES = ["fk", "fkindex", "flesch-kincaid"]
 
-    @classmethod
-    def estimate_difficulty(cls, text: str, language: 'Language', user: 'User'):
+    def estimate_difficulty(self, text: str):
         '''
-        Estimates the difficulty based on the Flesch-Kincaid readability index.
+
+            Estimates the difficulty based on the Flesch-Kincaid readability index.
+
         :param text: See DifficultyEstimatorStrategy
         :param language: See DifficultyEstimatorStrategy
         :param user: See DifficultyEstimatorStrategy
@@ -29,65 +33,55 @@ class FleschKincaidDifficultyEstimator(DifficultyEstimatorStrategy):
                     normalized: float (0<=normalized<=1)
                     discrete: string [EASY, MEDIUM, HARD]
         '''
-        flesch_kincaid_index = cls.flesch_kincaid_readability_index(text, language)
+        flesch_kincaid_index = self.flesch_kincaid_readability_index(text, self.language)
 
         difficulty_scores = dict(
-            normalized=cls.normalize_difficulty(flesch_kincaid_index),
-            discrete=cls.discrete_difficulty(flesch_kincaid_index),
-            grade=cls.grade_difficulty(flesch_kincaid_index)
+            normalized=self.normalize_difficulty(flesch_kincaid_index),
+            discrete=self.discrete_difficulty(flesch_kincaid_index),
+            grade=self.grade_difficulty(flesch_kincaid_index)
         )
 
         return difficulty_scores
 
-    @classmethod
-    def flesch_kincaid_readability_index(cls, text: str, language: 'Language'):
+    def flesch_kincaid_readability_index(self, text: str, language: 'Language'):
         words = [w.lower() for w in split_words_from_text(text)]
 
         number_of_syllables = 0
         number_of_words = len(words)
         for word, freq in Counter(words).items():
-            syllables_in_word = cls.estimate_number_of_syllables_in_word_pyphen(word, language)
-            number_of_syllables += syllables_in_word*freq
+            syllables_in_word = self.estimate_number_of_syllables_in_word_pyphen(word)
+            number_of_syllables += syllables_in_word * freq
 
         number_of_sentences = len(nltk.sent_tokenize(text))
 
-        constants = cls.get_constants_for_language(language);
+        constants = self.get_constants_for_language();
 
         index = constants["start"] - constants["sentence"] * (number_of_words / number_of_sentences) \
                 - constants["word"] * (number_of_syllables / number_of_words)
         return index
 
-    @classmethod
-    def get_constants_for_language(cls, language: 'language'):
-        if language.code == "de":
+    def get_constants_for_language(self):
+        if self.language.code == "de":
             return {"start": 180, "sentence": 1, "word": 58.5}
         else:
             return {"start": 206.835, "sentence": 1.015, "word": 84.6}
 
-    @classmethod
-    def estimate_number_of_syllables_in_word(cls, word: str, language: 'Language'):
-        if len(word) < cls.AVERAGE_SYLLABLE_LENGTH:
-            syllables = 1  # Always at least 1 syllable
-        else:
-            syllables = len(word) / cls.AVERAGE_SYLLABLE_LENGTH
-        return int(math.floor(syllables))  # Truncate the number of syllables
+    def estimate_number_of_syllables_in_word_pyphen(self, word: str):
 
-    @classmethod
-    def estimate_number_of_syllables_in_word_pyphen(cls, word: str, language: 'Language'):
+        AVERAGE_SYLLABLE_LENGTH = 2.5  # Simplifies the syllable counting
 
-        if language.code == "zh-CN":
-            if len(word) < cls.AVERAGE_SYLLABLE_LENGTH:
+        if self.language.code == "zh-CN":
+            if len(word) < AVERAGE_SYLLABLE_LENGTH:
                 syllables = 1  # Always at least 1 syllable
             else:
-                syllables = len(word) / cls.AVERAGE_SYLLABLE_LENGTH
+                syllables = len(word) / AVERAGE_SYLLABLE_LENGTH
             return int(math.floor(syllables))  # Truncate the number of syllables
         else:
-            dic = pyphen.Pyphen(lang=language.code)
+            dic = pyphen.Pyphen(lang=self.language.code)
             syllables = len(dic.positions(word)) + 1
             return syllables
 
-    @classmethod
-    def normalize_difficulty(cls, score: int):
+    def normalize_difficulty(self, score: int):
         if score < 0:
             return 1
         elif score > 100:
@@ -95,8 +89,7 @@ class FleschKincaidDifficultyEstimator(DifficultyEstimatorStrategy):
         else:
             return round(1 - (score * 0.01), 2)
 
-    @classmethod
-    def discrete_difficulty(cls, score: int):
+    def discrete_difficulty(self, score: int):
         if score > 80:
             return "EASY"
         elif score > 50:
@@ -104,8 +97,7 @@ class FleschKincaidDifficultyEstimator(DifficultyEstimatorStrategy):
         else:
             return "HARD"
 
-    @classmethod
-    def grade_difficulty(cls, score: int):
+    def grade_difficulty(self, score: int):
         if score < 0:
             return 100
         elif score > 100:

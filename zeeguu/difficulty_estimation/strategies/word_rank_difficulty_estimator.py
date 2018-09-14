@@ -1,7 +1,7 @@
 import string
 
 from zeeguu import model
-from zeeguu.language.difficulty_estimator_strategy import DifficultyEstimatorStrategy
+from zeeguu.difficulty_estimation.difficulty_estimator_strategy import DifficultyEstimatorStrategy
 import nltk
 import math
 import re
@@ -17,9 +17,9 @@ class WordRankDifficultyEstimator(DifficultyEstimatorStrategy):
 
     CUSTOM_NAMES = ["wr", "wrscore", "word-rank-score"]
 
-    #todo remove names from text
+    # todo remove names from text
     @classmethod
-    def estimate_difficulty(cls, text: str, language: 'model.Language', user: 'model.User'):
+    def estimate_difficulty(cls, text: str):
         '''
         Estimates the difficulty based on the word-rank.
         :param text: See DifficultyEstimatorStrategy
@@ -45,7 +45,7 @@ class WordRankDifficultyEstimator(DifficultyEstimatorStrategy):
         langtb = TextBlob(text).detect_language()
         words = nltk.word_tokenize(text)
 
-        #detect and remove proper nouns
+        # detect and remove proper nouns
         if 1 == 0:
             words = []
             sentences = nltk.sent_tokenize(text)
@@ -57,12 +57,12 @@ class WordRankDifficultyEstimator(DifficultyEstimatorStrategy):
                     if not str.isupper(tokens[i][0]):
                         words.append(tokens[i])
 
-        #remove punctuation
+        # remove punctuation
         words = [w for w in words if w not in string.punctuation]
-        #remove digits (or dates)
+        # remove digits (or dates)
         words = [w for w in words if re.search("\d", w) == None]
 
-        #translate tokens
+        # translate tokens
         words_trans = words.copy()
         for i in range(len(words)):
             try:
@@ -72,10 +72,8 @@ class WordRankDifficultyEstimator(DifficultyEstimatorStrategy):
             except:
                 print("not translated: ", words[i])
 
-
-        #remove equivalent words, assume they are cognates and therefore not difficult
+        # remove equivalent words, assume they are cognates and therefore not difficult
         words = [words[i] for i in range(len(words)) if words_trans[i].lower != words[i].lower()]
-
 
         number_of_words = len(words)
 
@@ -83,22 +81,22 @@ class WordRankDifficultyEstimator(DifficultyEstimatorStrategy):
 
         constants = cls.get_constants_for_language(language);
 
-        #calculate word rank per word
+        # calculate word rank per word
         words_stat = [Word.stats(w, language.code) for w in words]
-        #throw away words that do not occur in the top 50k
+        # throw away words that do not occur in the top 50k
         difficulties = [w.difficulty for w in words_stat if w.frequency is not 0]
         number_of_words = len(difficulties)
 
-        #index = constants["start"] - constants["sentence"] * (number_of_words / number_of_sentences) \
+        # index = constants["start"] - constants["sentence"] * (number_of_words / number_of_sentences) \
         #        - constants["word"] * (sum(difficulties) / number_of_words)
-        #average difficulty of text
+        # average difficulty of text
         return sum(difficulties) / number_of_words
 
     @classmethod
-    def get_constants_for_language(cls, language: 'model.language'):
-        #if language.code == "de":
+    def get_constants_for_language(cls, language: 'model.difficulty_estimation'):
+        # if difficulty_estimation.code == "de":
         #    return {"start": 180, "sentence": 1, "word": 58.5}
-        #else:
+        # else:
         return {"start": 130.835, "sentence": 1.015, "word": 180.6}
 
     @classmethod

@@ -1,43 +1,31 @@
 from numpy import mean
 from wordstats import Word, WordInfo
 from zeeguu import model
-from zeeguu.language.difficulty_estimator_strategy import DifficultyEstimatorStrategy
+from zeeguu.difficulty_estimation.difficulty_estimator_strategy import DifficultyEstimatorStrategy
 from zeeguu.util.text import split_words_from_text
 from zeeguu.model.word_knowledge.word_interaction_history import WordInteractionHistory
 from zeeguu.model import UserWord, Language
 from nltk.stem import SnowballStemmer
 from collections import defaultdict, Counter
 
-from zeeguu.constants import WIH_READ_CLICKED, WIH_READ_NOT_CLICKED_IN_SENTENCE, WIH_READ_NOT_CLICKED_OUT_SENTENCE, WIH_WRONG_EX_RECOGNIZE,\
-WIH_WRONG_EX_TRANSLATE,WIH_WRONG_EX_CHOICE,WIH_WRONG_EX_MATCH
+from zeeguu.constants import WIH_READ_CLICKED, WIH_READ_NOT_CLICKED_IN_SENTENCE, WIH_READ_NOT_CLICKED_OUT_SENTENCE, \
+    WIH_WRONG_EX_RECOGNIZE, \
+    WIH_WRONG_EX_TRANSLATE, WIH_WRONG_EX_CHOICE, WIH_WRONG_EX_MATCH
+
 
 class WordHistoryDifficultyEstimator(DifficultyEstimatorStrategy):
-
     CUSTOM_NAMES = ["history"]
-
-    def __init__(self, language: 'model.Language', user: 'model.User'):
-        self.user = user
-        self.language = language
-        self.score_map = dict()
-
-        # determines word scores
-        #words_history = WordInteractionHistory.find_all_word_histories_for_user_language(user, language)
-
-        #words_found = [w.word.word.lower() for w in words_history]
-        #event_history = [w.interaction_history for w in words_history]
-
-        #words_score = [max(1 - len(e) / 1, 0) for e in event_history]
 
     # creates estimator that determines the ratio of new words for a given text
     @classmethod
     def recurrence(cls, language: 'model.Language', user: 'model.User'):
         """
-                This estimator computes the ratio of new words for a given user and language
-                :param language: language of the text that needs to be estimated
+                This estimator computes the ratio of new words for a given user and difficulty_estimation
+                :param language: difficulty_estimation of the text that needs to be estimated
                 :param user: the user for which the difficulty estimation needs to be done
                 :rtype: WordHistoryDifficultyEstimator
-                :return: WordHistoryDifficultyEstimator with initialized user, language and word => score map
-                        which can be used for determining scores for multiple articles for the same user and language
+                :return: WordHistoryDifficultyEstimator with initialized user, difficulty_estimation and word => score map
+                        which can be used for determining scores for multiple articles for the same user and difficulty_estimation
         """
 
         estimator = cls(language, user)
@@ -47,8 +35,6 @@ class WordHistoryDifficultyEstimator(DifficultyEstimatorStrategy):
         words_found = [w.word.word for w in words_history]
         event_history = [w.interaction_history for w in words_history]
 
-
-
         words_score = [0 for e in event_history]
 
         estimator.score_map = dict(zip(words_found, words_score))
@@ -56,14 +42,14 @@ class WordHistoryDifficultyEstimator(DifficultyEstimatorStrategy):
         return estimator
 
     @classmethod
-    def recurrence_until_timestamp(cls, language: 'model.Language', user: 'model.User',max_timestamp):
+    def recurrence_until_timestamp(cls, language: 'model.Language', user: 'model.User', max_timestamp):
         """
-                This estimator computes the ratio of new words for a given user and language
-                :param language: language of the text that needs to be estimated
+                This estimator computes the ratio of new words for a given user and difficulty_estimation
+                :param language: difficulty_estimation of the text that needs to be estimated
                 :param user: the user for which the difficulty estimation needs to be done
                 :rtype: WordHistoryDifficultyEstimator
-                :return: WordHistoryDifficultyEstimator with initialized user, language and word => score map
-                        which can be used for determining scores for multiple articles for the same user and language
+                :return: WordHistoryDifficultyEstimator with initialized user, difficulty_estimation and word => score map
+                        which can be used for determining scores for multiple articles for the same user and difficulty_estimation
         """
 
         estimator = cls(language, user)
@@ -87,14 +73,14 @@ class WordHistoryDifficultyEstimator(DifficultyEstimatorStrategy):
         return estimator
 
     @classmethod
-    def difficulty(cls, language: 'model.Language', user: 'model.User', mode = 1):
+    def difficulty(cls, language: 'model.Language', user: 'model.User', mode=1):
         """
-                This estimator computes the ratio of new words for a given user and language
-                :param language: language of the text that needs to be estimated
+                This estimator computes the ratio of new words for a given user and difficulty_estimation
+                :param language: difficulty_estimation of the text that needs to be estimated
                 :param user: the user for which the difficulty estimation needs to be done
                 :rtype: WordHistoryDifficultyEstimator
-                :return: WordHistoryDifficultyEstimator with initialized user, language and word => score map
-                        which can be used for determining scores for multiple articles for the same user and language
+                :return: WordHistoryDifficultyEstimator with initialized user, difficulty_estimation and word => score map
+                        which can be used for determining scores for multiple articles for the same user and difficulty_estimation
         """
 
         estimator = cls(language, user)
@@ -123,29 +109,30 @@ class WordHistoryDifficultyEstimator(DifficultyEstimatorStrategy):
                         words_score.append(min(1 - N_seen_context / 4, 1 - N_seen / 7))
         elif mode == 2:
             for e in event_history:
-                words_score.append(max(1 - len(e)/10,0))
+                words_score.append(max(1 - len(e) / 10, 0))
 
         elif mode == 3:
             length = 0
             for e in event_history[::-1]:
-                if e is not WIH_READ_CLICKED or e is not WIH_WRONG_EX_CHOICE or e is not WIH_WRONG_EX_MATCH or e is not WIH_WRONG_EX_RECOGNIZE or\
-                    e is not WIH_WRONG_EX_TRANSLATE:
+                if e is not WIH_READ_CLICKED or e is not WIH_WRONG_EX_CHOICE or e is not WIH_WRONG_EX_MATCH or e is not WIH_WRONG_EX_RECOGNIZE or \
+                        e is not WIH_WRONG_EX_TRANSLATE:
                     length += 1
-                words_score.append(max(1 - len(e)/10,0))
+                words_score.append(max(1 - len(e) / 10, 0))
 
         estimator.score_map = dict(zip(words_found, words_score))
 
         return estimator
 
     @classmethod
-    def difficulty_until_timestamp(cls, language: 'model.Language', user: 'model.User', max_timestamp, mode = 1, scaling = 10.0, scaling2 = 20.0):
+    def difficulty_until_timestamp(cls, language: 'model.Language', user: 'model.User', max_timestamp, mode=1,
+                                   scaling=10.0, scaling2=20.0):
         """
-                This estimator computes the ratio of new words for a given user and language
-                :param language: language of the text that needs to be estimated
+                This estimator computes the ratio of new words for a given user and difficulty_estimation
+                :param language: difficulty_estimation of the text that needs to be estimated
                 :param user: the user for which the difficulty estimation needs to be done
                 :rtype: WordHistoryDifficultyEstimator
-                :return: WordHistoryDifficultyEstimator with initialized user, language and word => score map
-                        which can be used for determining scores for multiple articles for the same user and language
+                :return: WordHistoryDifficultyEstimator with initialized user, difficulty_estimation and word => score map
+                        which can be used for determining scores for multiple articles for the same user and difficulty_estimation
         """
 
         estimator = cls(language, user)
@@ -171,26 +158,24 @@ class WordHistoryDifficultyEstimator(DifficultyEstimatorStrategy):
                 N_seen = sum([event.event_type == WIH_READ_NOT_CLICKED_OUT_SENTENCE for event in e])
                 # N_clicked = sum([event == WIH_READ_CLICKED for event in event_history])
 
-                words_score.append(max(0,1 - N_seen_context / scaling - N_seen / scaling2))
+                words_score.append(max(0, 1 - N_seen_context / scaling - N_seen / scaling2))
         elif mode == 2:
             for e in event_history:
-                words_score.append(max(1 - len(e)/scaling,0))
+                words_score.append(max(1 - len(e) / scaling, 0))
 
         elif mode == 3:
             length = 0
             for e in event_history:
-                events= e[::-1]
+                events = e[::-1]
                 for event in events:
                     if event.event_type is not WIH_READ_CLICKED or event.event_type is not WIH_WRONG_EX_CHOICE or event.event_type is not WIH_WRONG_EX_MATCH or event.event_type is not WIH_WRONG_EX_RECOGNIZE or \
                             event.event_type is not WIH_WRONG_EX_TRANSLATE:
                         length += 1
-                words_score.append(max(1 - len(e)/scaling,0))
-
+                words_score.append(max(1 - len(e) / scaling, 0))
 
         estimator.score_map = dict(zip(words_found, words_score))
 
         return estimator
-
 
     def estimate_difficulty(self, text: str):
         """
@@ -211,10 +196,8 @@ class WordHistoryDifficultyEstimator(DifficultyEstimatorStrategy):
         word_frequency = Counter(words)
         total_words = len(words)
 
-
         # score per word
         word_scores = {w: self.word_difficulty(self.score_map, True, w) for w in word_frequency}
-
 
         # If we can't compute the text difficulty, we estimate hard
         if (len(word_scores)) == 0:
@@ -222,13 +205,13 @@ class WordHistoryDifficultyEstimator(DifficultyEstimatorStrategy):
                 median=1.0,
                 median_unique=1.0,
                 normalized=1.0,
-                discrete= "HARD",
+                discrete="HARD",
                 unique_ratio=1.0
             )
         else:
 
             # words above median score
-            word_scores_sorted= sorted(word_scores.items(), key=lambda item: item[1])
+            word_scores_sorted = sorted(word_scores.items(), key=lambda item: item[1])
             center = int(round(len(word_scores_sorted) / 2, 0))
             word_scores_median = dict(word_scores_sorted[center:])
             total_words_median = sum([word_frequency[w] for w in word_scores_median])
@@ -236,11 +219,12 @@ class WordHistoryDifficultyEstimator(DifficultyEstimatorStrategy):
             # If we can't compute the text difficulty, we estimate hard
 
             difficulty_scores = dict(
-                median=sum([ s*word_frequency[w] for w, s in word_scores_median.items()])/total_words_median,
+                median=sum([s * word_frequency[w] for w, s in word_scores_median.items()]) / total_words_median,
                 median_unique=mean(list(word_scores_median.values())),
-                normalized=sum([ s*word_frequency[w] for w, s in word_scores.items()])/total_words,  # Originally called 'score_average'
-                #todo: discrete=discrete_difficulty,               # Originally called 'estimated_difficulty'
-                unique_ratio=mean(list(word_scores.values()))      # Ratio of unknown
+                normalized=sum([s * word_frequency[w] for w, s in word_scores.items()]) / total_words,
+                # Originally called 'score_average'
+                # todo: discrete=discrete_difficulty,               # Originally called 'estimated_difficulty'
+                unique_ratio=mean(list(word_scores.values()))  # Ratio of unknown
             )
 
         return difficulty_scores
@@ -284,4 +268,3 @@ class WordHistoryDifficultyEstimator(DifficultyEstimatorStrategy):
             estimated_difficulty = float(known_probability)
 
         return estimated_difficulty
-
