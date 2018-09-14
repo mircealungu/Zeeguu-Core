@@ -94,7 +94,7 @@ class FrequencyDifficultyEstimator(DifficultyEstimatorStrategy):
             center = int(round(len(word_scores) / 2, 0))
             difficulty_median = word_scores[center]
 
-            normalized_estimate = sum(word_scores)
+            normalized_estimate = sum(word_scores)/len(word_scores)
             discrete_difficulty = self.discrete_text_difficulty(difficulty_median)
 
         difficulty_scores = dict(
