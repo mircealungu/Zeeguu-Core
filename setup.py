@@ -21,6 +21,7 @@ def ntlk_install_packages():
     import nltk
     print("Downloading nltk packages...")
     nltk.download('punkt')
+    nltk.download('averaged_perceptron_tagger')
 
 setuptools.setup(
     name="zeeguu",
