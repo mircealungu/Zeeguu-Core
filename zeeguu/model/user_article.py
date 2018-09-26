@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy.orm.exc import NoResultFound
 
 import zeeguu
-from sqlalchemy import Column, UniqueConstraint, Integer, ForeignKey, String, DateTime, Boolean, or_
+from sqlalchemy import Column, UniqueConstraint, Integer, ForeignKey, DateTime, Boolean, or_
 from sqlalchemy.orm import relationship
 
 from zeeguu.constants import JSON_TIME_FORMAT
@@ -184,18 +184,15 @@ class UserArticle(zeeguu.db.Model):
         :return:
         """
 
+        from zeeguu.content_recommender.mixed_recommender import user_article_info
+
         user_articles = cls.all_starred_or_liked_articles_of_user(user)
 
-        dicts = [dict(
-            user_id=each.user.id,
-            url=each.article.url.as_string(),
-            title=each.article.title,
-            language=each.article.language.code,
-            starred_date=each.last_interaction().strftime(JSON_TIME_FORMAT)
-        ) for each in user_articles
-            if each.last_interaction() is not None]
-
-        return dicts
+        return [
+            user_article_info(user, each.article, with_translations=False)
+            for each in user_articles
+            if each.last_interaction() is not None
+        ]
 
     @classmethod
     def exists(cls, obj):
