@@ -10,11 +10,12 @@ from zeeguu.language.strategies.flesch_kincaid_difficulty_estimator import \
 
 E_EASY_TEXT = "The cat sat on the mat."
 E_MEDIUM_TEXT = "This sentence, taken as a reading passage unto itself, is being used to prove a point."
-E_HARD_TEXT = "The Australian platypus is seemingly a hybrid of a mammal and reptilian creature."
+E_HARD_TEXT = "The Australian platypus, seemingly hybrid of a mammal and reptilian creature, mesmerized conservationists."
 
 DE_EASY_TEXT = "Ich bin ein Berliner."
 DE_MEDIUM_TEXT = "Ich bin ins Kino gegangen, um mir einen Film anzuschauen, den ich sehr spannend fand."
 DE_HARD_TEXT = "Wegen Wörtern wie Frühstücksfernsehen, Fußgängerübergang und Verkehrsüberwachung liebe ich "
+
 
 class FleschKincaidReadingEaseDifficultyEstimatorTest(ModelTestMixIn, TestCase):
 
