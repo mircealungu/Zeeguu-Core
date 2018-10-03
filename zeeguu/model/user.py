@@ -295,17 +295,30 @@ class User(db.Model):
 
     def bookmarks_for_article(self, article_id, with_context,
                               after_date=datetime.datetime(2010, 1, 1), max=42, with_title=False):
+
+
+
         bookmarks_by_date, sorted_dates = self.bookmarks_by_date(after_date)
 
         dates = []
         total_bookmarks = 0
         from zeeguu.model import Article
         article = Article.query.filter_by(id=article_id).one()
+        article_read_url_subpattern = f'read/article?articleID={article.id}'
+        print(article)
+        print(article.url.as_canonical_string())
+        print("======")
 
-        for date in sorted_dates:
+        for date in sorted_dates[:5]:
             bookmarks = []
+            print(date)
+            print(len(bookmarks_by_date[date]))
             for bookmark in bookmarks_by_date[date]:
-                if bookmark.text.url == article.url:
+                print(bookmark.text.url.as_canonical_string() )
+
+                bookmark_url = bookmark.text.url.as_canonical_string()
+                if  bookmark_url == article.url.as_canonical_string() \
+                        or article_read_url_subpattern in bookmark_url:
                     bookmarks.append(bookmark.json_serializable_dict(with_context, with_title))
                     total_bookmarks += 1
 
