@@ -3,6 +3,7 @@ import datetime
 import random
 import re
 
+from zeeguu.model import Article
 from zeeguu.model.exercise import Exercise
 
 from zeeguu.model.url import Url
@@ -39,7 +40,9 @@ def add_bookmark(db, user, original_language, original_word, translation_languag
 
     url = Url.find_or_create(session, the_url, the_url_title)
 
-    text = Text.find_or_create(session, the_context, translation_language, url)
+    article = Article.find_or_create(session, url.as_string())
+
+    text = Text.find_or_create(session, the_context, translation_language, url, article)
 
     origin = UserWord.find_or_create(session, original_word, original_language)
 

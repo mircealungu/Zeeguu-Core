@@ -5,6 +5,8 @@ import sqlalchemy
 from sqlalchemy import Column, ForeignKey, Integer, Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.exc import NoResultFound
+from zeeguu.model import Article
+
 from wordstats import Word
 
 import zeeguu
@@ -197,7 +199,7 @@ class Bookmark(db.Model):
 
         return bad_quality
 
-    def update_fit_for_study(self, session = None):
+    def update_fit_for_study(self, session=None):
         """
             Called when something happened to the bookmark,
              that requires it's "fit for study" status to be
@@ -285,14 +287,11 @@ class Bookmark(db.Model):
 
         bookmark_title = ""
         if with_title:
-            url = self.text.url.as_string()
             try:
-                from zeeguu.model import Article
-                article = Article.find(url)
-                bookmark_title = article.title
+                bookmark_title = self.text.article.title
             except Exception as e:
                 print(e)
-                print("could not find article title for " + url)
+                print(f"could not find article title for bookmark with id: {self.id}")
 
         result = dict(
             id=self.id,
@@ -332,9 +331,11 @@ class Bookmark(db.Model):
 
         origin = UserWord.find_or_create(session, _origin, origin_lang)
 
-        url = Url.find_or_create(session, _url, _url_title)
+        article = Article.find_or_create(session, _url)
 
-        context = Text.find_or_create(session, _context, origin_lang, url)
+        url = Url.find_or_create(session, article.url.as_string(), _url_title)
+
+        context = Text.find_or_create(session, _context, origin_lang, url, article)
 
         translation = UserWord.find_or_create(session, _translation, translation_lang)
 

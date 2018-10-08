@@ -3,6 +3,7 @@ import re
 import sqlalchemy.orm
 import time
 import zeeguu
+from zeeguu.model import Article
 
 from zeeguu.util import text_hash
 from zeeguu.model.language import Language
@@ -26,11 +27,15 @@ class Text(db.Model):
     url_id = db.Column(db.Integer, db.ForeignKey(Url.id))
     url = db.relationship(Url)
 
-    def __init__(self, content, language, url):
+    article_id = db.Column(db.Integer, db.ForeignKey(Article.id))
+    article = db.relationship(Article)
+
+    def __init__(self, content, language, url, article):
         self.content = content
         self.language = language
         self.url = url
         self.content_hash = text_hash(content)
+        self.article = article
 
     def __repr__(self):
         return '<Text %r>' % (self.content)
@@ -72,7 +77,7 @@ class Text(db.Model):
         return Bookmark.find_all_for_user_and_text(self, user)
 
     @classmethod
-    def find_or_create(cls, session, text, language, url):
+    def find_or_create(cls, session, text, language, url, article):
         """
         :param text: string
         :param language: Language (object)
@@ -81,10 +86,10 @@ class Text(db.Model):
         """
 
         try:
-            return cls.query.filter(cls.content_hash == text_hash(text)).one()
+            return cls.query.filter(cls.content_hash == text_hash(text)).filter(cls.article==article).one()
         except sqlalchemy.orm.exc.NoResultFound or sqlalchemy.exc.InterfaceError:
             try:
-                new = cls(text, language, url)
+                new = cls(text, language, url, article)
                 session.add(new)
                 session.commit()
                 return new
