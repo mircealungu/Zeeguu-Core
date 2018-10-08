@@ -293,45 +293,19 @@ class User(db.Model):
 
         return dates
 
-    def bookmarks_for_article(self, article_id, with_context,
-                              after_date=datetime.datetime(2010, 1, 1), max=42, with_title=False):
+    def bookmarks_for_article(self, article_id, with_context, with_title=False):
 
-        bookmarks_by_date, sorted_dates = self.bookmarks_by_date(after_date)
+        from zeeguu.model import Bookmark, Text
 
-        dates = []
-        total_bookmarks = 0
-        from zeeguu.model import Article
-        article = Article.query.filter_by(id=article_id).one()
-        article_read_url_subpattern = f'read/article?articleID={article.id}'
-        print(article)
-        print(article.url.as_canonical_string())
-        print("======")
+        bookmarks = []
 
-        for date in sorted_dates[:5]:
-            bookmarks = []
-            print(date)
-            print(len(bookmarks_by_date[date]))
-            for bookmark in bookmarks_by_date[date]:
-                print(bookmark.text.url.as_canonical_string() )
+        all_for_article = Bookmark.query.join(Text).filter(Text.article_id == article_id).order_by(
+            Bookmark.id.desc()).all()
 
-                bookmark_url = bookmark.text.url.as_canonical_string()
-                if  bookmark_url == article.url.as_canonical_string() \
-                        or article_read_url_subpattern in bookmark_url:
-                    bookmarks.append(bookmark.json_serializable_dict(with_context, with_title))
-                    total_bookmarks += 1
+        for each in all_for_article:
+            bookmarks.append(each.json_serializable_dict(with_context, with_title))
 
-            if bookmarks:
-                date_entry = dict(
-                    date=date.strftime("%A, %d %B %Y"),
-                    bookmarks=bookmarks
-                )
-                dates.append(date_entry)
-
-            if total_bookmarks > max:
-                print("we have already 50 bookmarks. be done with it!")
-                return dates
-
-        return dates
+        return bookmarks
 
     def bookmarks_by_url_by_date(self, n_days=365):
         bookmarks_list, dates = self.bookmarks_by_date()

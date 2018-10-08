@@ -5,6 +5,7 @@ import sqlalchemy
 from sqlalchemy import Column, ForeignKey, Integer, Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.exc import NoResultFound
+from zeeguu.constants import SIMPLE_TIME_FORMAT, JSON_TIME_FORMAT
 from zeeguu.model import Article
 
 from wordstats import Word
@@ -304,8 +305,11 @@ class Bookmark(db.Model):
             learned_datetime=learned_datetime,
             origin_rank=word_info.rank if word_info.rank != 100000 else '',
             starred=self.starred if self.starred is not None else False,
-            created_day=created_day
+            article_id=self.text.article_id if self.text.article_id else '',
+            created_day=created_day, #human readable stuff...
+            time=self.time.strftime(JSON_TIME_FORMAT)
         )
+
         result["from"] = self.origin.word
         if with_context:
             result['context'] = self.text.content
