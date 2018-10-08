@@ -103,21 +103,6 @@ class BookmarkTest(ModelTestMixIn):
 
         assert exercise_count_after > exercise_count_before
 
-    def test_find_or_create(self):
-
-        bookmark_should_be = BookmarkRule(self.user).bookmark
-
-        bookmark_to_check = Bookmark.find_or_create(self.db.session, self.user,
-                                                    bookmark_should_be.origin.word,
-                                                    bookmark_should_be.origin.language.code,
-                                                    bookmark_should_be.translation.word,
-                                                    bookmark_should_be.translation.language.code,
-                                                    bookmark_should_be.text.content,
-                                                    bookmark_should_be.text.article.url.as_string(),
-                                                    self.faker.word())
-
-        assert bookmark_to_check == bookmark_should_be
-
     def test_find_by_specific_user(self):
         list_should_be = self.user.all_bookmarks()
         list_to_check = Bookmark.find_by_specific_user(self.user)
@@ -218,8 +203,6 @@ class BookmarkTest(ModelTestMixIn):
         random_bookmarks[0].add_new_exercise(random_exercise)
         result_bool, result_time = random_bookmarks[0].has_been_learned(also_return_time=True)
         assert result_bool and result_time == random_bookmarks[0].exercise_log[-1].time
-
-        # TODO: Test the SmartwatchEvent case as well
 
         result_bool, result_None = random_bookmarks[1].has_been_learned(also_return_time=True)
         assert not result_bool and result_None is None
