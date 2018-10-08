@@ -25,6 +25,7 @@ zeeguu.db = flask_sqlalchemy.SQLAlchemy(zeeguu.app)
 from .language import Language
 from .url import Url
 from .domain_name import DomainName
+from .article import Article
 from .bookmark import Bookmark
 from .text import Text
 from .user import User
@@ -36,7 +37,7 @@ from .word_knowledge.word_interaction_history import WordInteractionHistory
 
 from .user_language import UserLanguage
 
-from .article import Article
+
 from .topic import Topic
 from .user_article import UserArticle
 from .article_word import ArticleWord
