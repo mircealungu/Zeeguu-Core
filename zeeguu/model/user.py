@@ -296,8 +296,6 @@ class User(db.Model):
     def bookmarks_for_article(self, article_id, with_context,
                               after_date=datetime.datetime(2010, 1, 1), max=42, with_title=False):
 
-
-
         bookmarks_by_date, sorted_dates = self.bookmarks_by_date(after_date)
 
         dates = []
