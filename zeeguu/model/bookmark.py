@@ -319,7 +319,7 @@ class Bookmark(db.Model):
     def find_or_create(cls, session, user,
                        _origin: str, _origin_lang: str,
                        _translation: str, _translation_lang: str,
-                       _context: str, _url: str, _url_title: str):
+                       _context: str, _url: str, _url_title: str, article_id: int):
         """
             if the bookmark does not exist, it creates it and returns it
             if it exists, it ** updates the translation** and returns the bookmark object
@@ -335,7 +335,7 @@ class Bookmark(db.Model):
 
         origin = UserWord.find_or_create(session, _origin, origin_lang)
 
-        article = Article.find_or_create(session, _url)
+        article = Article.query.filter_by(id=article_id).one()
 
         url = Url.find_or_create(session, article.url.as_string(), _url_title)
 
