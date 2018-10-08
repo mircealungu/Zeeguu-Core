@@ -26,7 +26,8 @@ class UserExerciseSessionTest(ModelTestMixIn, TestCase):
         self.VERY_FAR_IN_THE_FUTURE = '2030-01-01T00:00:00'
         self.CURRENT_TIME = datetime.now()
         self.TIMEOUT_SECONDS_IN_THE_PAST = datetime.now() - timedelta(seconds=self.exercise_session_timeout)
-        self.TWICE_TIMEOUT_SECONDS_IN_THE_PAST = datetime.now() - timedelta(seconds=self.exercise_session_timeout * 2)
+        self.SOME_TIME_AGO = datetime.now() - timedelta(seconds=self.exercise_session_timeout * 20)
+        self.A_BIT_LATER_THAN_SOME_TIME_AGO = datetime.now() - timedelta(seconds=self.exercise_session_timeout * 30)
         
 
     # One result scenario
@@ -47,8 +48,8 @@ class UserExerciseSessionTest(ModelTestMixIn, TestCase):
 
     def test__is_not_same_exercise_session(self):
         new_exercise_session = UserExerciseSession(self.ex_session1.user_id, datetime.now())
-        new_exercise_session.last_action_time = self.TWICE_TIMEOUT_SECONDS_IN_THE_PAST
-        new_exercise_session.start_time = self.TWICE_TIMEOUT_SECONDS_IN_THE_PAST
+        new_exercise_session.last_action_time = self.SOME_TIME_AGO
+        new_exercise_session.start_time = self.A_BIT_LATER_THAN_SOME_TIME_AGO
         assert (False == new_exercise_session._is_still_active())
 
     def test__update_last_use(self):
@@ -69,7 +70,7 @@ class UserExerciseSessionTest(ModelTestMixIn, TestCase):
 
     # Scenario2 = There is an active but no longer valid session
     def test__update_exercise_session_scenario2(self):
-        self.ex_session1.last_action_time = self.TWICE_TIMEOUT_SECONDS_IN_THE_PAST
+        self.ex_session1.last_action_time = self.SOME_TIME_AGO
         self.exercises[0].time = self.CURRENT_TIME
         resulting_exercise_session = UserExerciseSession.update_exercise_session(self.exercises[0], db_session)
         assert resulting_exercise_session != self.ex_session1

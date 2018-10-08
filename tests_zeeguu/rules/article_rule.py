@@ -5,6 +5,7 @@ from tests_zeeguu.rules.base_rule import BaseRule
 from tests_zeeguu.rules.language_rule import LanguageRule
 from tests_zeeguu.rules.rss_feed_rule import RSSFeedRule
 from tests_zeeguu.rules.url_rule import UrlRule
+from tests_zeeguu_api.test_article import URL_1
 from zeeguu.model import Article
 
 
@@ -15,12 +16,15 @@ class ArticleRule(BaseRule):
 
     """
 
-    def __init__(self):
+    def __init__(self, real=False):
         super().__init__()
 
-        self.article = self._create_model_object()
+        if real:
+            self.article = Article.find_or_create(ArticleRule.db.session, URL_1)
+        else:
+            self.article = self._create_model_object()
+            self.save(self.article)
 
-        self.save(self.article)
 
     def _create_model_object(self):
         title = " ".join(self.faker.text().split()[:4])

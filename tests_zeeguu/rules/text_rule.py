@@ -1,3 +1,4 @@
+from tests_zeeguu.rules.article_rule import ArticleRule
 from tests_zeeguu.rules.base_rule import BaseRule
 from tests_zeeguu.rules.language_rule import LanguageRule
 from tests_zeeguu.rules.url_rule import UrlRule
@@ -20,9 +21,11 @@ class TextRule(BaseRule):
     def _create_model_object(self, length):
         random_content = self.faker.text(max_nb_chars=length)
         random_language = LanguageRule().random
-        random_url = UrlRule().url
 
-        text = Text(random_content, random_language, random_url)
+        random_article = ArticleRule().article
+        random_url = random_article.url
+
+        text = Text(random_content, random_language, random_url, random_article )
 
         if self._exists_in_db(text):
             return self._create_model_object(length)

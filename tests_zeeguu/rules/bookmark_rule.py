@@ -4,8 +4,6 @@ from datetime import timedelta
 
 from tests_zeeguu.rules.base_rule import BaseRule
 from tests_zeeguu.rules.language_rule import LanguageRule
-from tests_zeeguu.rules.text_rule import TextRule
-from tests_zeeguu.rules.url_rule import UrlRule
 from tests_zeeguu.rules.user_word_rule import UserWordRule
 from zeeguu.model.bookmark import Bookmark
 from zeeguu.model.user_word import UserWord
@@ -44,8 +42,8 @@ class BookmarkRule(BaseRule):
         bookmark = None
 
         while not bookmark:
-            random_url = UrlRule().url
 
+            from tests_zeeguu.rules.text_rule import TextRule
             random_text = TextRule().text
 
             random_origin_word = self.faker.word() + str(random.random())
@@ -63,6 +61,9 @@ class BookmarkRule(BaseRule):
             random_translation = UserWordRule(random_translation_word,
                                               random_translation_language).user_word
             random_date = self.faker.date_time_this_month()
+
+            from tests_zeeguu.rules.article_rule import ArticleRule
+            random_article = ArticleRule(real=True).article
 
             bookmark = Bookmark(random_origin, random_translation, user,
                                 random_text, random_date)

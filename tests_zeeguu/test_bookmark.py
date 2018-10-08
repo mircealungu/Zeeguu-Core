@@ -104,13 +104,16 @@ class BookmarkTest(ModelTestMixIn):
         assert exercise_count_after > exercise_count_before
 
     def test_find_or_create(self):
+
         bookmark_should_be = BookmarkRule(self.user).bookmark
+
         bookmark_to_check = Bookmark.find_or_create(self.db.session, self.user,
                                                     bookmark_should_be.origin.word,
                                                     bookmark_should_be.origin.language.code,
                                                     bookmark_should_be.translation.word,
                                                     bookmark_should_be.translation.language.code,
-                                                    bookmark_should_be.text.content, self.faker.uri(),
+                                                    bookmark_should_be.text.content,
+                                                    bookmark_should_be.text.article.url.as_string(),
                                                     self.faker.word())
 
         assert bookmark_to_check == bookmark_should_be
