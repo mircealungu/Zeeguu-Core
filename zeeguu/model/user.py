@@ -299,8 +299,11 @@ class User(db.Model):
 
         bookmarks = []
 
-        all_for_article = Bookmark.query.join(Text).filter(Text.article_id == article_id).order_by(
-            Bookmark.id.asc()).all()
+        all_for_article = (Bookmark.query.join(Text).
+                           filter(Bookmark.user_id == self.id).
+                           filter(Text.article_id == article_id).
+                           order_by(Bookmark.id.asc()).
+                           all())
 
         for each in all_for_article:
             bookmarks.append(each.json_serializable_dict(with_context, with_title))
