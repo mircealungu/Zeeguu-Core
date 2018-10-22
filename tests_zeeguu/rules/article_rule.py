@@ -5,8 +5,9 @@ from tests_zeeguu.rules.base_rule import BaseRule
 from tests_zeeguu.rules.language_rule import LanguageRule
 from tests_zeeguu.rules.rss_feed_rule import RSSFeedRule
 from tests_zeeguu.rules.url_rule import UrlRule
-from tests_zeeguu_api.test_article import URL_1
 from zeeguu.model import Article
+
+TEST_URL = "http://www.spiegel.de/politik/deutschland/diesel-fahrverbote-schuld-sind-die-grenzwerte-kolumne-a-1197123.html"
 
 
 class ArticleRule(BaseRule):
@@ -20,7 +21,7 @@ class ArticleRule(BaseRule):
         super().__init__()
 
         if real:
-            self.article = Article.find_or_create(ArticleRule.db.session, URL_1)
+            self.article = Article.find_or_create(ArticleRule.db.session, TEST_URL)
         else:
             self.article = self._create_model_object()
             self.save(self.article)
