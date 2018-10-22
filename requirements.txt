@@ -15,3 +15,5 @@ nltk
 langdetect
 sortedcontainers
 pyphen
+numpy
+-e git+https://github.com/zeeguu-ecosystem/python-wordstats.git#egg=wordstats
