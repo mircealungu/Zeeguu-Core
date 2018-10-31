@@ -37,21 +37,4 @@ setuptools.setup(
         'develop': DevelopScript,
         'install': InstallScript,
     },
-    dependency_links=[
-        "git+https://github.com/mircealungu/python-wordstats.git#egg=wordstats"
-    ],
-    install_requires=(
-                        "flask>=0.10.1",
-                        "Flask-SQLAlchemy",
-                        "mysqlclient",
-                        "regex",
-                        "feedparser",
-                        "wordstats",
-                        "requests",
-                        "newspaper3k",
-                        "Faker",
-                        "nltk",
-                        "langdetect",
-                        "sortedcontainers"
-                      )
 )
