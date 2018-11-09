@@ -4,7 +4,7 @@ import sys
 
 import datetime
 
-LOGS_FOLDER = '~/.logs'
+LOGS_FOLDER = os.getenv('ZEEGUU_CORE_LOG_DIR', '~/.logs')
 
 log_dir = os.path.expanduser(LOGS_FOLDER)
 
