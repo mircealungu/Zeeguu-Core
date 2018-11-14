@@ -73,6 +73,10 @@ from .teacher import Teacher
 from .user_reading_session import UserReadingSession
 from .user_exercise_session import UserExerciseSession
 
+# bookmark scheduling
+from zeeguu.model.bookmark_priority_arts import BookmarkPriorityARTS
+
+
 # Creating the DB tables if needed
 # Note that this must be called after all the model classes are loaded
 zeeguu.db.init_app(zeeguu.app)
