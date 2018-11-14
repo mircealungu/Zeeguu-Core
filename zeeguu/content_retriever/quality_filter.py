@@ -7,6 +7,7 @@ html_read_more_patterns = [
     ,"Cet article est réservé aux abonnés" #Le Figaro
     ,"L’accès à la totalité de l’article est protégé" #Le Monde
     , "Ces informations sont destinées au groupe Bayard" #1jour1actu
+    , "Article réservé aux abonnés"
 ]
 
 plain_text_read_more_patterns = [
