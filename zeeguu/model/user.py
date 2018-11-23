@@ -288,7 +288,7 @@ class User(db.Model):
             dates.append(date_entry)
 
             if total_bookmarks > max:
-                print("we have already 50 bookmarks. be done with it!")
+                print(f"we have already {total_bookmarks} bookmarks. be done with it!")
                 return dates
 
         return dates
