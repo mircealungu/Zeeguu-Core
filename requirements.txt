@@ -1,12 +1,11 @@
-jieba3k 
-lxml 
-Pillow 
-nltk 
-pytest 
-flask 
-Flask-SQLAlchemy 
-mysqlclient 
-regex 
+jieba3k
+lxml
+Pillow
+pytest
+flask
+Flask-SQLAlchemy
+mysqlclient
+regex
 feedparser
 requests
 newspaper3k==0.2.7
@@ -15,3 +14,5 @@ nltk
 langdetect
 sortedcontainers
 pyphen
+numpy
+-e git+https://github.com/zeeguu-ecosystem/python-wordstats.git@master#egg=wordstats
