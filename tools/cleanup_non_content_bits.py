@@ -1,10 +1,10 @@
-import zeeguu
-from zeeguu.model import Article
-from zeeguu.model import RSSFeed
-from zeeguu.content_retriever.article_quality_filter import sufficient_quality_of_text, sufficient_quality
-from zeeguu.content_retriever.content_cleaner import cleanup_non_content_bits
+import zeeguu_core
+from zeeguu_core.model import Article
+from zeeguu_core.model import RSSFeed
+from zeeguu_core.content_retriever.article_quality_filter import sufficient_quality_of_text, sufficient_quality
+from zeeguu_core.content_retriever.content_cleaner import cleanup_non_content_bits
 import os
-from zeeguu import db
+from zeeguu_core import db
 
 SOURCE = 'www.theonion.com'
 

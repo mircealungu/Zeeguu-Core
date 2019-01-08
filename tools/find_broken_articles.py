@@ -1,9 +1,9 @@
-import zeeguu
-from zeeguu.model import Article
-from zeeguu.model import RSSFeed
-from zeeguu.content_retriever.quality_filter import sufficient_quality_of_text, sufficient_quality
+import zeeguu_core
+from zeeguu_core.model import Article
+from zeeguu_core.model import RSSFeed
+from zeeguu_core.content_retriever.quality_filter import sufficient_quality_of_text, sufficient_quality
 import os
-from zeeguu import db
+from zeeguu_core import db
 
 SOURCE = 'www.newscientist.com'
 TERMINATOR = '…'

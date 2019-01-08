@@ -17,16 +17,16 @@
 
 """
 
-import zeeguu
-from zeeguu.content_retriever.article_downloader import download_from_feed
-from zeeguu.model import RSSFeed
+import zeeguu_core
+from zeeguu_core.content_retriever.article_downloader import download_from_feed
+from zeeguu_core.model import RSSFeed
 
-session = zeeguu.db.session
+session = zeeguu_core.db.session
 
 counter = 0
 for feed in RSSFeed.query.all():
     counter += 1
     print(f"{counter}: DOWNLOADING {feed.title}".encode('utf-8'))
-    download_from_feed(feed, zeeguu.db.session)
+    download_from_feed(feed, zeeguu_core.db.session)
     print(f"{counter}: FINISHED DOWNLOADING {feed.title}".encode('utf-8'))
 
