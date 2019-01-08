@@ -7,7 +7,7 @@ from zeeguu_core.model.exercise import Exercise
 
 
 class ExerciseRule(BaseRule):
-    """A Rule testing class for the zeeguu.model.Exercise model class.
+    """A Rule testing class for the zeeguu_core.model.Exercise model class.
 
     Creates a Exercise object with random data and saves it to the database.
     """

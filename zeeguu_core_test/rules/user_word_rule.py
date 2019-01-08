@@ -4,7 +4,7 @@ from zeeguu_core.model.user_word import UserWord
 
 
 class UserWordRule(BaseRule):
-    """A Rule testing class for the zeeguu.model.UserWord model class.
+    """A Rule testing class for the zeeguu_core.model.UserWord model class.
 
     Creates a UserWord object with random data and saves it to the database.
     """

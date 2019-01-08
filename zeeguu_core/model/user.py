@@ -92,7 +92,7 @@ class User(db.Model):
         new_user = cls(fake_email, uuid, password, learned_language=learned_language, native_language=native_language)
 
         # # Until we find_or_create a better way of adding exercises for anonymous and new users... we simply
-        # from zeeguu.temporary.default_words import default_bookmarks
+        # from zeeguu_core.temporary.default_words import default_bookmarks
         # default_bookmarks(new_user, learned_language_code)
 
         return new_user

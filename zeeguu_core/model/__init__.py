@@ -5,7 +5,7 @@ from flask import Flask
 
 from zeeguu_core.configuration.configuration import load_configuration_or_abort
 
-# If zeeguu.app is already defined we use that object
+# If zeeguu_core.app is already defined we use that object
 # as the app for the db_init that we do later. If not,
 # we create the app here and load the corresponding configuration
 if not hasattr(zeeguu_core, "app"):
@@ -15,7 +15,7 @@ if not hasattr(zeeguu_core, "app"):
                                  'SQLALCHEMY_DATABASE_URI',
                                  'SQLALCHEMY_TRACK_MODIFICATIONS'])
 
-# Create the zeeguu.db object, which will be the superclass
+# Create the zeeguu_core.db object, which will be the superclass
 # of all the model classes
 zeeguu_core.db = flask_sqlalchemy.SQLAlchemy(zeeguu_core.app)
 # Note, that if we pass the app here, then we don't need later

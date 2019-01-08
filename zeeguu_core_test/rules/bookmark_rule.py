@@ -10,7 +10,7 @@ from zeeguu_core.model.user_word import UserWord
 
 
 class BookmarkRule(BaseRule):
-    """A Rule testing class for the zeeguu.model.Bookmark model class.
+    """A Rule testing class for the zeeguu_core.model.Bookmark model class.
 
     Creates a Bookmark object with random data and saves it to the database.
     """

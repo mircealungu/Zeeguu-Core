@@ -6,7 +6,7 @@ from zeeguu_core.model.text import Text
 
 
 class TextRule(BaseRule):
-    """A Rule testing class for the zeeguu.model.Text model class.
+    """A Rule testing class for the zeeguu_core.model.Text model class.
 
     Creates a Text object with random data and saves it to the database.
     """

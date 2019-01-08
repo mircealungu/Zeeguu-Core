@@ -4,7 +4,7 @@ from zeeguu_core.model.smartwatch.watch_interaction_event import WatchInteractio
 
 
 class WatchInterationEventRule(BaseRule):
-    """"A Rule testing class for the zeeguu.model.smartwatch.watch_interation_event model class.
+    """"A Rule testing class for the zeeguu_core.model.smartwatch.watch_interation_event model class.
     """
 
     def __init__(self, bookmark, watch_event_type=None):

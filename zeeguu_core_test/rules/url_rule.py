@@ -4,7 +4,7 @@ from zeeguu_core.model.url import Url
 
 
 class UrlRule(BaseRule):
-    """A Rule testing class for the zeeguu.model.Url model class.
+    """A Rule testing class for the zeeguu_core.model.Url model class.
 
     Creates a Url object with random data and saves it to the database.
     """
