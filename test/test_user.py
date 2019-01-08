@@ -4,9 +4,9 @@ import uuid
 from collections import Counter
 from datetime import datetime, timedelta
 
-from tests_zeeguu.model_test_mixin import ModelTestMixIn
-from tests_zeeguu.rules.bookmark_rule import BookmarkRule
-from tests_zeeguu.rules.user_rule import UserRule
+from test.model_test_mixin import ModelTestMixIn
+from test.rules.bookmark_rule import BookmarkRule
+from test.rules.user_rule import UserRule
 from zeeguu.model import User
 
 

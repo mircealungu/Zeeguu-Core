@@ -3,7 +3,7 @@ import random
 from sqlalchemy.orm.exc import NoResultFound
 
 import zeeguu
-from tests_zeeguu.rules.base_rule import BaseRule
+from test.rules.base_rule import BaseRule
 from zeeguu.model.exercise_source import ExerciseSource
 
 

@@ -1,5 +1,5 @@
-from tests_zeeguu.model_test_mixin import ModelTestMixIn
-from tests_zeeguu.rules.user_rule import UserRule
+from test.model_test_mixin import ModelTestMixIn
+from test.rules.user_rule import UserRule
 from zeeguu.model.bookmark_priority_arts import BookmarkPriorityARTS
 from zeeguu.word_scheduling import arts
 

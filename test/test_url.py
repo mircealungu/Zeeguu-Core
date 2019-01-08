@@ -1,7 +1,7 @@
 from threading import Thread
 from unittest import TestCase
-from tests_zeeguu.model_test_mixin import ModelTestMixIn
-from tests_zeeguu.rules.url_rule import UrlRule
+from test.model_test_mixin import ModelTestMixIn
+from test.rules.url_rule import UrlRule
 import zeeguu.model
 from zeeguu.model import Url, DomainName
 

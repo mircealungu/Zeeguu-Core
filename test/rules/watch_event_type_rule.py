@@ -1,4 +1,4 @@
-from tests_zeeguu.rules.base_rule import BaseRule
+from test.rules.base_rule import BaseRule
 from zeeguu.model.smartwatch.watch_event_type import WatchEventType
 
 

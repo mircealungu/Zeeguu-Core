@@ -1,5 +1,5 @@
-from tests_zeeguu.rules.base_rule import BaseRule
-from tests_zeeguu.rules.language_rule import LanguageRule
+from test.rules.base_rule import BaseRule
+from test.rules.language_rule import LanguageRule
 from zeeguu.model.user_word import UserWord
 
 

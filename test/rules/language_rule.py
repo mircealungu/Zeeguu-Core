@@ -3,7 +3,7 @@ import random
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm.exc import NoResultFound, ObjectDeletedError
 
-from tests_zeeguu.rules.base_rule import BaseRule
+from test.rules.base_rule import BaseRule
 from zeeguu.model.language import Language
 
 

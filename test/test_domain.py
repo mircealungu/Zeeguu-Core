@@ -4,9 +4,9 @@ from unittest import TestCase
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 import zeeguu
-from tests_zeeguu.model_test_mixin import ModelTestMixIn
-from tests_zeeguu.rules.url_rule import UrlRule
-from tests_zeeguu.rules.user_rule import UserRule
+from test.model_test_mixin import ModelTestMixIn
+from test.rules.url_rule import UrlRule
+from test.rules.user_rule import UserRule
 from zeeguu.model.domain_name import DomainName
 from zeeguu.model.url import Url
 

@@ -1,12 +1,12 @@
 from datetime import datetime, timedelta
 from random import randint
 
-from tests_zeeguu.rules.article_rule import ArticleRule
-from tests_zeeguu.rules.base_rule import BaseRule
-from tests_zeeguu.rules.language_rule import LanguageRule
-from tests_zeeguu.rules.rss_feed_rule import RSSFeedRule
-from tests_zeeguu.rules.url_rule import UrlRule
-from tests_zeeguu.rules.user_rule import UserRule
+from test.rules.article_rule import ArticleRule
+from test.rules.base_rule import BaseRule
+from test.rules.language_rule import LanguageRule
+from test.rules.rss_feed_rule import RSSFeedRule
+from test.rules.url_rule import UrlRule
+from test.rules.user_rule import UserRule
 from zeeguu.model import Article
 from zeeguu.model.user_article import UserArticle
 

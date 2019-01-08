@@ -1,10 +1,10 @@
 from unittest import TestCase
 
-from tests_zeeguu.rules.user_rule import UserRule
+from test.rules.user_rule import UserRule
 
-from tests_zeeguu.rules.language_rule import LanguageRule
+from test.rules.language_rule import LanguageRule
 
-from tests_zeeguu.model_test_mixin import ModelTestMixIn
+from test.model_test_mixin import ModelTestMixIn
 from zeeguu.language.strategies.flesch_kincaid_difficulty_estimator import \
     FleschKincaidDifficultyEstimator
 

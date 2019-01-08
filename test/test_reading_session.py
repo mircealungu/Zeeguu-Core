@@ -1,7 +1,7 @@
 from unittest import TestCase
-from tests_zeeguu.model_test_mixin import ModelTestMixIn
+from test.model_test_mixin import ModelTestMixIn
 import zeeguu
-from tests_zeeguu.rules.user_reading_session_rule import ReadingSessionRule
+from test.rules.user_reading_session_rule import ReadingSessionRule
 from zeeguu.constants import UMR_OPEN_ARTICLE_ACTION, UMR_ARTICLE_CLOSED_ACTION
 from zeeguu.model.user_reading_session import UserReadingSession
 from datetime import datetime, timedelta

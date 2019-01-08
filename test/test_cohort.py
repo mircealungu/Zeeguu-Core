@@ -1,9 +1,9 @@
 from unittest import TestCase
 
-from tests_zeeguu.model_test_mixin import ModelTestMixIn
+from test.model_test_mixin import ModelTestMixIn
 
 import zeeguu
-from tests_zeeguu.rules.cohort_rule import CohortRule
+from test.rules.cohort_rule import CohortRule
 from zeeguu.model.teacher import Teacher
 from zeeguu.model.teacher_cohort_map import TeacherCohortMap
 

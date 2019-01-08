@@ -2,9 +2,9 @@ from unittest import TestCase
 
 from sqlalchemy.orm.exc import NoResultFound
 
-from tests_zeeguu.model_test_mixin import ModelTestMixIn
-from tests_zeeguu.rules.language_rule import LanguageRule
-from tests_zeeguu.rules.user_rule import UserRule
+from test.model_test_mixin import ModelTestMixIn
+from test.rules.language_rule import LanguageRule
+from test.rules.user_rule import UserRule
 from zeeguu.model.language import Language
 
 

@@ -1,6 +1,6 @@
-from tests_zeeguu.rules.base_rule import BaseRule
-from tests_zeeguu.rules.language_rule import LanguageRule
-from tests_zeeguu.rules.user_rule import UserRule
+from test.rules.base_rule import BaseRule
+from test.rules.language_rule import LanguageRule
+from test.rules.user_rule import UserRule
 from zeeguu.model.cohort import Cohort
 from zeeguu.model.teacher_cohort_map import TeacherCohortMap
 

@@ -1,9 +1,9 @@
 from datetime import datetime
 
-from tests_zeeguu.model_test_mixin import ModelTestMixIn
-from tests_zeeguu.rules.user_rule import UserRule
-from tests_zeeguu.rules.watch_event_type_rule import WatchEventTypeRule
-from tests_zeeguu.rules.watch_interaction_event_rule import WatchInterationEventRule
+from test.model_test_mixin import ModelTestMixIn
+from test.rules.user_rule import UserRule
+from test.rules.watch_event_type_rule import WatchEventTypeRule
+from test.rules.watch_interaction_event_rule import WatchInterationEventRule
 from zeeguu.model.smartwatch.watch_event_type import WatchEventType
 from zeeguu.model.smartwatch.watch_interaction_event import WatchInteractionEvent
 from zeeguu.model.user_activitiy_data import UserActivityData

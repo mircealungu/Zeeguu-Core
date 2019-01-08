@@ -1,5 +1,5 @@
 
-from tests_zeeguu.rules.base_rule import BaseRule
+from test.rules.base_rule import BaseRule
 from zeeguu.model.url import Url
 
 

@@ -1,7 +1,7 @@
-from tests_zeeguu.rules.base_rule import BaseRule
-from tests_zeeguu.rules.bookmark_rule import BookmarkRule
-from tests_zeeguu.rules.exercise_rule import ExerciseRule
-from tests_zeeguu.rules.language_rule import LanguageRule
+from test.rules.base_rule import BaseRule
+from test.rules.bookmark_rule import BookmarkRule
+from test.rules.exercise_rule import ExerciseRule
+from test.rules.language_rule import LanguageRule
 from zeeguu.model.user import User
 
 

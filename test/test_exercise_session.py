@@ -1,8 +1,8 @@
 from unittest import TestCase
-from tests_zeeguu.model_test_mixin import ModelTestMixIn
+from test.model_test_mixin import ModelTestMixIn
 import zeeguu
-from tests_zeeguu.rules.user_exercise_session_rule import ExerciseSessionRule
-from tests_zeeguu.rules.user_rule import UserRule
+from test.rules.user_exercise_session_rule import ExerciseSessionRule
+from test.rules.user_rule import UserRule
 from zeeguu.model.user_exercise_session import UserExerciseSession
 from zeeguu.model.exercise import Exercise
 from zeeguu.model.bookmark import bookmark_exercise_mapping, Bookmark

@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
 from random import randint
 
-from tests_zeeguu.rules.base_rule import BaseRule
-from tests_zeeguu.rules.language_rule import LanguageRule
-from tests_zeeguu.rules.url_rule import UrlRule
+from test.rules.base_rule import BaseRule
+from test.rules.language_rule import LanguageRule
+from test.rules.url_rule import UrlRule
 from zeeguu.model import RSSFeed, Language, Url
 
 URL_OF_FEED_ONE = "http://www.spiegel.de/index.rss"

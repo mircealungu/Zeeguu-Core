@@ -1,5 +1,5 @@
-from tests_zeeguu.rules.base_rule import BaseRule
-from tests_zeeguu.rules.watch_event_type_rule import WatchEventTypeRule
+from test.rules.base_rule import BaseRule
+from test.rules.watch_event_type_rule import WatchEventTypeRule
 from zeeguu.model.smartwatch.watch_interaction_event import WatchInteractionEvent
 
 

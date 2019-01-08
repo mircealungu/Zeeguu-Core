@@ -2,9 +2,9 @@ import random
 
 from wordstats.loading_from_hermit import load_language_from_hermit
 
-from tests_zeeguu.model_test_mixin import ModelTestMixIn
-from tests_zeeguu.rules.language_rule import LanguageRule
-from tests_zeeguu.rules.user_word_rule import UserWordRule
+from test.model_test_mixin import ModelTestMixIn
+from test.rules.language_rule import LanguageRule
+from test.rules.user_word_rule import UserWordRule
 from zeeguu.model import UserWord
 
 

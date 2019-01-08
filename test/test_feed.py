@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
 from unittest import TestCase
 
-from tests_zeeguu.model_test_mixin import ModelTestMixIn
+from test.model_test_mixin import ModelTestMixIn
 
-from tests_zeeguu.rules.rss_feed_rule import RSSFeedRule
+from test.rules.rss_feed_rule import RSSFeedRule
 from zeeguu.content_retriever.article_downloader import download_from_feed
 
 

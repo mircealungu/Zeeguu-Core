@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 from random import randint
-from tests_zeeguu.rules.base_rule import BaseRule
-from tests_zeeguu.rules.cohort_rule import CohortRule
-from tests_zeeguu.rules.user_rule import UserRule
+from test.rules.base_rule import BaseRule
+from test.rules.cohort_rule import CohortRule
+from test.rules.user_rule import UserRule
 from zeeguu.model.user_exercise_session import UserExerciseSession
 
 class ExerciseSessionRule(BaseRule):

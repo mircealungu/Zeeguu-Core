@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from tests_zeeguu.model_test_mixin import ModelTestMixIn
+from test.model_test_mixin import ModelTestMixIn
 from zeeguu.language.difficulty_estimator_factory import DifficultyEstimatorFactory
 from zeeguu.language.strategies.default_difficulty_estimator import DefaultDifficultyEstimator
 from zeeguu.language.strategies.flesch_kincaid_difficulty_estimator import \

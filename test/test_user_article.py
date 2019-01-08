@@ -1,12 +1,12 @@
 from unittest import TestCase
 
-from tests_zeeguu.model_test_mixin import ModelTestMixIn
+from test.model_test_mixin import ModelTestMixIn
 
 import zeeguu
-from tests_zeeguu.rules.article_rule import ArticleRule
-from tests_zeeguu.rules.language_rule import LanguageRule
-from tests_zeeguu.rules.user_article_rule import UserArticleRule
-from tests_zeeguu.rules.user_rule import UserRule
+from test.rules.article_rule import ArticleRule
+from test.rules.language_rule import LanguageRule
+from test.rules.user_article_rule import UserArticleRule
+from test.rules.user_rule import UserRule
 from zeeguu.model import Topic
 from zeeguu.model.user_article import UserArticle
 

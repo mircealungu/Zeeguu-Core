@@ -2,10 +2,10 @@ import random
 from datetime import datetime
 
 import zeeguu
-from tests_zeeguu.model_test_mixin import ModelTestMixIn
-from tests_zeeguu.rules.exercise_rule import ExerciseRule
-from tests_zeeguu.rules.outcome_rule import OutcomeRule
-from tests_zeeguu.rules.user_rule import UserRule
+from test.model_test_mixin import ModelTestMixIn
+from test.rules.exercise_rule import ExerciseRule
+from test.rules.outcome_rule import OutcomeRule
+from test.rules.user_rule import UserRule
 from zeeguu.word_scheduling.arts.ab_testing import ABTesting
 from zeeguu.word_scheduling import arts
 

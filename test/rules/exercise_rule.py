@@ -1,8 +1,8 @@
 import random
 
-from tests_zeeguu.rules.base_rule import BaseRule
-from tests_zeeguu.rules.outcome_rule import OutcomeRule
-from tests_zeeguu.rules.source_rule import SourceRule
+from test.rules.base_rule import BaseRule
+from test.rules.outcome_rule import OutcomeRule
+from test.rules.source_rule import SourceRule
 from zeeguu.model.exercise import Exercise
 
 
