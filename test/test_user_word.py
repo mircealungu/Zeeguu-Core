@@ -38,13 +38,6 @@ class UserWordTest(ModelTestMixIn):
 
         assert all([word in list_retrieved for word in list_random_user_words])
 
-    def test_find_by_language(self):
-        random_language = LanguageRule().random
-        list_random_user_words = [UserWordRule(word=self.faker.word(), language=random_language).user_word for _ in range(random.randint(2, 5))]
-        list_retrieved = UserWord.find_by_language(random_language)
-
-        assert all([word in list_retrieved for word in list_random_user_words])
-
     def test_exists(self):
         user_word_in_db = UserWordRule().user_word
         assert UserWord.exists(user_word_in_db.word, user_word_in_db.language)

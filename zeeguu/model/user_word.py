@@ -90,11 +90,6 @@ class UserWord(db.Model, util.JSONSerializable):
         return cls.query.all()
 
     @classmethod
-    def find_by_language(cls, language):
-        return (cls.query.filter(cls.language == language)
-                .all())
-
-    @classmethod
     def exists(cls, word, language):
         try:
             cls.query.filter_by(
