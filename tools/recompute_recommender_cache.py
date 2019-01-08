@@ -8,11 +8,11 @@
 
 """
 
-import zeeguu
-from zeeguu.content_recommender.mixed_recommender import reading_preferences_hash, recompute_recommender_cache_if_needed
-from zeeguu.model import User, ArticlesCache
+import zeeguu_core
+from zeeguu_core.content_recommender.mixed_recommender import reading_preferences_hash, recompute_recommender_cache_if_needed
+from zeeguu_core.model import User, ArticlesCache
 
-session = zeeguu.db.session
+session = zeeguu_core.db.session
 
 
 def hashes_of_existing_cached_preferences():

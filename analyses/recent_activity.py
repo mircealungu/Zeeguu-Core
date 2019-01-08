@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3.6
 
-from zeeguu.model import UserActivityData
+from zeeguu_core.model import UserActivityData
 
 all_events = UserActivityData.find(event_filter='UMR - USER FEEDBACK')
 

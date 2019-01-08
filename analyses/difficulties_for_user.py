@@ -1,7 +1,7 @@
 #!/usr/local/bin/python3.6
 from sqlalchemy.orm.exc import NoResultFound
 
-from zeeguu.model import UserActivityData, User, Article
+from zeeguu_core.model import UserActivityData, User, Article
 
 users = User.query.order_by(User.id.desc()).all()
 

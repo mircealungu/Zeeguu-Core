@@ -9,10 +9,10 @@
 
 """
 
-import zeeguu
-from zeeguu.model import Article, Language, LocalizedTopic
+import zeeguu_core
+from zeeguu_core.model import Article, Language, LocalizedTopic
 
-session = zeeguu.db.session
+session = zeeguu_core.db.session
 
 counter = 0
 

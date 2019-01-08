@@ -18,8 +18,8 @@
 #
 
 
-from zeeguu.model import Article, UserArticle, UserActivityData
-from zeeguu import db
+from zeeguu_core.model import Article, UserArticle, UserActivityData
+from zeeguu_core import db
 
 dbs = db.session
 

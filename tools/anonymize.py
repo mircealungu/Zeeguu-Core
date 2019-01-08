@@ -10,8 +10,8 @@
 #
 
 
-from zeeguu.model import User
-from zeeguu import db
+from zeeguu_core.model import User
+from zeeguu_core import db
 from faker import Faker
 fake = Faker()
 
