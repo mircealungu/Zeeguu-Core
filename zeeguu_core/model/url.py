@@ -1,14 +1,14 @@
 import re
+from urllib.parse import urlparse
+from urllib.request import urlopen
 
 import sqlalchemy.orm
+from requests import Request
 from sqlalchemy import UniqueConstraint
 
 import zeeguu_core
 import time
 import random
-
-from urllib.parse import urlparse
-from urllib.request import Request, urlopen
 
 db = zeeguu_core.db
 
@@ -122,7 +122,14 @@ class Url(db.Model):
                 .one())
 
     @classmethod
-    def extract_canonical_url(cls, url: str):
+    def follow_redirects_and_extract_canonical_url(cls, url: str):
+        """
+            does two things...
+            follows the redirects
+            and extracts the canonical url of the final
+        :param url:
+        :return:
+        """
 
         if not hasattr(cls, 'canonical_url_cache'):
             cls.canonical_url_cache = {}
@@ -143,3 +150,11 @@ class Url(db.Model):
 
         cls.canonical_url_cache[url] = canonical_url
         return canonical_url
+
+    @classmethod
+    def extract_canonical_url(self, url: str):
+
+        from urllib.parse import urlparse
+        u = urlparse(url)
+
+        return f"{u.scheme}://{u.netloc}{u.path}"

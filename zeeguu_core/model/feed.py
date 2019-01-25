@@ -4,6 +4,7 @@ import time
 from datetime import datetime
 
 import feedparser
+import requests
 import sqlalchemy.orm.exc
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -121,7 +122,8 @@ class RSSFeed(db.Model):
                 result = item.updated_parsed
                 return result
 
-        feed_data = feedparser.parse(self.url.as_string())
+        response = requests.get(self.url.as_string())
+        feed_data = feedparser.parse(response.text)
 
         feed_items = []
         for item in feed_data.entries:

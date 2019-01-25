@@ -24,14 +24,14 @@ def ntlk_install_packages():
     nltk.download('averaged_perceptron_tagger')
 
 setuptools.setup(
-    name="zeeguu",
+    name="zeeguu_core",
     version="0.1",
     packages=setuptools.find_packages(),
     include_package_data=True,
     zip_safe=False,
     author="Zeeguu Team",
     author_email="me@mir.lu",
-    description="API for Zeeguu",
+    description="Core for Zeeguu",
     keywords="second language acquisition api",
     cmdclass={
         'develop': DevelopScript,

@@ -91,10 +91,6 @@ class User(db.Model):
 
         new_user = cls(fake_email, uuid, password, learned_language=learned_language, native_language=native_language)
 
-        # # Until we find_or_create a better way of adding exercises for anonymous and new users... we simply
-        # from zeeguu_core.temporary.default_words import default_bookmarks
-        # default_bookmarks(new_user, learned_language_code)
-
         return new_user
 
     def __repr__(self):
@@ -323,37 +319,16 @@ class User(db.Model):
                 texts_by_url.setdefault(bookmark.text.url, set()).add(bookmark.text)
         return most_recent_n_days, urls_by_date, texts_by_url
 
-    def bookmarks_to_study(self, bookmark_count=10, generate_bookmarks_if_needed=False):
+    def bookmarks_to_study(self, bookmark_count=10):
         """
 
         :param bookmark_count: by default we recommend 10 words
 
-        :param generate_bookmarks_if_needed: force generating some example words, even if
-            there are none in the history of the user. Before this param was introduced,
-             the system would always generate some examples here...
         :return:
         """
         from zeeguu_core.word_scheduling import arts
 
         bookmarks = arts.bookmarks_to_study(self, bookmark_count, zeeguu_core.db)
-
-        if len(bookmarks) == 0 and self.bookmark_count() == 0 and generate_bookmarks_if_needed:
-            # we have zero bookmarks in our account... better to generate some
-            # bookmarks to study than just whistle...
-            # we might be in a situation where we're on the watch for example...
-            # in this case, we add some new ones to the user's account
-            from zeeguu_core.temporary.default_words import create_default_bookmarks
-            new_bookmarks = create_default_bookmarks(zeeguu_core.db.session, self, self.learned_language.code)
-
-            for each_new in new_bookmarks:
-                # try to find if the user has seen this in the past
-                bookmarks.append(each_new)
-                zeeguu_core.db.session.add(each_new)
-
-                if len(bookmarks) == bookmark_count:
-                    break
-
-            zeeguu_core.db.session.commit()
 
         return bookmarks
 

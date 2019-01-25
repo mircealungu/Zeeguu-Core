@@ -5,13 +5,7 @@ from zeeguu_core_test.rules.base_rule import BaseRule
 from zeeguu_core_test.rules.language_rule import LanguageRule
 from zeeguu_core_test.rules.url_rule import UrlRule
 from zeeguu_core.model import RSSFeed, Language, Url
-
-URL_OF_FEED_ONE = "http://www.spiegel.de/index.rss"
-IMG_URL_OF_FEED_ONE = "http://www.spiegel.de/spiegel.png"
-LANG_OF_FEED_ONE = "de"
-URL_OF_FEED_TWO = "http://www.lefigaro.fr/rss/figaro_international.xml"
-IMG_URL_OF_FEED_TWO = "http://www.lefigaro.fr/favicon.png"
-LANG_OF_FEED_TWO = "fr"
+from zeeguu_core_test.urls_for_test import spiegel_png, spiegel_rss
 
 
 class RSSFeedRule(BaseRule):
@@ -28,19 +22,12 @@ class RSSFeedRule(BaseRule):
         self.feed = self.rss_feed
         self.save(self.rss_feed)
 
-        lang1 = Language.find_or_create(LANG_OF_FEED_ONE)
-        url = Url.find_or_create(self.db.session, URL_OF_FEED_ONE)
-        image_url = Url.find_or_create(self.db.session, IMG_URL_OF_FEED_ONE)
+        lang1 = Language.find_or_create('de')
+        url = Url.find_or_create(self.db.session, spiegel_rss)
+        image_url = Url.find_or_create(self.db.session, spiegel_png)
         self.feed1 = RSSFeed.find_or_create(self.db.session, url, "", "", image_url=image_url,
                                             language=lang1)
         self.save(self.feed1)
-
-        lang2 = Language.find_or_create(LANG_OF_FEED_TWO)
-        url2 = Url.find_or_create(self.db.session, URL_OF_FEED_TWO)
-        image_url2 = Url.find_or_create(self.db.session, IMG_URL_OF_FEED_TWO)
-        self.feed2 = RSSFeed.find_or_create(self.db.session,
-                                            url2, "", "", image_url=image_url2, language=lang2)
-        self.save(self.feed2)
 
     @staticmethod
     def _exists_in_db(obj):

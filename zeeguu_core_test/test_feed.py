@@ -14,13 +14,9 @@ class FeedTest(ModelTestMixIn, TestCase):
         self.spiegel = RSSFeedRule().feed1
         download_from_feed(self.spiegel, self.db.session, 3)
 
-        self.telegraaf = RSSFeedRule().feed2
-        download_from_feed(self.telegraaf, self.db.session, 3)
-
     def test_feed_items(self):
-        assert len(self.spiegel.get_articles()) == 3
-        assert len(self.spiegel.get_articles(limit=2)) == 2
-        assert len(self.telegraaf.get_articles()) == 3
+        assert len(self.spiegel.get_articles()) == 2
+        assert len(self.spiegel.get_articles(limit=1)) == 1
 
     def test_after_date_works(self):
         tomorrow = datetime.now() + timedelta(days=1)

@@ -10,6 +10,8 @@ from zeeguu_core.content_retriever.article_downloader import download_from_feed,
 from zeeguu_core.content_retriever.quality_filter import sufficient_quality
 from zeeguu_core.model import Topic, LocalizedTopic, ArticleWord
 
+from .urls_for_test import *
+
 
 class TestRetrieveAndCompute(ModelTestMixIn):
     def setUp(self):
@@ -58,39 +60,33 @@ class TestRetrieveAndCompute(ModelTestMixIn):
         else:
             assert (article in article_word.articles)
 
-    def testSufficientQuality(self):
-        u = "https://www.propublica.org/article/" \
-            "warren-buffett-recommends-investing-in-index-funds-but-many-of-his-employees-do-not-have-that-option"
+    def test_sufficient_quality(self):
 
-        art = newspaper.Article(u)
+        art = newspaper.Article(investing_in_index_funds)
         art.download()
         art.parse()
 
         assert (sufficient_quality(art, {}))
 
-    def testNewScientistOverlay(self):
-        u = "https://www.newscientist.com/" \
-            "article/2164774-in-30-years-asian-pacific-fish-will-be-gone-and-then-were-next/"
+    def test_new_scientist_overlay(self):
 
-        art = newspaper.Article(u)
+        art = newspaper.Article(fish_will_be_gone)
         art.download()
         art.parse()
 
         assert (not sufficient_quality(art, {}))
 
-    def testLeMondeEditionAbonee(self):
-        u = "http://www.lemonde.fr/ameriques/article/" \
-            "2018/03/24/quand-les-vols-americains-se-transforment-en-arche-de-noe_5275773_3222.html"
+    def test_le_monde_subscription(self):
 
-        art = newspaper.Article(u)
+        art = newspaper.Article(vols_americans)
         art.download()
         art.parse()
 
         assert (not sufficient_quality(art, {}))
 
-    def testFragmentRemoval(self):
-        url = 'https://www.theonion.com/u-s-military-announces-plan-to-consolidate-all-wars-in-1824018300'
-        art = newspaper.Article(url)
+    def test_fragment_removal(self):
+
+        art = newspaper.Article(onion_us_military)
         art.download()
         art.parse()
 

@@ -10,6 +10,7 @@ from datetime import datetime
 import newspaper
 import re
 
+import requests_mock
 import zeeguu_core
 
 from zeeguu_core import model
@@ -24,9 +25,11 @@ LOG_CONTEXT = "FEED RETRIEVAL"
 
 def _url_after_redirects(url):
     # solve redirects and save the clean url
-    response = requests.get(url)
-    return response.url
-
+    try:
+        response = requests.get(url)
+        return response.url
+    except requests_mock.exceptions.NoMockAddress:
+        return url
 
 def download_from_feed(feed: RSSFeed, session, limit=1000):
     """
@@ -52,7 +55,7 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
     if feed.last_crawled_time:
         last_retrieval_time_from_DB = feed.last_crawled_time
         zeeguu_core.log(f"last retrieval time from DB = {last_retrieval_time_from_DB}")
-
+    items = feed.feed_items()
     for feed_item in feed.feed_items():
 
         if downloaded >= limit:

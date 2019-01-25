@@ -6,10 +6,9 @@ import zeeguu_core
 from zeeguu_core_test.rules.article_rule import ArticleRule
 from zeeguu_core_test.rules.language_rule import LanguageRule
 from zeeguu_core.model import Topic, Article
+from zeeguu_core_test.urls_for_test import plane_crashes, formation_professionnelle
 
 session = zeeguu_core.db.session
-
-SOME_ARTICLE_URL = 'http://www.lemonde.fr/idees/article/2018/02/21/formation-le-big-bang-attendra_5260297_3232.html'
 
 
 class ArticleTest(ModelTestMixIn, TestCase):
@@ -33,10 +32,9 @@ class ArticleTest(ModelTestMixIn, TestCase):
         assert len(self.article1.topics) == 2
 
     def test_find_or_create(self):
-        self.new_art = Article.find_or_create(session, SOME_ARTICLE_URL)
+        self.new_art = Article.find_or_create(session, formation_professionnelle)
         assert (self.new_art.fk_difficulty)
 
     def test_load_article_without_language_information(self):
-        url = 'https://edition.cnn.com/2018/03/12/asia/kathmandu-plane-crash/index.html'
-        art = Article.find_or_create(session, url)
+        art = Article.find_or_create(session, plane_crashes)
         assert (art)

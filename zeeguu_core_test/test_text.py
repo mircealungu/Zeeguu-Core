@@ -13,4 +13,4 @@ class TextTest(ModelTestMixIn):
         self.bookmark_rule = BookmarkRule(self.user_rule.user)
 
     def test_user_word_count(self):
-        self.assertIsNotNone (self.text_rule.text.content_hash)
+        self.assertIsNotNone(self.text_rule.text.content_hash)
