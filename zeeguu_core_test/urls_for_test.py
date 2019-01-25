@@ -4,6 +4,7 @@ from zeeguu_core.model import Url
 
 TESTDATA_FOLDER = os.path.join(os.path.dirname(__file__), "test_data")
 
+pelosi_sperrt_president = "http://www.spiegel.de/politik/ausland/nancy-pelosi-trump-soll-erst-nach-beendigung-des-shutdowns-rede-halten-duerfen-a-1249611.html"
 onion_us_military = "https://www.theonion.com/u-s-military-announces-plan-to-consolidate-all-wars-in-1824018300"
 
 vols_americans = "http://www.lemonde.fr/ameriques/article/2018/03/24/quand-les-vols-americains-se-transforment-en-arche-de-noe_5275773_3222.html"
@@ -40,7 +41,8 @@ test_urls = {
     spiegel_militar: 'spiegel_militar.html',
     diesel_fahrverbote: 'diesel_fahrverbote.html',
     formation_professionnelle: 'formation_professionnelle.html',
-    plane_crashes: 'plane_crashes.html'
+    plane_crashes: 'plane_crashes.html',
+    pelosi_sperrt_president: 'pelosi_sperrt_president.html'
 
 }
 

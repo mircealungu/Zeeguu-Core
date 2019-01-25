@@ -25,11 +25,9 @@ LOG_CONTEXT = "FEED RETRIEVAL"
 
 def _url_after_redirects(url):
     # solve redirects and save the clean url
-    try:
-        response = requests.get(url)
-        return response.url
-    except requests_mock.exceptions.NoMockAddress:
-        return url
+    response = requests.get(url)
+    return response.url
+
 
 def download_from_feed(feed: RSSFeed, session, limit=1000):
     """
@@ -124,7 +122,8 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
                     try:
                         session.commit()
                     except Exception as e:
-                        zeeguu_core.log(f'{LOG_CONTEXT}: Something went wrong when committing words/topic to article: {e}')
+                        zeeguu_core.log(
+                            f'{LOG_CONTEXT}: Something went wrong when committing words/topic to article: {e}')
 
             except Exception as e:
                 # raise e
@@ -151,7 +150,6 @@ def add_topics(new_article, session):
 
 
 def add_searches(title, url, new_article, session):
-
     """
     This method takes the relevant keywords from the title
     and URL, and tries to properly clean them.
@@ -184,7 +182,7 @@ def add_searches(title, url, new_article, session):
             session.add(article_word_obj)
 
 
-def strip_article_title_word(word:str):
+def strip_article_title_word(word: str):
     """
 
         Used when tokenizing the titles of articles
