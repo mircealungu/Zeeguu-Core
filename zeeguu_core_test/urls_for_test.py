@@ -53,8 +53,5 @@ def mock_url(m, url):
 
 
 def mock_urls(m):
-    # Url.canonical_url_cache = {}
     for each in test_urls.keys():
         mock_url(m, each)
-        # Url.canonical_url_cache[each] = each
-
