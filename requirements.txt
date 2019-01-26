@@ -10,6 +10,7 @@ feedparser
 requests
 newspaper3k==0.2.7
 Faker
+requests_mock
 nltk
 langdetect
 sortedcontainers
