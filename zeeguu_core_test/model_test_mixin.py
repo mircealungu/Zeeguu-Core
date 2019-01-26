@@ -5,7 +5,7 @@ from faker import Faker
 
 from unittest import TestCase
 
-from .urls_for_test import mock_urls
+from .urls_for_test import mock_requests_get
 
 
 class ModelTestMixIn(TestCase):
@@ -27,6 +27,10 @@ class ModelTestMixIn(TestCase):
         self.db.drop_all()
 
     def run(self, result=None):
+
+        # For the unit tests we use several pages
+        # that are stored locally, so we mock requests.get
+        # to return the content of the
         with requests_mock.Mocker() as m:
-            mock_urls(m)
+            mock_requests_get(m)
             super(ModelTestMixIn, self).run(result)

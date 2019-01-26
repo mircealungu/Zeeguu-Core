@@ -47,13 +47,13 @@ test_urls = {
 }
 
 
-def mock_url(m, url):
+def mock_requests_get_for_url(m, url):
     f = open(os.path.join(TESTDATA_FOLDER, test_urls[url]))
     content = (f.read())
 
     m.get(url, text=content)
 
 
-def mock_urls(m):
+def mock_requests_get(m):
     for each in test_urls.keys():
-        mock_url(m, each)
+        mock_requests_get_for_url(m, each)
