@@ -121,35 +121,36 @@ class Url(db.Model):
                 .filter(cls.domain == d)
                 .one())
 
-    @classmethod
-    def follow_redirects_and_extract_canonical_url(cls, url: str):
-        """
-            does two things...
-            follows the redirects
-            and extracts the canonical url of the final
-        :param url:
-        :return:
-        """
-
-        if not hasattr(cls, 'canonical_url_cache'):
-            cls.canonical_url_cache = {}
-
-        cached = cls.canonical_url_cache.get(url, None)
-        if cached:
-            return cached
-
-        without_zeeguu_prefix = url.split('articleURL=')[-1]
-
-        req = Request(without_zeeguu_prefix, headers={'User-Agent': 'Chrome/35.0.1916.47'})
-        res = urlopen(req)
-        final = res.geturl()
-
-        o = urlparse(final)
-
-        canonical_url = o.scheme + "://" + o.netloc + o.path
-
-        cls.canonical_url_cache[url] = canonical_url
-        return canonical_url
+    # To delete... nobody seems to use this.
+    # @classmethod
+    # def follow_redirects_and_extract_canonical_url(cls, url: str):
+    #     """
+    #         does two things...
+    #         follows the redirects
+    #         and extracts the canonical url of the final
+    #     :param url:
+    #     :return:
+    #     """
+    #
+    #     if not hasattr(cls, 'canonical_url_cache'):
+    #         cls.canonical_url_cache = {}
+    #
+    #     cached = cls.canonical_url_cache.get(url, None)
+    #     if cached:
+    #         return cached
+    #
+    #     without_zeeguu_prefix = url.split('articleURL=')[-1]
+    #
+    #     req = Request(without_zeeguu_prefix, headers={'User-Agent': 'Chrome/35.0.1916.47'})
+    #     res = urlopen(req)
+    #     final = res.geturl()
+    #
+    #     o = urlparse(final)
+    #
+    #     canonical_url = o.scheme + "://" + o.netloc + o.path
+    #
+    #     cls.canonical_url_cache[url] = canonical_url
+    #     return canonical_url
 
     @classmethod
     def extract_canonical_url(self, url: str):
