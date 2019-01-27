@@ -16,7 +16,7 @@ class FeedTest(ModelTestMixIn, TestCase):
 
     def test_feed_items(self):
         assert len(self.spiegel.get_articles()) == 3
-        assert len(self.spiegel.get_articles(limit=1)) == 1
+        assert len(self.spiegel.get_articles(limit=2)) == 2
 
     def test_after_date_works(self):
         tomorrow = datetime.now() + timedelta(days=1)
