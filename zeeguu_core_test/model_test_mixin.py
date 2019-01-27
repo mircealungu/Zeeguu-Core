@@ -28,9 +28,10 @@ class ModelTestMixIn(TestCase):
 
     def run(self, result=None):
 
-        # For the unit tests we use several pages
-        # that are stored locally, so we mock requests.get
-        # to return the content of the
+        # For the unit tests we use several HTML documents
+        # that are stored locally so we don't have to download
+        # them for every test
+        # To do this we mock requests.get 
         with requests_mock.Mocker() as m:
             mock_requests_get(m)
             super(ModelTestMixIn, self).run(result)
