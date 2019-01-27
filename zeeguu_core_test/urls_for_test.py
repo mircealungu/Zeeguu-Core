@@ -1,7 +1,5 @@
 import os
 
-from zeeguu_core.model import Url
-
 TESTDATA_FOLDER = os.path.join(os.path.dirname(__file__), "test_data")
 
 pelosi_sperrt_president = "http://www.spiegel.de/politik/ausland/nancy-pelosi-trump-soll-erst-" \
