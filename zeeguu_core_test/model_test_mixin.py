@@ -5,7 +5,7 @@ from faker import Faker
 
 from unittest import TestCase
 
-from .urls_for_test import mock_requests_get
+from zeeguu_core_test.test_data.mocking_the_web import mock_requests_get
 
 
 class ModelTestMixIn(TestCase):

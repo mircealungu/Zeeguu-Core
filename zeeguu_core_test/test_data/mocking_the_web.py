@@ -1,6 +1,6 @@
 import os
 
-TESTDATA_FOLDER = os.path.join(os.path.dirname(__file__), "test_data")
+TESTDATA_FOLDER = os.path.join(os.path.dirname(__file__), "")
 
 pelosi_sperrt_president = "http://www.spiegel.de/politik/ausland/nancy-pelosi-trump-soll-erst-" \
                           "nach-beendigung-des-shutdowns-rede-halten-duerfen-a-1249611.html"
@@ -34,6 +34,10 @@ formation_professionnelle = 'https://www.lemonde.fr/idees/article/2018/02/21/for
 
 plane_crashes = 'https://edition.cnn.com/2018/03/12/asia/kathmandu-plane-crash/index.html'
 
+der_kleine_prinz = 'http://www.derkleineprinz-online.de/text/2-kapitel/'
+
+blinden_und_elefant = 'https://www.geschichten-netzwerk.de/geschichten/die-blinden-und-der-elefant/'
+
 test_urls = {
 
     vols_americans: 'vols_americans.html',
@@ -46,7 +50,9 @@ test_urls = {
     diesel_fahrverbote: 'diesel_fahrverbote.html',
     formation_professionnelle: 'formation_professionnelle.html',
     plane_crashes: 'plane_crashes.html',
-    pelosi_sperrt_president: 'pelosi_sperrt_president.html'
+    pelosi_sperrt_president: 'pelosi_sperrt_president.html',
+    der_kleine_prinz: 'der_kleine_prinz.html',
+    blinden_und_elefant: 'blinden_und_elefant.html'
 
 }
 

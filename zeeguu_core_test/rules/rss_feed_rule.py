@@ -1,11 +1,10 @@
-from datetime import datetime, timedelta
 from random import randint
 
 from zeeguu_core_test.rules.base_rule import BaseRule
 from zeeguu_core_test.rules.language_rule import LanguageRule
 from zeeguu_core_test.rules.url_rule import UrlRule
 from zeeguu_core.model import RSSFeed, Language, Url
-from zeeguu_core_test.urls_for_test import spiegel_png, spiegel_rss
+from zeeguu_core_test.test_data.mocking_the_web import spiegel_png, spiegel_rss
 
 
 class RSSFeedRule(BaseRule):

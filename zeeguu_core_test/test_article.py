@@ -6,7 +6,7 @@ import zeeguu_core
 from zeeguu_core_test.rules.article_rule import ArticleRule
 from zeeguu_core_test.rules.language_rule import LanguageRule
 from zeeguu_core.model import Topic, Article
-from zeeguu_core_test.urls_for_test import plane_crashes, formation_professionnelle
+from zeeguu_core_test.test_data.mocking_the_web import plane_crashes, formation_professionnelle
 
 session = zeeguu_core.db.session
 

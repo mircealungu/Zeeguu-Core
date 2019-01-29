@@ -10,7 +10,7 @@ from zeeguu_core.content_retriever.article_downloader import download_from_feed,
 from zeeguu_core.content_retriever.quality_filter import sufficient_quality
 from zeeguu_core.model import Topic, LocalizedTopic, ArticleWord
 
-from .urls_for_test import *
+from zeeguu_core_test.test_data.mocking_the_web import *
 
 
 class TestRetrieveAndCompute(ModelTestMixIn):
