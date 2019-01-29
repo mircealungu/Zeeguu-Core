@@ -62,7 +62,7 @@ class TestRetrieveAndCompute(ModelTestMixIn):
 
     def test_sufficient_quality(self):
 
-        art = newspaper.Article(investing_in_index_funds)
+        art = newspaper.Article(url_investing_in_index_funds)
         art.download()
         art.parse()
 
@@ -70,7 +70,7 @@ class TestRetrieveAndCompute(ModelTestMixIn):
 
     def test_new_scientist_overlay(self):
 
-        art = newspaper.Article(fish_will_be_gone)
+        art = newspaper.Article(url_fish_will_be_gone)
         art.download()
         art.parse()
 
@@ -78,7 +78,7 @@ class TestRetrieveAndCompute(ModelTestMixIn):
 
     def test_le_monde_subscription(self):
 
-        art = newspaper.Article(vols_americans)
+        art = newspaper.Article(url_vols_americans)
         art.download()
         art.parse()
 
@@ -86,7 +86,7 @@ class TestRetrieveAndCompute(ModelTestMixIn):
 
     def test_fragment_removal(self):
 
-        art = newspaper.Article(onion_us_military)
+        art = newspaper.Article(url_onion_us_military)
         art.download()
         art.parse()
 

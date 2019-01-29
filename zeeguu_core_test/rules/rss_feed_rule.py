@@ -4,7 +4,7 @@ from zeeguu_core_test.rules.base_rule import BaseRule
 from zeeguu_core_test.rules.language_rule import LanguageRule
 from zeeguu_core_test.rules.url_rule import UrlRule
 from zeeguu_core.model import RSSFeed, Language, Url
-from zeeguu_core_test.test_data.mocking_the_web import spiegel_png, spiegel_rss
+from zeeguu_core_test.test_data.mocking_the_web import url_spiegel_png, url_spiegel_rss
 
 
 class RSSFeedRule(BaseRule):
@@ -22,8 +22,8 @@ class RSSFeedRule(BaseRule):
         self.save(self.rss_feed)
 
         lang1 = Language.find_or_create('de')
-        url = Url.find_or_create(self.db.session, spiegel_rss)
-        image_url = Url.find_or_create(self.db.session, spiegel_png)
+        url = Url.find_or_create(self.db.session, url_spiegel_rss)
+        image_url = Url.find_or_create(self.db.session, url_spiegel_png)
         self.feed1 = RSSFeed.find_or_create(self.db.session, url, "", "", image_url=image_url,
                                             language=lang1)
         self.save(self.feed1)

@@ -6,7 +6,7 @@ from zeeguu_core_test.rules.language_rule import LanguageRule
 from zeeguu_core_test.rules.rss_feed_rule import RSSFeedRule
 from zeeguu_core_test.rules.url_rule import UrlRule
 from zeeguu_core.model import Article
-from zeeguu_core_test.test_data.mocking_the_web import diesel_fahrverbote
+from zeeguu_core_test.test_data.mocking_the_web import url_diesel_fahrverbote
 
 
 class ArticleRule(BaseRule):
@@ -20,7 +20,7 @@ class ArticleRule(BaseRule):
         super().__init__()
 
         if real:
-            self.article = Article.find_or_create(ArticleRule.db.session, diesel_fahrverbote)
+            self.article = Article.find_or_create(ArticleRule.db.session, url_diesel_fahrverbote)
         else:
             self.article = self._create_model_object()
             self.save(self.article)
