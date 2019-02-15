@@ -10,7 +10,7 @@ class Language(db.Model):
     __table_args__ = {'mysql_collate': 'utf8_bin'}
     __tablename__ = 'language'
 
-    LANGUAGES_THAT_CAN_BE_LEARNED = ['de', 'es', 'fr', 'nl', 'en', 'it']
+    LANGUAGES_THAT_CAN_BE_LEARNED = ['de', 'es', 'fr', 'nl', 'en', 'it', 'da']
     LANGUAGES_AVAILABLE_AS_NATIVE = ['en', 'nl', 'zh-CN']
 
     id = db.Column(db.Integer, primary_key=True)
@@ -24,7 +24,8 @@ class Language(db.Model):
         "fr": "French",
         "nl": "Dutch",
         "it": "Italian",
-        "zh-CN": "Chinese"
+        "zh-CN": "Chinese",
+        "da": "Danish"
     }
 
     def __init__(self, code, name):
