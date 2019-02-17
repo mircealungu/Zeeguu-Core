@@ -10,7 +10,6 @@ from datetime import datetime
 import newspaper
 import re
 
-import requests_mock
 import zeeguu_core
 
 from zeeguu_core import model
