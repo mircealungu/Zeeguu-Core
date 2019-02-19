@@ -40,7 +40,7 @@ class RSSFeed(db.Model):
 
     def __init__(self, url, title, description, image_url=None, icon_name=None, language=None):
         self.url = url
-        self.image_url = image_url
+        self.image_url = ""
         self.icon_name = icon_name
         self.title = title
         self.language = language
@@ -83,9 +83,7 @@ class RSSFeed(db.Model):
 
 
     def as_dictionary(self):
-        image_url = ""
-        if self.image_url:
-            image_url = self.image_url.as_string()
+
 
         language = "unknown_lang"
         if self.language:
@@ -97,7 +95,8 @@ class RSSFeed(db.Model):
             url=self.url.as_string(),
             description=self.description,
             language=language,
-            image_url=image_url
+            image_url='',
+            icon_name=self.icon_name
         )
 
     def feed_items(self):
@@ -170,7 +169,7 @@ class RSSFeed(db.Model):
             return None
 
     @classmethod
-    def find_or_create(cls, session, url, title, description, image_url: Url, language: Language):
+    def find_or_create(cls, session, url, title, description, icon_name, language: Language):
         try:
             result = (cls.query.filter(cls.url == url)
                       .filter(cls.title == title)
@@ -179,7 +178,7 @@ class RSSFeed(db.Model):
                       .one())
             return result
         except sqlalchemy.orm.exc.NoResultFound:
-            new = cls(url, title, description, image_url, language)
+            new = cls(url, title, description, icon_name=icon_name, language=language)
             session.add(new)
             session.commit()
             return new
