@@ -115,7 +115,7 @@ class Article(db.Model):
         result_dict = dict(
             id=self.id,
             title=self.title,
-            url=self.url.path,
+            url=self.url.as_string(),
             summary=self.summary,
             language=self.language.code,
             authors=self.authors,
