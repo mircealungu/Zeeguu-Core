@@ -34,11 +34,14 @@ class RSSFeed(db.Model):
     image_url_id = db.Column(db.Integer, db.ForeignKey(Url.id))
     image_url = db.relationship(Url, foreign_keys=image_url_id)
 
+    icon_name = db.Column(db.String(2083))
+
     last_crawled_time = db.Column(db.DateTime)
 
-    def __init__(self, url, title, description, image_url=None, language=None):
+    def __init__(self, url, title, description, image_url=None, icon_name=None, language=None):
         self.url = url
         self.image_url = image_url
+        self.icon_name = icon_name
         self.title = title
         self.language = language
         self.description = description
@@ -71,16 +74,13 @@ class RSSFeed(db.Model):
         try:
             image_url_string = data.feed.image.href
             print(f'Found image url at: {image_url_string}')
-            image_url = Url(image_url_string, title + " Icon")
         except:
             print('Could not find any image url.')
-            image_url = None
 
         feed_url = Url(url, title)
 
-        return RSSFeed(feed_url, title, description, image_url, None)
+        return RSSFeed(feed_url, title, description)
 
-        return RSSFeed()
 
     def as_dictionary(self):
         image_url = ""
