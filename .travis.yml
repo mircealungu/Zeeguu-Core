@@ -1,6 +1,7 @@
 before_install:
   - pip3 install -r requirements.txt
-  - python3 -m nltk.downloader -d ~/nltk_data punkt
+  - sudo chmod uog+rw /usr/local/share/
+#  - python3 -m nltk.downloader -d /usr/local/share/nltk_data punkt
 
 language: python
 python:
@@ -11,6 +12,7 @@ cache:
    - $HOME/virtualenv
 
 env:
+
 
 install: "python3 setup.py install"
 
