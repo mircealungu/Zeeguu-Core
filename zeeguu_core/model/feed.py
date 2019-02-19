@@ -40,7 +40,7 @@ class RSSFeed(db.Model):
 
     def __init__(self, url, title, description, image_url=None, icon_name=None, language=None):
         self.url = url
-        self.image_url = ""
+        self.image_url = image_url
         self.icon_name = icon_name
         self.title = title
         self.language = language
