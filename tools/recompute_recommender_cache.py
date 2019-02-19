@@ -9,7 +9,8 @@
 """
 
 import zeeguu_core
-from zeeguu_core.content_recommender.mixed_recommender import reading_preferences_hash, recompute_recommender_cache_if_needed
+from zeeguu_core.content_recommender.mixed_recommender import reading_preferences_hash, \
+    recompute_recommender_cache_if_needed
 from zeeguu_core.model import User, ArticlesCache
 
 session = zeeguu_core.db.session
@@ -63,7 +64,7 @@ def recompute_for_users():
     :param existing_hashes:
     :return:
     """
-    already_done=[]
+    already_done = []
     for user_id in User.all_recent_user_ids():
         try:
             user = User.find_by_id(user_id)
@@ -78,6 +79,6 @@ def recompute_for_users():
             print(f"Failed for user {user}")
 
 
-#existing_hashes = hashes_of_existing_cached_preferences()
-clean_the_cache()
-recompute_for_users()
+if __name__ == '__main__':
+    clean_the_cache()
+    recompute_for_users()
