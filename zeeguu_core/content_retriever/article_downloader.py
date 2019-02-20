@@ -49,7 +49,8 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
 
 
     """
-    log(feed)
+    log(feed.title)
+    
     downloaded = 0
     skipped = 0
     skipped_due_to_low_quality = dict()
