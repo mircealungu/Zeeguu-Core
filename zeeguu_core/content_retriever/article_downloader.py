@@ -139,6 +139,10 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
                         zeeguu_core.log(f"added keywords: {url}")
                         session.commit()
 
+                        if last_retrieval_time_seen_this_crawl:
+                            feed.last_crawled_time = last_retrieval_time_seen_this_crawl
+                        session.add(feed)
+
                     except Exception as e:
                         zeeguu_core.log(
                             f'{LOG_CONTEXT}: Something went wrong when creating article and attaching words/topics: {e}')
@@ -155,11 +159,6 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
     zeeguu_core.log(f'  Downloaded: {downloaded}')
     zeeguu_core.log(f'  Low Quality: {skipped_due_to_low_quality}')
     zeeguu_core.log(f'  Already in DB: {skipped_already_in_db}')
-
-    if last_retrieval_time_seen_this_crawl:
-        feed.last_crawled_time = last_retrieval_time_seen_this_crawl
-    session.add(feed)
-    session.commit()
 
 
 def add_topics(new_article, session):
