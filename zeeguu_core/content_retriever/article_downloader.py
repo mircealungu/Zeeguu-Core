@@ -93,12 +93,14 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
 
         if art:
             skipped_already_in_db += 1
+            zeeguu_core.log(f"already in db: {url}")
         else:
             try:
 
                 art = newspaper.Article(url)
                 art.download()
                 art.parse()
+                zeeguu_core.log(f"succesfully parsed: {url}")
 
                 cleaned_up_text = cleanup_non_content_bits(art.text)
 
@@ -122,7 +124,9 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
                     downloaded += 1
 
                     add_topics(new_article, session)
+                    zeeguu_core.log(f"added toipcs: {url}")
                     add_searches(title, url, new_article, session)
+                    zeeguu_core.log(f"added keywords: {url}")
 
                     try:
                         session.commit()
