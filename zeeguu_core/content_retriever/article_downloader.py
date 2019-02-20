@@ -80,7 +80,13 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
         title = feed_item['title']
         summary = feed_item['summary']
 
-        art = model.Article.find(url)
+        try:
+            art = model.Article.find(url)
+        except:
+            import sys
+            ex = sys.exc_info()[0]
+            zeeguu_core.log(f" {LOG_CONTEXT}: For some reason excepted while Article.find for: {url}\n{str(ex)}")
+            continue
 
         if (not last_retrieval_time_seen_this_crawl) or (this_article_time > last_retrieval_time_seen_this_crawl):
             last_retrieval_time_seen_this_crawl = this_article_time
