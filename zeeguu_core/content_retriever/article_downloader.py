@@ -79,7 +79,7 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
         if _date_in_the_future(this_article_time):
             zeeguu_core.log("article from the future...")
             continue
-            
+
         if last_retrieval_time_from_DB:
 
             if this_article_time < last_retrieval_time_from_DB:
@@ -117,31 +117,33 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
                 if quality_article:
                     from zeeguu_core.language.difficulty_estimator_factory import DifficultyEstimatorFactory
 
-                    # Create new article and save it to DB
-                    new_article = zeeguu_core.model.Article(
-                        Url.find_or_create(session, url),
-                        title,
-                        ', '.join(art.authors),
-                        cleaned_up_text,
-                        summary,
-                        this_article_time,
-                        feed,
-                        feed.language
-                    )
-                    session.add(new_article)
-                    session.commit()
-                    downloaded += 1
-
-                    add_topics(new_article, session)
-                    zeeguu_core.log(f"added toipcs: {url}")
-                    add_searches(title, url, new_article, session)
-                    zeeguu_core.log(f"added keywords: {url}")
-
                     try:
+                        # Create new article and save it to DB
+                        new_article = zeeguu_core.model.Article(
+                            Url.find_or_create(session, url),
+                            title,
+                            ', '.join(art.authors),
+                            cleaned_up_text,
+                            summary,
+                            this_article_time,
+                            feed,
+                            feed.language
+                        )
+                        session.add(new_article)
                         session.commit()
+                        downloaded += 1
+
+                        add_topics(new_article, session)
+                        zeeguu_core.log(f"added toipcs: {url}")
+                        add_searches(title, url, new_article, session)
+                        zeeguu_core.log(f"added keywords: {url}")
+                        session.commit()
+
                     except Exception as e:
                         zeeguu_core.log(
-                            f'{LOG_CONTEXT}: Something went wrong when committing words/topic to article: {e}')
+                            f'{LOG_CONTEXT}: Something went wrong when creating article and attaching words/topics: {e}')
+                        zeeguu_core.log("rolling back the session... ")
+                        session.rollback()
 
             except Exception as e:
                 # raise e
