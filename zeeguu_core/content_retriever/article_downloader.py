@@ -168,10 +168,12 @@ def add_searches(title, url, new_article, session):
     # Split the title, path and url netloc (sub domain)
     all_words = title.split()
     from urllib.parse import urlparse
+
     # Parse the URL so we can call netloc and path without a lot of regex
     parsed_url = urlparse(url)
-    all_words.append(re.split('; |, |\*|-|%20|/', parsed_url.path))
-    all_words.append(parsed_url.netloc.split('.')[0])
+    all_words += re.split('; |, |\*|-|%20|/', parsed_url.path)
+    all_words += parsed_url.netloc.split('.')[0]
+
     for word in all_words:
         # Strip the unwanted characters
         word = strip_article_title_word(word)
