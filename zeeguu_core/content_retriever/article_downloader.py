@@ -28,6 +28,11 @@ def _url_after_redirects(url):
     return response.url
 
 
+def _date_in_the_future(time):
+    from datetime import datetime
+    return time > datetime.now()
+
+
 def download_from_feed(feed: RSSFeed, session, limit=1000):
     """
 
@@ -71,6 +76,10 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
             zeeguu_core.log(f"can't get time from {url}: {feed_item['published']}")
             continue
 
+        if _date_in_the_future(this_article_time):
+            zeeguu_core.log("article from the future...")
+            continue
+            
         if last_retrieval_time_from_DB:
 
             if this_article_time < last_retrieval_time_from_DB:
