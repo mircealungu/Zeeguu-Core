@@ -26,11 +26,19 @@ session = zeeguu_core.db.session
 
 def retrieve_articles_from_all_feeds():
     counter = 0
-    for feed in RSSFeed.query.all():
+    all_feeds = RSSFeed.query.all()
+    all_feeds_count = len(all_feeds)
+    for feed in all_feeds:
         counter += 1
-        print(f"{counter}: DOWNLOADING {feed.title}".encode('utf-8'))
+        msg = f"{counter}/{all_feeds_count}: DOWNLOADING {feed.title}".encode('utf-8')
+        print(msg)
+        zeeguu_core.log(msg)
+
         download_from_feed(feed, zeeguu_core.db.session)
-        print(f"{counter}: FINISHED DOWNLOADING {feed.title}".encode('utf-8'))
+
+        msg = f"{counter}/{all_feeds_count}: FINISHED DOWNLOADING {feed.title}".encode('utf-8')
+        print(msg)
+        zeeguu_core.log(msg)
 
 
 if __name__ == '__main__':
