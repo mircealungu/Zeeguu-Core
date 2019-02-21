@@ -130,7 +130,7 @@ class Article(db.Model):
 
         if self.rss_feed:
             result_dict['feed_id'] = self.rss_feed.id,
-            result_dict['feed_image_url'] = self.rss_feed.image_url.path,
+            result_dict['feed_image_url'] = self.rss_feed.image_url.as_string(),
             result_dict['icon_name'] = self.rss_feed.icon_name
 
         if with_content:
