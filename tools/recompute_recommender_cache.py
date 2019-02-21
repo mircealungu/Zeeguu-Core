@@ -71,12 +71,22 @@ def recompute_for_users():
             reading_pref_hash = reading_preferences_hash(user)
             if reading_pref_hash not in already_done:
                 recompute_recommender_cache_if_needed(user, session)
-                print(f"Success for {reading_pref_hash} and {user}")
+                zeeguu_core.log_n_print(f"Success for {reading_pref_hash} and {user}")
                 already_done.append(reading_pref_hash)
             else:
-                print(f"nno need to do for {user}. hash {reading_pref_hash} already done")
+                zeeguu_core.log_n_print(f"nno need to do for {user}. hash {reading_pref_hash} already done")
         except Exception as e:
-            print(f"Failed for user {user}")
+            zeeguu_core.log_n_print(f"Failed for user {user}")
+
+
+def recompute_for_topics_and_languages():
+    from zeeguu_core.model import Topic, Language
+
+    for each in Topic.get_all_topics():
+        each.all_articles()
+
+    for each in Language.available_languages():
+        each.get_articles()
 
 
 if __name__ == '__main__':
