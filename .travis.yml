@@ -1,7 +1,6 @@
 before_install:
   - pip3 install -r requirements.txt
-  - sudo chmod uog+rw /usr/local/share/
-#  - python3 -m nltk.downloader -d /usr/local/share/nltk_data punkt
+  - python3 -m nltk.downloader -d ~/nltk_data punkt
 
 language: python
 python:

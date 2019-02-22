@@ -20,8 +20,8 @@ class InstallScript(install):
 def ntlk_install_packages():
     import nltk
     print("Downloading nltk packages...")
-    nltk.download('punkt', download_dir='/usr/local/share/nltk_data')
-    nltk.download('averaged_perceptron_tagger', download_dir='/usr/local/share/nltk_data')
+    nltk.download('punkt')
+    nltk.download('averaged_perceptron_tagger')
 
 setuptools.setup(
     name="zeeguu_core",
