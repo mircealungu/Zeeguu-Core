@@ -53,6 +53,7 @@ while restart_loop is True:
         all_words = []
 
         url = urlparse(address)
+        print(url)
         subdomain = url.netloc.split('.')[0]
         title_words = title.split()
 
@@ -85,11 +86,10 @@ while restart_loop is True:
             elif word in stopwords:
                 filtered_general += 1
             else:
-                article_word_obj = ArticleWord.find_by_word(word)
-                if article_word_obj is None:
-                    article_word_obj = ArticleWord(word)
+                article_word_obj = ArticleWord.find_or_create(session, word)
                 article_word_obj.add_article(article)
                 word_count += 1
+                print (" - " + word)
             if word_count % 1000 == 0:
                 print("another 1000 words added")
                 print(f'That took {time.time() - starting_time} seconds...')
