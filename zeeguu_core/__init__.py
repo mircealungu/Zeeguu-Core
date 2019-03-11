@@ -1,19 +1,17 @@
 # -*- coding: utf8 -*-
 import os
-import sys
 
 import datetime
 
-LOGS_FOLDER = os.getenv('ZEEGUU_CORE_LOG_DIR', '~/.logs')
+log_file = "zeeguu.log"
 
-log_dir = os.path.expanduser(LOGS_FOLDER)
+log_dir = os.getenv('ZEEGUU_CORE_LOG_DIR')
+if log_dir:
 
-if not os.path.exists(log_dir):
-    os.makedirs(log_dir)
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
 
-log_file = os.path.expanduser(f"{LOGS_FOLDER}/zeeguu.log")
-if 'unittest' in sys.modules:
-    log_file=os.path.expanduser("/dev/null")
+    log_file = f"{log_dir}/{log_file}"
 
 
 def log(text):
@@ -24,10 +22,10 @@ def log(text):
     return text
 
 
-def log_n_print(text):
+def logp(text):
     """
 
-        Print both to stdout and the logfile
+        Log and print to stdout at the same time
 
     :return: None
     """
