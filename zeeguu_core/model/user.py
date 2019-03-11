@@ -266,8 +266,8 @@ class User(db.Model):
         reading_sessions = self.all_reading_sessions(after_date)
         reading_sessions_by_date = dict()
 
-        for elem in map(extract_day_from_date, reading_sessions):
-            reading_sessions_by_date.setdefault(elem[1], []).append(elem[0])
+        for session, date in map(extract_day_from_date, reading_sessions):
+            reading_sessions_by_date.setdefault(date, []).append(session)
 
         sorted_dates = list(reading_sessions_by_date.keys())
         sorted_dates.sort(reverse=True)

@@ -8,6 +8,10 @@ html_read_more_patterns = [
     ,"L’accès à la totalité de l’article est protégé" #Le Monde
     , "Ces informations sont destinées au groupe Bayard" #1jour1actu
     , "Article réservé aux abonnés"
+
+    # der spiegel
+    , "Sie haben keinen Zugang? Jetzt gratis testen!."
+    , "Jetzt Gratismonat beginnen"
 ]
 
 plain_text_read_more_patterns = [

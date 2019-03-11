@@ -34,11 +34,14 @@ class RSSFeed(db.Model):
     image_url_id = db.Column(db.Integer, db.ForeignKey(Url.id))
     image_url = db.relationship(Url, foreign_keys=image_url_id)
 
+    icon_name = db.Column(db.String(2083))
+
     last_crawled_time = db.Column(db.DateTime)
 
-    def __init__(self, url, title, description, image_url=None, language=None):
+    def __init__(self, url, title, description, image_url=None, icon_name=None, language=None):
         self.url = url
         self.image_url = image_url
+        self.icon_name = icon_name
         self.title = title
         self.language = language
         self.description = description
@@ -71,21 +74,16 @@ class RSSFeed(db.Model):
         try:
             image_url_string = data.feed.image.href
             print(f'Found image url at: {image_url_string}')
-            image_url = Url(image_url_string, title + " Icon")
         except:
             print('Could not find any image url.')
-            image_url = None
 
         feed_url = Url(url, title)
 
-        return RSSFeed(feed_url, title, description, image_url, None)
+        return RSSFeed(feed_url, title, description)
 
-        return RSSFeed()
 
     def as_dictionary(self):
-        image_url = ""
-        if self.image_url:
-            image_url = self.image_url.as_string()
+
 
         language = "unknown_lang"
         if self.language:
@@ -97,7 +95,8 @@ class RSSFeed(db.Model):
             url=self.url.as_string(),
             description=self.description,
             language=language,
-            image_url=image_url
+            image_url='',
+            icon_name=self.icon_name
         )
 
     def feed_items(self):
@@ -170,7 +169,7 @@ class RSSFeed(db.Model):
             return None
 
     @classmethod
-    def find_or_create(cls, session, url, title, description, image_url: Url, language: Language):
+    def find_or_create(cls, session, url, title, description, icon_name, language: Language):
         try:
             result = (cls.query.filter(cls.url == url)
                       .filter(cls.title == title)
@@ -179,7 +178,7 @@ class RSSFeed(db.Model):
                       .one())
             return result
         except sqlalchemy.orm.exc.NoResultFound:
-            new = cls(url, title, description, image_url, language)
+            new = cls(url, title, description, icon_name=icon_name, language=language)
             session.add(new)
             session.commit()
             return new

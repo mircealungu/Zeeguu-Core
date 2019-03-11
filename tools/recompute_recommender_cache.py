@@ -9,7 +9,8 @@
 """
 
 import zeeguu_core
-from zeeguu_core.content_recommender.mixed_recommender import reading_preferences_hash, recompute_recommender_cache_if_needed
+from zeeguu_core.content_recommender.mixed_recommender import reading_preferences_hash, \
+    recompute_recommender_cache_if_needed
 from zeeguu_core.model import User, ArticlesCache
 
 session = zeeguu_core.db.session
@@ -63,21 +64,31 @@ def recompute_for_users():
     :param existing_hashes:
     :return:
     """
-    already_done=[]
+    already_done = []
     for user_id in User.all_recent_user_ids():
         try:
             user = User.find_by_id(user_id)
             reading_pref_hash = reading_preferences_hash(user)
             if reading_pref_hash not in already_done:
                 recompute_recommender_cache_if_needed(user, session)
-                print(f"Success for {reading_pref_hash} and {user}")
+                zeeguu_core.log_n_print(f"Success for {reading_pref_hash} and {user}")
                 already_done.append(reading_pref_hash)
             else:
-                print(f"nno need to do for {user}. hash {reading_pref_hash} already done")
+                zeeguu_core.log_n_print(f"nno need to do for {user}. hash {reading_pref_hash} already done")
         except Exception as e:
-            print(f"Failed for user {user}")
+            zeeguu_core.log_n_print(f"Failed for user {user}")
 
 
-#existing_hashes = hashes_of_existing_cached_preferences()
-clean_the_cache()
-recompute_for_users()
+def recompute_for_topics_and_languages():
+    from zeeguu_core.model import Topic, Language
+
+    for each in Topic.get_all_topics():
+        each.all_articles()
+
+    for each in Language.available_languages():
+        each.get_articles()
+
+
+if __name__ == '__main__':
+    clean_the_cache()
+    recompute_for_users()

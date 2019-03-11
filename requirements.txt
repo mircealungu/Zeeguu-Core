@@ -5,7 +5,7 @@ pytest
 flask
 Flask-SQLAlchemy
 mysqlclient
-regex
+regex==2017.5.26
 feedparser
 requests
 newspaper3k==0.2.7

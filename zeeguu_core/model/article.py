@@ -115,7 +115,7 @@ class Article(db.Model):
         result_dict = dict(
             id=self.id,
             title=self.title,
-            url=self.url.path,
+            url=self.url.as_string(),
             summary=self.summary,
             language=self.language.code,
             authors=self.authors,
@@ -130,7 +130,12 @@ class Article(db.Model):
 
         if self.rss_feed:
             result_dict['feed_id'] = self.rss_feed.id,
-            result_dict['feed_image_url'] = self.rss_feed.image_url.path,
+            result_dict['icon_name'] = self.rss_feed.icon_name
+
+            # TO DO: remove feed_image_url from RSSFeed --- this is here for compatibility
+            # until the codebase is moved to zorg.
+            if self.rss_feed.image_url:
+                result_dict['feed_image_url'] = self.rss_feed.image_url.as_string()
 
         if with_content:
             result_dict['content'] = self.content
