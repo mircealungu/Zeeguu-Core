@@ -188,6 +188,16 @@ class User(db.Model):
         self.password = util.password_hash(password, salt_bytes)
         self.password_salt = salt_bytes.hex()
 
+    def all_reading_sessions(self, after_date=datetime.datetime(1970, 1, 1),
+                    before_date=datetime.date.today() + datetime.timedelta(
+                        days=1)):
+        from zeeguu_core.model.user_reading_session import UserReadingSession
+        return UserReadingSession.query. \
+            filter_by(user_id=self.id). \
+            filter(UserReadingSession.start_time >= after_date). \
+            filter(UserReadingSession.start_time <= before_date). \
+            order_by(UserReadingSession.start_time).all()
+
     def all_bookmarks(self, after_date=datetime.datetime(1970, 1, 1),
                       before_date=datetime.date.today() + datetime.timedelta(
                           days=1)):
@@ -242,6 +252,54 @@ class User(db.Model):
                 print(f"{b.origin.word} ({b.origin.language.code})- {rank(b)} (id: {b.id})")
 
         return sorted_bookmarks
+
+    def reading_sessions_by_date(self, after_date=datetime.datetime(1970,1,1)):
+        """
+        :param after_date: The date from which the reading sessions will be queried
+        :return: a pair of 1. a dict with date-> reading_sessions and 2. a sorted list of dates
+        """
+        def extract_day_from_date(reading_session):
+            return reading_session, reading_session.start_time.replace(reading_session.start_time.year,
+                                                 reading_session.start_time.month,
+                                                 reading_session.start_time.day, 0, 0, 0,
+                                                 0)
+        reading_sessions = self.all_reading_sessions(after_date)
+        reading_sessions_by_date = dict()
+
+        for elem in map(extract_day_from_date, reading_sessions):
+            reading_sessions_by_date.setdefault(elem[1], []).append(elem[0])
+
+        sorted_dates = list(reading_sessions_by_date.keys())
+        sorted_dates.sort(reverse=True)
+        return reading_sessions_by_date, sorted_dates
+
+    def reading_sessions_by_day(self,
+                         after_date=datetime.datetime(2010, 1, 1), max=42):
+        """
+        :param after_date: The date from which the reading sessions will be queried
+        :return: a serializable list of of objects containing a date and all the reading sessions belonging to that date
+        """
+        reading_sessions_by_date, sorted_dates = self.reading_sessions_by_date(after_date)
+
+        dates = []
+        total_reading_sessions = 0
+        for date in sorted_dates:
+            reading_sessions = []
+            for reading_session in reading_sessions_by_date[date]:
+              reading_sessions.append(reading_session.json_serializable_dict())
+              total_reading_sessions += 1
+            date_entry = dict(
+                date=date.strftime("%A, %d %B %Y"),
+                reading_sessions=reading_sessions
+            )
+            dates.append(date_entry)
+
+            if total_reading_sessions > max:
+                print(f"we have already {total_reading_sessions} reading sessions. be done with it!")
+                return dates
+
+        return dates
+ 
 
     def bookmarks_by_date(self, after_date=datetime.datetime(1970, 1, 1)):
         """
