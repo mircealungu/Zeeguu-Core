@@ -23,6 +23,8 @@ url_diesel_fahrverbote = \
 url_spiegel_rss = "http://www.spiegel.de/index.rss"
 url_spiegel_png = "http://www.spiegel.de/spiegel.png"
 
+icon_name_spiegel = "spiegel.png"
+
 url_spiegel_venezuela = "http://www.spiegel.de/politik/ausland/venezuela-juan-guaido-und-sein-riskanter-konter-" \
                     "gegen-nicolas-maduro-a-1249613.html"
 

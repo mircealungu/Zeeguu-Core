@@ -1,5 +1,8 @@
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.exc import InterfaceError, IntegrityError, DatabaseError
+
+
 
 import zeeguu_core
 
@@ -42,11 +45,16 @@ class ArticleWord(db.Model):
     def find_or_create(cls, session, word):
         try:
             return cls.query.filter(cls.word == word).one()
-        except NoResultFound:
-            new = cls(word)
-            session.add(new)
-            session.commit()
-            return new
+        except NoResultFound or InterfaceError:
+            try:
+                new = cls(word)
+                session.add(new)
+                session.commit()
+                return new
+            except IntegrityError or DatabaseError:
+                print("avoided race condition in article_word")
+                session.rollback()
+                return cls.query.filter(cls.word == word).one()
 
     @classmethod
     def find_by_word(cls, word):
