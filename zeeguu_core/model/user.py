@@ -253,7 +253,7 @@ class User(db.Model):
 
         return sorted_bookmarks
 
-    def reading_sessions_by_date(self, after_date=datetime.datetime(1970,1,1)):
+    def _unordered_reading_sessions(self, after_date=datetime.datetime(1970,1,1)):
         """
         :param after_date: The date from which the reading sessions will be queried
         :return: a pair of 1. a dict with date-> reading_sessions and 2. a sorted list of dates
@@ -279,7 +279,7 @@ class User(db.Model):
         :param after_date: The date from which the reading sessions will be queried
         :return: a serializable list of of objects containing a date and all the reading sessions belonging to that date
         """
-        reading_sessions_by_date, sorted_dates = self.reading_sessions_by_date(after_date)
+        reading_sessions_by_date, sorted_dates = self._unordered_reading_sessions(after_date)
 
         dates = []
         total_reading_sessions = 0
