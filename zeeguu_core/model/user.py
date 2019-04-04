@@ -253,25 +253,41 @@ class User(db.Model):
 
         return sorted_bookmarks
 
-    def _unordered_reading_sessions(self, after_date=datetime.datetime(1970,1,1)):
-        """
-        :param after_date: The date from which the reading sessions will be queried
-        :return: a pair of 1. a dict with date-> reading_sessions and 2. a sorted list of dates
-        """
-        def extract_day_from_date(reading_session):
-            return reading_session, reading_session.start_time.replace(reading_session.start_time.year,
-                                                 reading_session.start_time.month,
-                                                 reading_session.start_time.day, 0, 0, 0,
-                                                 0)
-        reading_sessions = self.all_reading_sessions(after_date)
-        reading_sessions_by_date = dict()
+    
 
-        for session, date in map(extract_day_from_date, reading_sessions):
-            reading_sessions_by_date.setdefault(date, []).append(session)
 
-        sorted_dates = list(reading_sessions_by_date.keys())
-        sorted_dates.sort(reverse=True)
-        return reading_sessions_by_date, sorted_dates
+    def _date_to_sortable_day(self, date):
+        return date.replace(date.year,
+                                date.month,
+                                date.day, 0, 0, 0,
+                                0)
+
+
+    def _transform_to_date_list(self, object_list):
+        objects_by_date = dict()
+
+        for the_object in object_list:
+            date = self._date_to_sortable_day(the_object.start_time)
+            objects_by_date.setdefault(date, []).append(the_object)
+
+        return objects_by_date
+ 
+    def _transform_to_serializable(self, tuple_list, key_name):
+        result = []
+
+        for date, object_list in tuple_list:
+            serialized_objects = []
+            for the_object in object_list:
+                serialized_objects.append(the_object.json_serializable_dict())
+            date_entry = dict(
+                date=date.strftime("%A, %d %B %Y"),
+            )
+            date_entry[key_name] = serialized_objects
+            result.append(date_entry)
+
+        return result
+
+  
 
     def reading_sessions_by_day(self,
                          after_date=datetime.datetime(2010, 1, 1), max=42):
@@ -279,27 +295,20 @@ class User(db.Model):
         :param after_date: The date from which the reading sessions will be queried
         :return: a serializable list of of objects containing a date and all the reading sessions belonging to that date
         """
-        reading_sessions_by_date, sorted_dates = self._unordered_reading_sessions(after_date)
 
-        dates = []
-        total_reading_sessions = 0
-        for date in sorted_dates:
-            reading_sessions = []
-            for reading_session in reading_sessions_by_date[date]:
-              reading_sessions.append(reading_session.json_serializable_dict())
-              total_reading_sessions += 1
-            date_entry = dict(
-                date=date.strftime("%A, %d %B %Y"),
-                reading_sessions=reading_sessions
-            )
-            dates.append(date_entry)
+        reading_sessions = self.all_reading_sessions(after_date)
+        reading_sessions_by_date_unordered = self._transform_to_date_list(reading_sessions)
+        reading_sessions_by_date_ordered = sorted(reading_sessions_by_date_unordered.items(), reverse=True, key=lambda tup: tup[0])
 
-            if total_reading_sessions > max:
-                print(f"we have already {total_reading_sessions} reading sessions. be done with it!")
-                return dates
+        if(len(reading_sessions_by_date_ordered) > max):
+            reading_sessions_by_date_ordered = reading_sessions_by_date_ordered[:max]
 
-        return dates
- 
+        result = self._transform_to_serializable(reading_sessions_by_date_ordered, key_name='reading_sessions')
+
+        return result
+
+
+
 
     def bookmarks_by_date(self, after_date=datetime.datetime(1970, 1, 1)):
         """
