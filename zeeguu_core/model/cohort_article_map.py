@@ -19,5 +19,5 @@ class CohortArticleMap(zeeguu_core.db.Model):
         self.article = article
 
     @classmethod
-    def get_articles_for_cohort(cls, cohort):
+    def get_articles_info_for_cohort(cls, cohort):
         return [relation.article.article_info() for relation in cls.query.filter_by(cohort=cohort).all()]

@@ -69,6 +69,7 @@ from .smartwatch.watch_interaction_event import WatchInteractionEvent
 from .cohort import Cohort
 from .teacher_cohort_map import TeacherCohortMap
 from .teacher import Teacher
+from .cohort_article_map import CohortArticleMap
 
 from .user_reading_session import UserReadingSession
 from .user_exercise_session import UserExerciseSession
