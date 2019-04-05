@@ -256,29 +256,45 @@ class User(db.Model):
     
 
 
-    def _date_to_sortable_day(self, date):
-        return date.replace(date.year,
-                                date.month,
-                                date.day, 0, 0, 0,
+    def _datetime_to_date(self, date_time):
+        """
+            we define datetime as being any datetime object,
+            and date as being a datetime object with only the year, month and day part
+        """ 
+        return date_time.replace(date_time.year,
+                                date_time.month,
+                                date_time.day, 0, 0, 0,
                                 0)
 
 
-    def _transform_to_date_list(self, object_list):
-        objects_by_date = dict()
+    def _to_date_dict(self, dict_list, date_key):
+        """
+            :param dict_list: a list of dictionaries 
+            :param date_key: the key that maps to the datetime object in the dictionary 
+            :return: dictionary with dates mapping to a list of dictionaries
+        """
+        date_dict = dict()
+        for dictionary in dict_list:
+            date = self._datetime_to_date(getattr(dictionary, date_key))
+            date_dict.setdefault(date, []).append(dictionary)
 
-        for the_object in object_list:
-            date = self._date_to_sortable_day(the_object.start_time)
-            objects_by_date.setdefault(date, []).append(the_object)
-
-        return objects_by_date
+        return date_dict
  
-    def _transform_to_serializable(self, tuple_list, key_name):
+    def _to_serializable(self, tuple_list, key_name, *args):
+        """
+            :param tuple_list: a list of tuples with 
+                1. position: date  
+                2. position: list of objects with 'json_serializable_dict()' method
+            :param key_name: the key name of the final serialized objects in the result list
+            :param *args: the list of arguments that should be passed down to the 'json_serializable_dict()' method
+            :return:
+        """
         result = []
 
         for date, object_list in tuple_list:
             serialized_objects = []
-            for the_object in object_list:
-                serialized_objects.append(the_object.json_serializable_dict())
+            for obj in object_list:
+                serialized_objects.append(obj.json_serializable_dict(*args))
             date_entry = dict(
                 date=date.strftime("%A, %d %B %Y"),
             )
@@ -297,22 +313,19 @@ class User(db.Model):
         """
 
         reading_sessions = self.all_reading_sessions(after_date)
-        reading_sessions_by_date_unordered = self._transform_to_date_list(reading_sessions)
-        reading_sessions_by_date_ordered = sorted(reading_sessions_by_date_unordered.items(), reverse=True, key=lambda tup: tup[0])
+        date_reading_sessions_dict = self._to_date_dict(dict_list=reading_sessions, date_key='start_time')
+        sorted_date_reading_sessions_tuples= sorted(date_reading_sessions_dict.items(), reverse=True, key=lambda tup: tup[0])
 
-        if(len(reading_sessions_by_date_ordered) > max):
-            reading_sessions_by_date_ordered = reading_sessions_by_date_ordered[:max]
+        if(len(sorted_date_reading_sessions_tuples) > max):
+            sorted_date_reading_sessions_tuples = sorted_date_reading_sessions_tuples[:max]
 
-        result = self._transform_to_serializable(reading_sessions_by_date_ordered, key_name='reading_sessions')
+        result = self._to_serializable(sorted_date_reading_sessions_tuples, key_name='reading_sessions')
 
         return result
 
 
-
-
     def bookmarks_by_date(self, after_date=datetime.datetime(1970, 1, 1)):
         """
-
         :param after_date:
         :return: a pair of 1. a dict with date-> bookmarks and 2. a sorted list of dates
         """
@@ -333,28 +346,20 @@ class User(db.Model):
         sorted_dates.sort(reverse=True)
         return bookmarks_by_date, sorted_dates
 
+
     def bookmarks_by_day(self, with_context,
                          after_date=datetime.datetime(2010, 1, 1), max=42, with_title=False):
-        bookmarks_by_date, sorted_dates = self.bookmarks_by_date(after_date)
 
-        dates = []
-        total_bookmarks = 0
-        for date in sorted_dates:
-            bookmarks = []
-            for bookmark in bookmarks_by_date[date]:
-                bookmarks.append(bookmark.json_serializable_dict(with_context, with_title))
-                total_bookmarks += 1
-            date_entry = dict(
-                date=date.strftime("%A, %d %B %Y"),
-                bookmarks=bookmarks
-            )
-            dates.append(date_entry)
+        bookmarks = self.all_bookmarks(after_date)
+        date_bookmarks_dict = self._to_date_dict(dict_list=bookmarks, date_key='time')
+        sorted_date_bookmarks = sorted(date_bookmarks_dict.items(), reverse=True, key=lambda tup: tup[0])
 
-            if total_bookmarks > max:
-                print(f"we have already {total_bookmarks} bookmarks. be done with it!")
-                return dates
+        if(len(sorted_date_bookmarks) > max):
+            sorted_date_bookmarks = sorted_date_bookmarks[:max]
 
-        return dates
+        result = self._to_serializable(sorted_date_bookmarks, 'bookmarks', with_context, with_title)
+        return result
+
 
     def bookmarks_for_article(self, article_id, with_context, with_title=False):
 
