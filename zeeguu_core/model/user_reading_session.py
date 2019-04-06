@@ -389,3 +389,15 @@ class UserReadingSession(db.Model):
 
         sessions = query.all()
         return sessions
+
+    def json_serializable_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "duration": self.duration,
+            "article_id": self.article_id,
+            "start_time": self.start_time.strftime(JSON_TIME_FORMAT),
+            "last_action_time": self.last_action_time.strftime(JSON_TIME_FORMAT),
+            "is_active": self.is_active,
+            "article_title": self.article.title
+        }
