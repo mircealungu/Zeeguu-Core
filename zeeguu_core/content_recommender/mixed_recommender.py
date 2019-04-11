@@ -7,7 +7,8 @@
 """
 from zeeguu_core import log
 from zeeguu_core.model import Article, User, Bookmark, \
-    UserLanguage, TopicFilter, TopicSubscription, SearchFilter, SearchSubscription, ArticleWord, ArticlesCache
+    UserLanguage, TopicFilter, TopicSubscription, SearchFilter, \
+    SearchSubscription, ArticleWord, ArticlesCache, CohortArticleMap, Cohort
 from sortedcontainers import SortedList
 
 
@@ -113,6 +114,11 @@ def article_recommendations_for_user(user, count):
 
     return [user_article_info(user, article) for article in all_articles]
 
+def cohort_articles_for_user(user, count):
+
+    cohort = Cohort.find(user.cohort_id)
+    cohort_articles = CohortArticleMap.get_articles_info_for_cohort(cohort)
+    return cohort_articles
 
 def article_search_for_user(user, count, search):
     """
