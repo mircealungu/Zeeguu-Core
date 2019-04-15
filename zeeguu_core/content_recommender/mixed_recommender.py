@@ -114,7 +114,7 @@ def article_recommendations_for_user(user, count):
 
     return [user_article_info(user, article) for article in all_articles]
 
-def cohort_articles_for_user(user, count):
+def cohort_articles_for_user(user):
 
     cohort = Cohort.find(user.cohort_id)
     cohort_articles = CohortArticleMap.get_articles_info_for_cohort(cohort)
