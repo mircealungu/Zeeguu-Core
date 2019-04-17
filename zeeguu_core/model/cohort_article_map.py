@@ -11,7 +11,7 @@ class CohortArticleMap(zeeguu_core.db.Model):
     cohort = relationship(Cohort)
 
     article_id = Column(Integer, ForeignKey(Article.id))
-    article = relationship(Article, cascade="all, delete-orphan", single_parent=True)
+    article = relationship(Article)
     __table_args__ = (PrimaryKeyConstraint(cohort_id, article_id), {'mysql_collate': 'utf8_bin'})
 
     def __init__(self, cohort, article):
