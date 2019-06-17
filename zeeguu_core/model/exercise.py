@@ -61,11 +61,10 @@ class Exercise(db.Model):
         from zeeguu_core.model.bookmark import Bookmark, bookmark_exercise_mapping
         import sqlalchemy
 
-        query = db_session.query(Exercise, Bookmark).join(bookmark_exercise_mapping, Bookmark)
-        query = query.filter(Exercise.id == self.id)
+        query = Bookmark.query.filter(Bookmark.exercise_log.any(id=self.id))
 
         try:
-            related_data = query.one()
-            return related_data.Bookmark.user_id
+            corresponding_bookmark = query.one()
+            return corresponding_bookmark.user_id
         except sqlalchemy.orm.exc.NoResultFound:
             return None
