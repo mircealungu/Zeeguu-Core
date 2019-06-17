@@ -20,7 +20,7 @@ db = zeeguu_core.db
 class User(db.Model):
     __table_args__ = {'mysql_collate': 'utf8_bin'}
 
-    EMAIL_VALIDATION_REGEX = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
+    EMAIL_VALIDATION_REGEX = r"(^[a-z0-9_.+-]+@[a-z0-9-]+\.[a-z0-9-.]+$)"
     ANONYMOUS_EMAIL_DOMAIN = '@anon.zeeguu'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -159,6 +159,8 @@ class User(db.Model):
     @classmethod
     @sqlalchemy.orm.validates("email")
     def validate_email(cls, col, email):
+        if (any(x.isupper() for x in email)):
+            raise ValueError("You should use only lowercase letters for email")
         if not re.match(cls.EMAIL_VALIDATION_REGEX, email):
             raise ValueError("Invalid email address")
         return email
@@ -189,8 +191,8 @@ class User(db.Model):
         self.password_salt = salt_bytes.hex()
 
     def all_reading_sessions(self, after_date=datetime.datetime(1970, 1, 1),
-                    before_date=datetime.date.today() + datetime.timedelta(
-                        days=1)):
+                             before_date=datetime.date.today() + datetime.timedelta(
+                                 days=1)):
         from zeeguu_core.model.user_reading_session import UserReadingSession
         return UserReadingSession.query. \
             filter_by(user_id=self.id). \
@@ -253,19 +255,15 @@ class User(db.Model):
 
         return sorted_bookmarks
 
-    
-
-
     def _datetime_to_date(self, date_time):
         """
             we define datetime as being any datetime object,
             and date as being a datetime object with only the year, month and day part
-        """ 
+        """
         return date_time.replace(date_time.year,
-                                date_time.month,
-                                date_time.day, 0, 0, 0,
-                                0)
-
+                                 date_time.month,
+                                 date_time.day, 0, 0, 0,
+                                 0)
 
     def _to_date_dict(self, dict_list, date_key):
         """
@@ -279,7 +277,7 @@ class User(db.Model):
             date_dict.setdefault(date, []).append(dictionary)
 
         return date_dict
- 
+
     def _to_serializable(self, tuple_list, key_name, *args):
         """
             :param tuple_list: a list of tuples with 
@@ -303,10 +301,8 @@ class User(db.Model):
 
         return result
 
-  
-
     def reading_sessions_by_day(self,
-                         after_date=datetime.datetime(2010, 1, 1), max=42):
+                                after_date=datetime.datetime(2010, 1, 1), max=42):
         """
         :param after_date: The date from which the reading sessions will be queried
         :return: a serializable list of of objects containing a date and all the reading sessions belonging to that date
@@ -314,15 +310,15 @@ class User(db.Model):
 
         reading_sessions = self.all_reading_sessions(after_date)
         date_reading_sessions_dict = self._to_date_dict(dict_list=reading_sessions, date_key='start_time')
-        sorted_date_reading_sessions_tuples= sorted(date_reading_sessions_dict.items(), reverse=True, key=lambda tup: tup[0])
+        sorted_date_reading_sessions_tuples = sorted(date_reading_sessions_dict.items(), reverse=True,
+                                                     key=lambda tup: tup[0])
 
-        if(len(sorted_date_reading_sessions_tuples) > max):
+        if (len(sorted_date_reading_sessions_tuples) > max):
             sorted_date_reading_sessions_tuples = sorted_date_reading_sessions_tuples[:max]
 
         result = self._to_serializable(sorted_date_reading_sessions_tuples, key_name='reading_sessions')
 
         return result
-
 
     def bookmarks_by_date(self, after_date=datetime.datetime(1970, 1, 1)):
         """
@@ -346,7 +342,6 @@ class User(db.Model):
         sorted_dates.sort(reverse=True)
         return bookmarks_by_date, sorted_dates
 
-
     def bookmarks_by_day(self, with_context,
                          after_date=datetime.datetime(2010, 1, 1), max=42, with_title=False):
 
@@ -354,12 +349,11 @@ class User(db.Model):
         date_bookmarks_dict = self._to_date_dict(dict_list=bookmarks, date_key='time')
         sorted_date_bookmarks = sorted(date_bookmarks_dict.items(), reverse=True, key=lambda tup: tup[0])
 
-        if(len(sorted_date_bookmarks) > max):
+        if (len(sorted_date_bookmarks) > max):
             sorted_date_bookmarks = sorted_date_bookmarks[:max]
 
         result = self._to_serializable(sorted_date_bookmarks, 'bookmarks', with_context, with_title)
         return result
-
 
     def bookmarks_for_article(self, article_id, with_context, with_title=False):
 
