@@ -54,10 +54,6 @@ class User(db.Model):
         self.native_language = native_language or Language.default_native_language()
         self.invitation_code = invitation_code
         self.cohort = cohort
-        # Add the learned language to user languages and set reading_news to True
-        # so that the user has articles in the reader when opening it for the first time.
-        from zeeguu_core.model import UserLanguage
-        UserLanguage(self, learned_language or Language.default_learned(), reading_news=True)
 
     @classmethod
     def create_anonymous(cls, uuid, password, learned_language_code=None, native_language_code=None):
