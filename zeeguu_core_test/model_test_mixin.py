@@ -1,3 +1,6 @@
+# import warnings
+# warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 import requests_mock
 import zeeguu_core.model
 
