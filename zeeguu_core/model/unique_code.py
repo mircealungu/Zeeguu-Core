@@ -2,6 +2,8 @@ from datetime import datetime
 from random import randint
 
 import zeeguu_core
+from sqlalchemy import func
+
 db = zeeguu_core.db
 
 
@@ -14,7 +16,7 @@ class UniqueCode(db.Model):
     time = db.Column(db.DateTime)
 
     def __init__(self, email):
-        self.code = randint(100,999)
+        self.code = randint(100, 999)
         self.email = email
         self.time = datetime.now()
 
@@ -27,4 +29,4 @@ class UniqueCode(db.Model):
 
     @classmethod
     def all_codes_for(cls, email):
-        return (cls.query.filter(cls.email == email)).all()
+        return (cls.query.filter(func.lower(cls.email) == email.lower())).all()

@@ -6,7 +6,7 @@ import re
 
 import sqlalchemy.orm
 import zeeguu_core
-from sqlalchemy import Column, ForeignKey, Integer
+from sqlalchemy import Column, ForeignKey, Integer, func
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.exc import NoResultFound
 from zeeguu_core import util
@@ -488,7 +488,7 @@ class User(db.Model):
 
     @classmethod
     def find(cls, email):
-        return User.query.filter(User.email == email).one()
+        return User.query.filter(func.lower(User.email) == email.lower()).one()
 
     @classmethod
     def find_by_id(cls, id):
@@ -516,7 +516,7 @@ class User(db.Model):
     @classmethod
     def authorize(cls, email, password):
         try:
-            user = cls.query.filter(cls.email == email).one()
+            user = cls.find(email)
             if user.password == util.password_hash(password, bytes.fromhex(user.password_salt)):
                 return user
         except sqlalchemy.orm.exc.NoResultFound:
