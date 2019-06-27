@@ -31,7 +31,7 @@ def print_feedback_info(activity_data, user):
         if activity_data.value == "not_finished_for_too_difficult":
             line += f"{art.fk_difficulty}"
 
-        line += f", https://www.zeeguu.unibe.ch/bookmarks_for_article/{art.id}/{user.id}"
+        line += f", https://www.zeeguu.org/bookmarks_for_article/{art.id}/{user.id}"
 
         print(line)
 
