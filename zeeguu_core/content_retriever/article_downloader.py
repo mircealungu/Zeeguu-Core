@@ -79,6 +79,9 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
         except requests.exceptions.TooManyRedirects:
             log(f"Too many redirects for: {url}")
             continue
+        except Exception:
+            log(f"could not get url after redirects for: {url}")
+            continue
 
         try:
             this_article_time = datetime.strptime(feed_item['published'], SIMPLE_TIME_FORMAT)
