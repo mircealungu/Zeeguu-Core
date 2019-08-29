@@ -44,10 +44,13 @@ print(f" ... url count: {len(all_urls)}")
 
 #
 
-print(f"2. finding articles older than {DAYS} data...")
+print(f"2. finding articles older than {DAYS} days...")
 all_articles = Article.all_older_than(days=DAYS)
 print(f" ... article count: {len(all_articles)}")
+
+i = 0
 for each in all_articles:
+    i += 1
     info = UserArticle.find_by_article(each)
     url_found = each.url.as_string() in all_urls
 
@@ -61,6 +64,10 @@ for each in all_articles:
     else:
         deleted.append(each.id)
         dbs.delete(each)
+
+    if i == 1000:
+        dbs.commit()
+        i = 0
 
 dbs.commit()
 
