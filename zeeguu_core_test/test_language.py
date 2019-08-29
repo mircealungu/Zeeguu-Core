@@ -1,5 +1,6 @@
 from unittest import TestCase
 
+import zeeguu_core
 from sqlalchemy.orm.exc import NoResultFound
 
 from zeeguu_core_test.model_test_mixin import ModelTestMixIn
@@ -7,6 +8,7 @@ from zeeguu_core_test.rules.language_rule import LanguageRule
 from zeeguu_core_test.rules.user_rule import UserRule
 from zeeguu_core.model.language import Language
 
+session = zeeguu_core.db.session
 
 class LanguageTest(ModelTestMixIn, TestCase):
 
@@ -34,7 +36,7 @@ class LanguageTest(ModelTestMixIn, TestCase):
     def test_user_set_language(self):
         language_should_be = LanguageRule().random
 
-        self.user.set_learned_language(language_should_be.code)
+        self.user.set_learned_language(language_should_be.code, session)
         assert self.user.learned_language.id == language_should_be.id
 
     def test_native_language(self):
