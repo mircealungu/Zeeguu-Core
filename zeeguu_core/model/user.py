@@ -128,10 +128,11 @@ class User(db.Model):
         estimator = DifficultyEstimatorFactory.get_difficulty_estimator(self.preferred_difficulty_estimator())
         return estimator.estimate_difficulty(text, language, self)
 
-    def set_learned_language(self, code, session = None):
-        self.learned_language = Language.find(code)
+    def set_learned_language(self, language_code, session = None):
+        self.learned_language = Language.find(language_code)
         from zeeguu_core.model import UserLanguage
-        language = UserLanguage(self, self.learned_language, reading_news=True)
+        language = UserLanguage.find_or_create(session, self, self.learned_language)
+        language.reading_news = True
         if session:
             session.add(language)
 
