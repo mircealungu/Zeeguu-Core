@@ -33,7 +33,7 @@ class LocalizedTopic(db.Model):
 
     keywords = Column(String(1024))
 
-    def __init__(self, topic: Topic, language: Language, topic_translated: str, keywords: str=""):
+    def __init__(self, topic: Topic, language: Language, topic_translated: str, keywords: str = ""):
         self.topic = topic
         self.language = language
         self.topic_translated = topic_translated
@@ -44,7 +44,7 @@ class LocalizedTopic(db.Model):
 
     def matches_article(self, article):
         keywords = self.keywords.strip().split(" ")
-        
+
         for keyword in keywords:
             if keyword != '' and (keyword in article.url.as_string() or keyword in article.title):
                 return True
@@ -59,11 +59,3 @@ class LocalizedTopic(db.Model):
     @classmethod
     def all_for_language(cls, language):
         return (cls.query.filter(cls.language == language)).all()
-
-    @classmethod
-    def find(cls, name: str, language: 'Language'):
-        try:
-            return (cls.query.filter(and_(cls.name == name, cls.language == language))).one()
-        except Exception as e:
-            print(e)
-            return None
