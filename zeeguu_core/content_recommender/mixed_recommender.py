@@ -5,6 +5,8 @@
 
 
 """
+from sqlalchemy import not_, or_, any_
+from sqlalchemy.orm.exc import NoResultFound
 from zeeguu_core import log
 from zeeguu_core.model import Article, User, Bookmark, \
     UserLanguage, TopicFilter, TopicSubscription, SearchFilter, \
@@ -75,18 +77,10 @@ def recompute_recommender_cache(reading_preferences_hash_code, session, user, ar
     """
     all_articles = find_articles_for_user(user)
 
-    count = 0
-    while count < article_limit:
-        count += 1
-        try:
-            art = next(all_articles)
-            cache_obj = ArticlesCache(art, reading_preferences_hash_code)
-            session.add(cache_obj)
-        except StopIteration as e:
-            print("could not find as many results as we wanted")
-            break
-        finally:
-            session.commit()
+    for art in all_articles:
+        cache_obj = ArticlesCache(art, reading_preferences_hash_code)
+        session.add(cache_obj)
+        session.commit()
 
 
 def article_recommendations_for_user(user, count):
@@ -114,11 +108,15 @@ def article_recommendations_for_user(user, count):
 
     return [user_article_info(user, article) for article in all_articles]
 
-def cohort_articles_for_user(user):
 
-    cohort = Cohort.find(user.cohort_id)
-    cohort_articles = CohortArticleMap.get_articles_info_for_cohort(cohort)
-    return cohort_articles
+def cohort_articles_for_user(user):
+    try:
+        cohort = Cohort.find(user.cohort_id)
+        cohort_articles = CohortArticleMap.get_articles_info_for_cohort(cohort)
+        return cohort_articles
+    except NoResultFound as e:
+        return []
+
 
 def article_search_for_user(user, count, search):
     """
@@ -169,14 +167,12 @@ def find_articles_for_user(user):
 
     search_subscriptions = SearchSubscription.all_for_user(user)
 
-    subscribed_articles = get_subscribed_articles_list(search_subscriptions, topic_subscriptions)
-
-    subscribed_articles = filter_subscribed_articles(subscribed_articles, user_languages, user)
+    subscribed_articles = filter_subscribed_articles(search_subscriptions, topic_subscriptions, user_languages, user)
 
     return subscribed_articles
 
 
-def filter_subscribed_articles(subscribed_articles, user_languages, user):
+def filter_subscribed_articles(search_subscriptions, topic_subscriptions, user_languages, user):
     """
     :param subscribed_articles:
     :param user_filters:
@@ -188,42 +184,90 @@ def filter_subscribed_articles(subscribed_articles, user_languages, user):
 
     """
 
-    def _article_matches_user_topic_filters(article, filters):
-        return not set(article.topics).isdisjoint([each.topic for each in filters])
-
+    from zeeguu_core.model import Topic
     user_search_filters = SearchFilter.all_for_user(user)
 
-    user_filters = TopicFilter.all_for_user(user)
+    if len(user_languages) == 0:
+        return []
 
-    keywords_to_avoid = []
-    for user_search_filter in user_search_filters:
-        keywords_to_avoid.append(user_search_filter.search.keywords)
+    # TODO: shouldn't this be passed down from upstream?
+    total_article_count = 30
+    per_language_article_count = total_article_count / len(user_languages)
 
-    subscribed_articles = (art for art in subscribed_articles if
-                           (art.language in user_languages)
-                           and not art.broken
-                           and (UserLanguage.appropriate_level(art, user))
-                           and not _article_matches_user_topic_filters(art, user_filters)
-                           and not (art.contains_any_of(keywords_to_avoid)))
-    return subscribed_articles
+    final_article_mix = set()
+    for language in user_languages:
+        print(f"language: {language}")
 
+        query = Article.query
+        query = query.order_by(Article.id.desc())
+        query = query.filter(Article.language == language)
+        query = query.filter(Article.broken == False)
 
-def get_subscribed_articles_list(search_subscriptions, topic_subscriptions):
-    subscribed_articles = SortedList(key=lambda x: -x.id)
+        # speed up a bit the stuff
+        # query = query.filter(Article.id > 500000)
 
-    if not topic_subscriptions and not search_subscriptions:
-        return (each for each in Article.query.order_by(Article.published_time.desc()).limit(10000))
+        # 0. Ensure appropriate difficulty
+        declared_level_min, declared_level_max = user.levels_for(language)
+        lower_bounds = declared_level_min * 10
+        upper_bounds = declared_level_max * 10
 
-    else:
+        query = query.filter(lower_bounds < Article.fk_difficulty)
+        query = query.filter(upper_bounds > Article.fk_difficulty)
 
-        for sub in topic_subscriptions:
-            subscribed_articles.update(sub.topic.all_articles())
+        # 1. Keywords to exclude
+        # ==============================
+        keywords_to_avoid = []
+        for user_search_filter in user_search_filters:
+            keywords_to_avoid.append(user_search_filter.search.keywords)
+        print(f"keywords to exclude: {keywords_to_avoid}")
 
+        for keyword_to_avoid in keywords_to_avoid:
+            query = query.filter(not_(or_(Article.title.contains(keyword_to_avoid),
+                                          Article.content.contains(
+                                              keyword_to_avoid))))  # title does not contain keywords
+
+        # 2. Topics to exclude / filter out
+        # =================================
+        user_filters = TopicFilter.all_for_user(user)
+        to_exclude_topic_ids = [each.topic.id for each in user_filters]
+        print(f"to exlcude topic ids: {to_exclude_topic_ids}")
+        print(f"topics to exclude: {user_filters}")
+        query = query.filter(not_(Article.topics.any(Topic.id.in_(to_exclude_topic_ids))))
+
+        # 3. Topics subscribed, and thus to include
+        # =========================================
+        ids_of_topics_to_include = [subscription.topic.id for subscription in topic_subscriptions]
+        print(f"topics to include: {topic_subscriptions}")
+        print(f"topics ids to include: {ids_of_topics_to_include}")
+        # we comment out this line, because we want to do an or_between it and the
+        # one corresponding to searches later below!
+        # query = query.filter(Article.topics.any(Topic.id.in_(topic_ids)))
+
+        # 4. Searches to include
+        # ======================
+        print(f"Search subscriptions: {search_subscriptions}")
+        ids_for_articles_containing_search_terms = set()
         for user_search in search_subscriptions:
-            search = user_search.search.keywords
-            subscribed_articles.update(get_articles_for_search_term(search))
+            search_string = user_search.search.keywords.lower()
+            print(search_string)
 
-    return subscribed_articles
+            articles_for_word = ArticleWord.get_articles_for_word(search_string)
+            print(articles_for_word)
+            ids_for_articles_containing_search_terms.update([article.id for article in articles_for_word])
+        print(ids_for_articles_containing_search_terms)
+        # commenting out this line, in favor of it being part of a merge later
+        # query = query.filter(Article.id.in_(article_ids))
+
+        if (ids_of_topics_to_include or ids_for_articles_containing_search_terms):
+            query = query.filter(or_(
+                Article.topics.any(Topic.id.in_(ids_of_topics_to_include)),
+                Article.id.in_(ids_for_articles_containing_search_terms)
+            ))
+
+        query = query.limit(per_language_article_count)
+        final_article_mix.update(query.all())
+
+    return final_article_mix
 
 
 def get_user_articles_sources_languages(user, limit=1000):
