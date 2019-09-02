@@ -40,8 +40,10 @@ class UserLanguage(db.Model):
     reading_news = Column(Boolean)
     doing_exercises = Column(Boolean)
 
+    cefr_level = Column(Integer)
+
     def __init__(self, user, language, declared_level_min=0, declared_level_max=10, inferred_level_min=0,
-                 inferred_level_max=10, reading_news=False, doing_exercises=False):
+                 inferred_level_max=10, reading_news=False, doing_exercises=False, cefr_level=0):
         self.user = user
         self.language = language
         self.declared_level_min = declared_level_min
@@ -50,6 +52,7 @@ class UserLanguage(db.Model):
         self.inferred_level_max = inferred_level_max
         self.reading_news = reading_news
         self.doing_exercises = doing_exercises
+        self.cefr_level = cefr_level
 
     def get(self):
         return self.value
@@ -96,20 +99,3 @@ class UserLanguage(db.Model):
         result = cls.query.filter(cls.user == user).filter(cls.reading_news == True).all()
 
         return result
-
-    @classmethod
-    def appropriate_level(cls, article, user):
-        """
-
-            ensures that the article is at the appropriate
-            level for this user and this article language
-
-        :param article:
-        :param user:
-        :return:
-        """
-        declared_level_min, declared_level_max = user.levels_for(article.language)
-        lower_bounds = declared_level_min * 10
-        upper_bounds = declared_level_max * 10
-
-        return (lower_bounds <= article.fk_difficulty <= upper_bounds)

@@ -107,6 +107,7 @@ class User(db.Model):
             result[each.language.code + "_max"] = each.declared_level_max
             result[each.language.code + "_reading"] = each.reading_news
             result[each.language.code + "_exercises"] = each.doing_exercises
+            result[each.language.code + "_cefr_level"] = each.cefr_level
 
         return result
 
@@ -128,16 +129,39 @@ class User(db.Model):
         estimator = DifficultyEstimatorFactory.get_difficulty_estimator(self.preferred_difficulty_estimator())
         return estimator.estimate_difficulty(text, language, self)
 
-    def set_learned_language(self, language_code, session = None):
+    def set_native_language(self, code):
+        self.native_language = Language.find(code)
+
+    def set_learned_language(self, language_code, session=None):
         self.learned_language = Language.find(language_code)
+
         from zeeguu_core.model import UserLanguage
+
+        # disable the exercises and reading for all the other languages
+        all_other_languages = (UserLanguage.query.
+                               filter(User.id == self.id).
+                               filter(UserLanguage.doing_exercises == True).all())
+        for each in all_other_languages:
+            each.doing_exercises = False
+            each.reading_news = False
+            if session:
+                session.add(each)
+
         language = UserLanguage.find_or_create(session, self, self.learned_language)
         language.reading_news = True
+        language.doing_exercises = True
+
         if session:
             session.add(language)
 
-    def set_native_language(self, code):
-        self.native_language = Language.find(code)
+    def set_learned_language_level(self, language_code: str, level: str, session=None):
+        learned_language = Language.find(language_code)
+        from zeeguu_core.model import UserLanguage
+        language = UserLanguage.find_or_create(session, self, learned_language)
+        language.cefr_level = int(level)
+        if session:
+            session.add(language)
+
 
     def has_bookmarks(self):
         return self.bookmark_count() > 0
@@ -461,11 +485,25 @@ class User(db.Model):
         declared_level_max = 11
 
         # start from user's levels if they exist
-        if lang_info.declared_level_min:
+        if lang_info.declared_level_min > 0:
             declared_level_min = lang_info.declared_level_min
 
-        if lang_info.declared_level_max:
+        if lang_info.declared_level_max < 10:
             declared_level_max = lang_info.declared_level_max
+
+        CEFR_TO_DIFFICULTY_MAPPING = {
+            1: (1, 5.5),
+            2: (1, 6),
+            3: (3, 7),
+            4: (4, 8),
+            5: (6, 9),
+            6: (7, 10)
+        }
+
+        if lang_info.cefr_level > 0:
+            declared_level_min, declared_level_max = CEFR_TO_DIFFICULTY_MAPPING[lang_info.cefr_level]
+            print(f"based on level {lang_info.cefr_level} min: {declared_level_min} and max: {declared_level_max}")
+
 
         # If there's cohort info, consider it
         if self.cohort:
