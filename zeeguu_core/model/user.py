@@ -485,11 +485,13 @@ class User(db.Model):
         declared_level_max = 11
 
         # start from user's levels if they exist
-        if lang_info.declared_level_min > 0:
-            declared_level_min = lang_info.declared_level_min
+        if lang_info.declared_level_min:
+            if lang_info.declared_level_min > 0:
+                declared_level_min = lang_info.declared_level_min
 
-        if lang_info.declared_level_max < 10:
-            declared_level_max = lang_info.declared_level_max
+        if lang_info.declared_level_max:
+            if lang_info.declared_level_max < 10:
+                declared_level_max = lang_info.declared_level_max
 
         CEFR_TO_DIFFICULTY_MAPPING = {
             1: (1, 5.5),
