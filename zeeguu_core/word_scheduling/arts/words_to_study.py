@@ -1,4 +1,4 @@
-from zeeguu_core.model.bookmark import Bookmark
+from zeeguu_core.model import Bookmark, UserWord
 from zeeguu_core.model.bookmark_priority_arts import BookmarkPriorityARTS
 from zeeguu_core.word_scheduling.arts.ab_testing import ABTesting
 from zeeguu_core import log
@@ -17,14 +17,15 @@ def bookmarks_to_study(user, desired_bookmarks_count=10):
         possible_bookmarks_to_return_count is equally dividable by the group count.
 
     """
-    bookmarks = Bookmark.query. \
-        filter_by(user_id=user.id). \
-        filter_by(learned=False). \
-        join(BookmarkPriorityARTS). \
-        filter(BookmarkPriorityARTS.bookmark_id == Bookmark.id). \
-        filter(or_(Bookmark.fit_for_study == True, Bookmark.starred == True)). \
-        order_by(BookmarkPriorityARTS.priority.desc()). \
-        all()
+    bookmarks = (Bookmark.query.
+                 filter_by(user_id=user.id).
+                 filter_by(learned=False).
+                 join(BookmarkPriorityARTS, BookmarkPriorityARTS.bookmark_id == Bookmark.id).
+                 join(UserWord, Bookmark.origin_id == UserWord.id).
+                 filter(or_(Bookmark.fit_for_study == True, Bookmark.starred == True)).
+                 filter(UserWord.language_id == user.learned_language_id).
+                 order_by(BookmarkPriorityARTS.priority.desc()).
+                 all())
 
     # Group the bookmarks by their used priority algorithm in lists
     bookmark_groups = ABTesting.split_bookmarks_based_on_algorithm(bookmarks)
