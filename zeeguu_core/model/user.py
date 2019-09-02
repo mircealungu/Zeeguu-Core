@@ -11,7 +11,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm.exc import NoResultFound
 from zeeguu_core import util
 from zeeguu_core.language.difficulty_estimator_factory import DifficultyEstimatorFactory
-from zeeguu_core.model.language import Language
+from zeeguu_core.model import Language
 from wordstats import Word
 
 db = zeeguu_core.db
@@ -162,7 +162,6 @@ class User(db.Model):
         if session:
             session.add(language)
 
-
     def has_bookmarks(self):
         return self.bookmark_count() > 0
 
@@ -228,12 +227,14 @@ class User(db.Model):
     def all_bookmarks(self, after_date=datetime.datetime(1970, 1, 1),
                       before_date=datetime.date.today() + datetime.timedelta(
                           days=1)):
-        from zeeguu_core.model.bookmark import Bookmark
-        return Bookmark.query. \
-            filter_by(user_id=self.id). \
-            filter(Bookmark.time >= after_date). \
-            filter(Bookmark.time <= before_date). \
-            order_by(Bookmark.time).all()
+        from zeeguu_core.model.bookmark import Bookmark, UserWord
+        return (Bookmark.query.
+                join(UserWord, Bookmark.origin_id == UserWord.id).
+                filter(UserWord.language_id == self.learned_language_id).
+                filter(Bookmark.user_id==self.id).
+                filter(Bookmark.time >= after_date).
+                filter(Bookmark.time <= before_date).
+                order_by(Bookmark.time).all())
 
     def all_bookmarks_fit_for_study(self):
         from zeeguu_core.model.bookmark import Bookmark
@@ -247,26 +248,40 @@ class User(db.Model):
             Bookmark.time.desc()).all()
 
     def starred_bookmarks(self, count):
-        from zeeguu_core.model.bookmark import Bookmark
-        return Bookmark.query.filter_by(user_id=self.id).filter_by(starred=True).order_by(
-            Bookmark.time.desc()).limit(count)
+        from zeeguu_core.model.bookmark import Bookmark, UserWord
+        return (Bookmark.query.
+                join(UserWord, Bookmark.origin_id == UserWord.id).
+                filter(UserWord.language_id == self.learned_language_id).
+                filter(Bookmark.user_id == self.id).
+                filter(Bookmark.starred == True).
+                order_by(Bookmark.time.desc()).
+                limit(count))
 
     def learned_bookmarks(self, count=50):
-        from zeeguu_core.model.bookmark import Bookmark
+        from zeeguu_core.model.bookmark import Bookmark, UserWord
 
-        learned = Bookmark.query.filter_by(user_id=self.id).filter_by(learned=True).order_by(
-            Bookmark.learned_time.desc()).limit(400)
+        learned = (Bookmark.query.
+                   join(UserWord, Bookmark.origin_id == UserWord.id).
+                   filter(UserWord.language_id == self.learned_language_id).
+                   filter(Bookmark.user_id == self.id).
+                   filter(Bookmark.learned == True).
+                   order_by(Bookmark.learned_time.desc()).limit(400))
 
         return learned
 
     def top_bookmarks(self, count=50, also_print=False):
-        from zeeguu_core.model.bookmark import Bookmark
+        from zeeguu_core.model import Bookmark, UserWord
 
         def rank(b):
             return Word.stats(b.origin.word, b.origin.language.code).rank
 
-        all_bookmarks = Bookmark.query.filter_by(user_id=self.id).filter_by(learned=False).order_by(
-            Bookmark.time.desc()).limit(400)
+        all_bookmarks = (Bookmark.
+                         query.
+                         join(UserWord, Bookmark.origin_id == UserWord.id).
+                         filter(UserWord.language_id == self.learned_language_id).
+                         filter(Bookmark.user_id == self.id).
+                         filter(Bookmark.learned == False).order_by(
+            Bookmark.time.desc()).limit(400))
 
         single_word_bookmarks = [each for each in all_bookmarks if each.quality_top_bookmark()]
 
@@ -505,7 +520,6 @@ class User(db.Model):
         if lang_info.cefr_level > 0:
             declared_level_min, declared_level_max = CEFR_TO_DIFFICULTY_MAPPING[lang_info.cefr_level]
             print(f"based on level {lang_info.cefr_level} min: {declared_level_min} and max: {declared_level_max}")
-
 
         # If there's cohort info, consider it
         if self.cohort:
