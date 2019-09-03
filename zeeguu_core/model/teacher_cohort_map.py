@@ -1,6 +1,7 @@
 import zeeguu_core
 from sqlalchemy import Column, Integer, ForeignKey
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm.exc import NoResultFound
 from zeeguu_core.model import User
 from zeeguu_core.model.cohort import Cohort
 
@@ -33,5 +34,11 @@ class TeacherCohortMap(zeeguu_core.db.Model):
         return [teacher_role.user for teacher_role in cls.query.filter_by(cohort=cohort).all()]
 
     @classmethod
-    def find(cls, user, cohort):
-        return cls.query.filter_by(user=user, cohort=cohort)
+    def find_or_create(cls, user, cohort, session):
+        try:
+            return cls.query.filter_by(user=user).filter_by(cohort=cohort).one()
+        except NoResultFound as e:
+            new = cls(user, cohort)
+            session.add(new)
+            session.commit()
+            return new
