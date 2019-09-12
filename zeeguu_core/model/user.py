@@ -218,38 +218,48 @@ class User(db.Model):
                              before_date=datetime.date.today() + datetime.timedelta(
                                  days=1)):
         from zeeguu_core.model.user_reading_session import UserReadingSession
-        return UserReadingSession.query. \
-            filter_by(user_id=self.id). \
-            filter(UserReadingSession.start_time >= after_date). \
-            filter(UserReadingSession.start_time <= before_date). \
-            order_by(UserReadingSession.start_time).all()
+        query = zeeguu_core.db.session.query(UserReadingSession)
+        return (query.
+                filter_by(user_id=self.id).
+                filter(UserReadingSession.start_time >= after_date).
+                filter(UserReadingSession.start_time <= before_date).
+                order_by(UserReadingSession.start_time)).all()
 
     def all_bookmarks(self, after_date=datetime.datetime(1970, 1, 1),
                       before_date=datetime.date.today() + datetime.timedelta(
                           days=1)):
         from zeeguu_core.model.bookmark import Bookmark, UserWord
-        return (Bookmark.query.
+
+        query = zeeguu_core.db.session.query(Bookmark)
+        return (query.
                 join(UserWord, Bookmark.origin_id == UserWord.id).
                 filter(UserWord.language_id == self.learned_language_id).
-                filter(Bookmark.user_id==self.id).
+                filter(Bookmark.user_id == self.id).
                 filter(Bookmark.time >= after_date).
                 filter(Bookmark.time <= before_date).
                 order_by(Bookmark.time).all())
 
     def all_bookmarks_fit_for_study(self):
         from zeeguu_core.model.bookmark import Bookmark
-        return Bookmark.query. \
-            filter_by(user_id=self.id). \
-            filter_by(fit_for_study=True).all()
+
+        query = zeeguu_core.db.session.query(Bookmark)
+        return (query.
+                filter_by(user_id=self.id).
+                filter_by(fit_for_study=True)).all()
 
     def bookmarks_chronologically(self):
         from zeeguu_core.model.bookmark import Bookmark
-        return Bookmark.query.filter_by(user_id=self.id).order_by(
-            Bookmark.time.desc()).all()
+
+        query = zeeguu_core.db.session.query(Bookmark)
+        return (query.
+                filter_by(user_id=self.id).
+                order_by(Bookmark.time.desc())).all()
 
     def starred_bookmarks(self, count):
         from zeeguu_core.model.bookmark import Bookmark, UserWord
-        return (Bookmark.query.
+
+        query = zeeguu_core.db.session.query(Bookmark)
+        return (query.
                 join(UserWord, Bookmark.origin_id == UserWord.id).
                 filter(UserWord.language_id == self.learned_language_id).
                 filter(Bookmark.user_id == self.id).
@@ -260,7 +270,8 @@ class User(db.Model):
     def learned_bookmarks(self, count=50):
         from zeeguu_core.model.bookmark import Bookmark, UserWord
 
-        learned = (Bookmark.query.
+        query = zeeguu_core.db.session.query(Bookmark)
+        learned = (query.
                    join(UserWord, Bookmark.origin_id == UserWord.id).
                    filter(UserWord.language_id == self.learned_language_id).
                    filter(Bookmark.user_id == self.id).
@@ -275,8 +286,8 @@ class User(db.Model):
         def rank(b):
             return Word.stats(b.origin.word, b.origin.language.code).rank
 
-        all_bookmarks = (Bookmark.
-                         query.
+        query = zeeguu_core.db.session.query(Bookmark)
+        all_bookmarks = (query.
                          join(UserWord, Bookmark.origin_id == UserWord.id).
                          filter(UserWord.language_id == self.learned_language_id).
                          filter(Bookmark.user_id == self.id).
@@ -401,7 +412,8 @@ class User(db.Model):
 
         bookmarks = []
 
-        all_for_article = (Bookmark.query.join(Text).
+        query = zeeguu_core.db.session.query(Bookmark)
+        all_for_article = (query.join(Text).
                            filter(Bookmark.user_id == self.id).
                            filter(Text.article_id == article_id).
                            order_by(Bookmark.id.asc()).
@@ -539,11 +551,13 @@ class User(db.Model):
 
     @classmethod
     def find_all(cls):
-        return User.query.all()
+        query = zeeguu_core.db.session.query(User)
+        return query.all()
 
     @classmethod
     def find(cls, email):
-        return User.query.filter(func.lower(User.email) == email.lower()).one()
+        query = zeeguu_core.db.session.query(User)
+        return query.filter(func.lower(User.email) == email.lower()).one()
 
     @classmethod
     def find_by_id(cls, id):
@@ -553,14 +567,18 @@ class User(db.Model):
     def all_recent_user_ids(cls, days=90):
         from zeeguu_core.model import UserActivityData
         sometime_ago = datetime.datetime.now() - datetime.timedelta(days=days)
-        recent_activities = UserActivityData.query.filter(UserActivityData.time > sometime_ago).all()
+
+        query = zeeguu_core.db.session.query(UserActivityData)
+        recent_activities = query.filter(UserActivityData.time > sometime_ago).all()
         user_ids = set([each.user_id for each in recent_activities])
         return user_ids
 
     @classmethod
     def exists(cls, user):
+
+        query = zeeguu_core.db.session.query(User)
         try:
-            cls.query.filter_by(
+            query.filter_by(
                 email=user.email,
                 id=user.id
             ).one()
