@@ -529,7 +529,7 @@ class User(db.Model):
             6: (7, 10)
         }
 
-        if lang_info.cefr_level > 0:
+        if lang_info.cefr_level and lang_info.cefr_level > 0:
             declared_level_min, declared_level_max = CEFR_TO_DIFFICULTY_MAPPING[lang_info.cefr_level]
             print(f"based on level {lang_info.cefr_level} min: {declared_level_min} and max: {declared_level_max}")
 
