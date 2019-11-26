@@ -25,7 +25,8 @@ class Language(db.Model):
         "nl": "Dutch",
         "it": "Italian",
         "zh-CN": "Chinese",
-        "da": "Danish"
+        "da": "Danish",
+        "ro": "Romanian"
     }
 
     def __init__(self, code, name):
@@ -61,7 +62,7 @@ class Language(db.Model):
 
     @classmethod
     def available_languages(cls):
-        return [Language.find_or_create(code) for code in cls.LANGUAGES_THAT_CAN_BE_LEARNED]
+        return ([Language.find_or_create(code) for code in cls.LANGUAGES_THAT_CAN_BE_LEARNED])
 
     @classmethod
     def find(cls, code):

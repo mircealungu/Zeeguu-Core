@@ -155,7 +155,7 @@ class User(db.Model):
             session.add(language)
 
     def set_learned_language_level(self, language_code: str, level: str, session=None):
-        learned_language = Language.find(language_code)
+        learned_language = Language.find_or_create(language_code)
         from zeeguu_core.model import UserLanguage
         language = UserLanguage.find_or_create(session, self, learned_language)
         language.cefr_level = int(level)
