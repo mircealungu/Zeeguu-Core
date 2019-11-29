@@ -104,7 +104,8 @@ def article_recommendations_for_user(user, count):
     reading_pref_hash = reading_preferences_hash(user)
     recompute_recommender_cache_if_needed(user, zeeguu_core.db.session)
     all_articles = ArticlesCache.get_articles_for_hash(reading_pref_hash, count)
-    all_articles = [each for each in all_articles if not each.broken]
+    all_articles = [each for each in all_articles if (not each.broken
+                                                      and each.published_time)]
     all_articles = SortedList(all_articles, lambda x: x.published_time)
 
     return [user_article_info(user, article) for article in reversed(all_articles)]
