@@ -74,7 +74,7 @@ class Text(db.Model):
 
     def all_bookmarks(self, user):
         from zeeguu_core.model import Bookmark
-        return Bookmark.find_all_for_user_and_text(self, user)
+        return Bookmark.find_all_for_text_and_user(self, user)
 
     @classmethod
     def find_or_create(cls, session, text, language, url, article):

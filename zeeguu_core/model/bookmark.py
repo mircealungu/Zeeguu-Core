@@ -113,7 +113,8 @@ class Bookmark(db.Model):
         """
             if the user translates a superset of this sentence
         """
-        all_bookmarks_in_text = Bookmark.find_all_for_user_and_text(self.user, self.text)
+        all_bookmarks_in_text = Bookmark.find_all_for_text_and_user(self.text, self.user)
+
         for each in all_bookmarks_in_text:
             if each != self:
                 if self.origin.word in each.origin.word:
@@ -187,7 +188,7 @@ class Bookmark(db.Model):
 
                 or
                 # a too long context is not good either
-                self.context_word_count() > 20
+                self.context_word_count() > 42
 
                 or
                 # a superset of translation same as origin...
@@ -204,7 +205,11 @@ class Bookmark(db.Model):
         """
             Called when something happened to the bookmark,
              that requires it's "fit for study" status to be
-              updated.
+              updated. Including:
+              - starred / unstarred
+              - exercise finished for the given bookmark
+              - ...
+
         :param session:
         :return:
         """
@@ -374,8 +379,8 @@ class Bookmark(db.Model):
         return cls.query.filter().all()
 
     @classmethod
-    def find_all_for_user_and_text(cls, text, user):
-        return cls.query.filter_by(text=text, user=user).all()
+    def find_all_for_text_and_user(cls, text, user):
+        return Bookmark.query.filter_by(text=text, user=user).all()
 
     @classmethod
     def find_all_for_user_and_url(cls, user, url):
