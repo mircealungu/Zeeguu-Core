@@ -16,3 +16,5 @@ testing_default.cfg
 
 *.log
 activate_zeeguu.sh
+
+.in
