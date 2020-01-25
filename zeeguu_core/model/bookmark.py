@@ -23,6 +23,9 @@ from zeeguu_core.util.timer_logging_decorator import time_this
 
 db = zeeguu_core.db
 
+CORRECTS_IN_A_ROW_FOR_LEARNED = 4
+CORRECTS_IN_DISTINCT_DAYS_FOR_LEARNED = 4
+
 bookmark_exercise_mapping = Table('bookmark_exercise_mapping',
                                   db.Model.metadata,
                                   Column('bookmark_id', Integer,
@@ -307,11 +310,11 @@ class Bookmark(db.Model):
             title=bookmark_title,
             url=self.text.url.as_string(),
             origin_importance=word_info.importance,
-            learned_datetime=learned_datetime,
+            learned_datetime=self.most_recent_correct_dates(),
             origin_rank=word_info.rank if word_info.rank != 100000 else '',
             starred=self.starred if self.starred is not None else False,
             article_id=self.text.article_id if self.text.article_id else '',
-            created_day=created_day, #human readable stuff...
+            created_day=created_day,  # human readable stuff...
             time=self.time.strftime(JSON_TIME_FORMAT)
         )
 
@@ -432,71 +435,74 @@ class Bookmark(db.Model):
                       key=lambda x: x.time,
                       reverse=True)
 
-    def check_if_learned_based_on_exercise_outcomes(self,
-                                                    add_to_result_time=False):
-        """
-        TODO: This should replace check_is_latest_outcome in the future...
-        :param add_to_result_time:
-        :return:
-        """
-        if len(self.exercise_log) == 0:
-            if add_to_result_time:
-                return False, None
+    def compact_sorted_exercise_log(self):
+        result = ""
+        for ex in self.sorted_exercise_log():
+            result += (f"{ex.time.day}/{ex.time.month} " +
+                       f"{ex.outcome.outcome[:4]}   ")
+        return result
 
-            return False
+    def most_recent_correct_dates(self):
 
-        last_exercise = self.exercise_log[-1]
-
-        # If last outcome is TOO EASY we know it
-        if last_exercise.outcome.outcome == ExerciseOutcome.TOO_EASY:
-            if add_to_result_time:
-                return True, last_exercise.time
-
-            return True
-
-        CORRECTS_IN_A_ROW = 5
-        if len(self.exercise_log) >= CORRECTS_IN_A_ROW:
-
-            # If we got it right for the last CORRECTS_IN_A_ROW times, we know it
-            if all(exercise.outcome.correct for exercise in self.exercise_log[-CORRECTS_IN_A_ROW:]):
-                return True, last_exercise.time
-
-        if add_to_result_time:
+        sorted_exercise_log = self.sorted_exercise_log()
+        if len(sorted_exercise_log) == 0:
             return False, None
 
-        return False
+        # 3. Otherwise, count the number of corrects
+        most_recent_corrects = []
 
-    def is_learned_based_on_exercise_outcomes(self,
-                                              also_return_time=False):
+        for exercise in sorted_exercise_log:
+            if exercise.is_correct():
+                most_recent_corrects.append(exercise)
+            else:
+                break
+
+        distinct_days = []
+        for exercise in most_recent_corrects:
+            date = exercise.time.date()
+            if date not in distinct_days:
+                distinct_days.append(date)
+
+        result = []
+        for day in list(distinct_days)[:CORRECTS_IN_DISTINCT_DAYS_FOR_LEARNED]:
+            result.append(day.strftime("%b.%d "))
+        return " ".join(result)
+
+    def is_learned_based_on_exercise_outcomes(self):
         """
-        TODO: This should replace check_is_latest_outcome in the future...
-
-        :param also_return_time:
         :return:
         """
-        sorted_exercise_log_by_latest = self.sorted_exercise_log()
 
-        if sorted_exercise_log_by_latest:
-            last_exercise = sorted_exercise_log_by_latest[0]
-
-            # If last outcome is TOO EASY we know it
-            if last_exercise.outcome.outcome == ExerciseOutcome.TOO_EASY:
-                if also_return_time:
-                    return True, last_exercise.time
-                return True
-
-            CORRECTS_IN_A_ROW = 5
-            if len(sorted_exercise_log_by_latest) > CORRECTS_IN_A_ROW:
-
-                # If we got it right for the last CORRECTS_IN_A_ROW times, we know it
-                if all(exercise.outcome.outcome == ExerciseOutcome.CORRECT for
-                       exercise in
-                       sorted_exercise_log_by_latest[0:CORRECTS_IN_A_ROW - 1]):
-                    return True, last_exercise.time
-
-        if also_return_time:
+        # 1. False if: We have no exercises
+        sorted_exercise_log = self.sorted_exercise_log()
+        if len(sorted_exercise_log) == 0:
             return False, None
-        return False
+
+        # We have at least one exercise
+        last_exercise = sorted_exercise_log[0]
+
+        # 2. True if: Last exercise is too easy
+        if last_exercise.is_too_easy():
+            return True, last_exercise.time
+
+        # 3. Otherwise, get the most recent sequence of corrects
+        most_recent_corrects = []
+
+        for exercise in sorted_exercise_log:
+            if exercise.is_correct():
+                most_recent_corrects.append(exercise)
+            else:
+                break
+
+        distinct_days = set()
+        for exercise in most_recent_corrects:
+            distinct_days.add(exercise.time.date())
+
+        # 4. True: if sufficient corrects in distinct days
+        if len(distinct_days) >= CORRECTS_IN_DISTINCT_DAYS_FOR_LEARNED:
+            return True, last_exercise.time
+
+        return False, None
 
     def update_learned_status(self, session):
         """
@@ -505,7 +511,7 @@ class Bookmark(db.Model):
         :param session:
         :return:
         """
-        is_learned, learned_time = self.is_learned_based_on_exercise_outcomes(True)
+        is_learned, learned_time = self.is_learned_based_on_exercise_outcomes()
         log = self.sorted_exercise_log()
         exercise_log_summary = ' '.join([exercise.short_string_summary() for exercise in log])
         if is_learned:
@@ -527,7 +533,7 @@ class Bookmark(db.Model):
 
         return False, None
 
-    def has_been_learned(self, also_return_time=False):
+    def has_been_learned(self):
         # TODO: This must be stored in the DB together with the
         # bookmark... once a bookmark has been learned, we should
         # not not need to doubt it ... we might still want to confirm
@@ -542,12 +548,9 @@ class Bookmark(db.Model):
         """
 
         # The first case is when we have an exercise outcome set to Too EASY
-        learned, time = self.is_learned_based_on_exercise_outcomes(True)
+        learned, time = self.is_learned_based_on_exercise_outcomes()
         if learned:
-            if also_return_time:
-                return True, time
-
-            return True
+            return True, time
 
         # The second case is when we have an event in the smartwatch event log
         # that indicates that the word has been learned
@@ -555,7 +558,4 @@ class Bookmark(db.Model):
         if learned:
             return learned, time
 
-        if also_return_time:
-            return False, None
-
-        return False
+        return False, None

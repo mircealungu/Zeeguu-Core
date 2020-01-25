@@ -26,7 +26,7 @@ def compute_learner_stats_during_last_year(user):
             learning_stats[0] += 1
 
         # when bookmark was learned if it was learned
-        was_bookmark_learned, time_when_bookmark_was_learned = bookmark.has_been_learned(True)
+        was_bookmark_learned, time_when_bookmark_was_learned = bookmark.has_been_learned()
         if was_bookmark_learned:
             if time_when_bookmark_was_learned > date_one_year_ago:
                 index_month_when_learned = (int(time_when_bookmark_was_learned.strftime("%m")) - current_month) % 12
