@@ -4,6 +4,9 @@ from zeeguu_core.model import User, Exercise, Bookmark
 from zeeguu_core.model.bookmark import bookmark_exercise_mapping
 from zeeguu_core import db
 
+# USER_ID = 2162
+# USER_ID = 2145  # Fe
+# USER_ID = 2134 #Victor
 USER_ID = 534
 
 user = User.find_by_id(USER_ID)
@@ -45,10 +48,24 @@ for ex in q.all():
 
     if bookmark.learned and ex.time == bookmark.learned_time:
         print("Learned!")
+        print(" ")
 
-print(user.bookmarks_to_study())
-
+print("All Bookmarks")
 for bookmark in user.all_bookmarks():
+    btime = datetime.datetime.strftime(bookmark.time, "%Y-%m-%d")
+    print(f"{btime} " +
+          ("[Quality] " if bookmark.quality_bookmark() else "") +
+          ("[fit_for_study] " if bookmark.fit_for_study else "") +
+          ("[Learned] " if bookmark.learned else "") +
+          f"Ctx: {bookmark.context_word_count()} " +
+          f"{bookmark.id} " +
+          f"{bookmark.origin.word} / {bookmark.translation.word}"
+
+          )
+
+print("")
+print("Bookmarks to Study")
+for bookmark in user.bookmarks_to_study():
     btime = datetime.datetime.strftime(bookmark.time, "%Y-%m-%d")
     print(f"{btime} " +
           ("[Quality] " if bookmark.quality_bookmark() else "") +
