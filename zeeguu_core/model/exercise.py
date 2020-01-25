@@ -30,6 +30,9 @@ class Exercise(db.Model):
     def __str__(self):
         return f'{self.source.source} ' + str(self.time) + f' {self.outcome.outcome}'
 
+    def __repr__(self):
+        return self.__str__()
+
     @classmethod
     def find(cls,
              user_id=None):
@@ -76,7 +79,11 @@ class Exercise(db.Model):
         q = (Bookmark.query.
              join(bookmark_exercise_mapping).
              join(Exercise).
-             filter(Exercise.id==self.id))
+             filter(Exercise.id == self.id))
         return q.one()
 
+    def is_too_easy(self):
+        return self.outcome.outcome == ExerciseOutcome.TOO_EASY
 
+    def is_correct(self):
+        return self.outcome.outcome == ExerciseOutcome.CORRECT
