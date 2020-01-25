@@ -12,6 +12,8 @@ class ExerciseSource(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     source = db.Column(db.String(255), nullable=False)
 
+    TOP_BOOKMARKS_MINI_EXERCISE = 'Top Bookmarks Mini-Exercise'
+
     def __init__(self, source):
         self.source = source
 
