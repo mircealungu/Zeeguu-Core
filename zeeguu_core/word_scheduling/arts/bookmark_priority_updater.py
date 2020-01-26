@@ -60,11 +60,14 @@ class BookmarkPriorityUpdater:
             b1, b2 = itertools.tee(bookmark_exercise_of_user, 2)
 
             max_iterations = max(pair.exercise.id if pair.exercise is not None else 0 for pair in b1)
+
             exercises_and_priorities = [cls._calculate_bookmark_priority(x, max_iterations) for x in b2]
 
             with db.session.no_autoflush:  # might not be needed, but just to be safe
                 for each in exercises_and_priorities:
                     entry = BookmarkPriorityARTS.find_or_create(each.bookmark, each.priority)
+                    zeeguu_core.log(
+                        f"Updating {each.bookmark.id} with priority: {each.priority} from: {entry.priority}")
                     entry.priority = each.priority
                     db.session.add(entry)
                     # print(entry)
