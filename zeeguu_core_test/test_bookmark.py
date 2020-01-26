@@ -1,6 +1,6 @@
 import random
 
-from zeeguu_core.model.bookmark import CORRECTS_IN_A_ROW_FOR_LEARNED
+from zeeguu_core.model.bookmark import CORRECTS_IN_A_ROW_FOR_LEARNED, CORRECTS_IN_DISTINCT_DAYS_FOR_LEARNED
 from zeeguu_core_test.model_test_mixin import ModelTestMixIn
 
 from zeeguu_core_test.rules.bookmark_rule import BookmarkRule
@@ -178,10 +178,16 @@ class BookmarkTest(ModelTestMixIn):
         # A bookmark with CORRECTS_IN_A_ROW_FOR_LEARNED correct exercises in a row
         # returns true and the time of the last exercise
         correct_bookmark = random_bookmarks[2]
-        for i in range(0, CORRECTS_IN_A_ROW_FOR_LEARNED):
+        exercises = 0
+        distinct_dates = set()
+        while not (exercises >= CORRECTS_IN_A_ROW_FOR_LEARNED and
+                   len(distinct_dates) >= CORRECTS_IN_DISTINCT_DAYS_FOR_LEARNED):
             correct_exercise = ExerciseRule().exercise
             correct_exercise.outcome = OutcomeRule().correct
             correct_bookmark.add_new_exercise(correct_exercise)
+            exercises += 1
+            distinct_dates.add(correct_exercise.time.date())
+
         correct_bookmark.update_learned_status(self.db.session)
 
         result_bool, result_time = correct_bookmark.is_learned_based_on_exercise_outcomes()
@@ -189,7 +195,6 @@ class BookmarkTest(ModelTestMixIn):
 
         learned_time_from_log = correct_bookmark.sorted_exercise_log()[0].time
         assert result_time == learned_time_from_log
-
 
         # A bookmark with no TOO EASY outcome or less than 5 correct exercises in a row returns False, None
         wrong_exercise = ExerciseRule().exercise
