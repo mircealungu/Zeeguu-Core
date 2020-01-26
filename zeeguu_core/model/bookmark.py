@@ -249,21 +249,42 @@ class Bookmark(db.Model):
                 not last_outcome.unknown_feedback() and
                 not self.events_prevent_further_study())
 
-    def add_new_exercise_result(self, exercise_source, exercise_outcome,
+    def add_new_exercise_result(self,
+                                exercise_source: ExerciseSource,
+                                exercise_outcome: ExerciseOutcome,
                                 exercise_solving_speed):
 
-        from .user_exercise_session import UserExerciseSession
-
-        new_source = ExerciseSource.query.filter_by(
-            source=exercise_source.source
-        ).first()
-        new_outcome = ExerciseOutcome.query.filter_by(
-            outcome=exercise_outcome.outcome
-        ).first()
-        exercise = Exercise(new_outcome, new_source, exercise_solving_speed,
+        exercise = Exercise(exercise_outcome, exercise_source, exercise_solving_speed,
                             datetime.now())
+
         self.add_new_exercise(exercise)
         db.session.add(exercise)
+
+        return exercise
+
+    def report_exercise_outcome(self,
+                                exercise_source: str,
+                                exercise_outcome: str,
+                                exercise_solving_speed,
+                                db_session):
+
+        from zeeguu_core.model import UserExerciseSession
+        from zeeguu_core.word_scheduling.arts.bookmark_priority_updater import BookmarkPriorityUpdater
+
+        new_source = ExerciseSource.find_or_create(db_session, exercise_source)
+        new_outcome = ExerciseOutcome.find_or_create(db_session, exercise_outcome)
+
+        exercise = self.add_new_exercise_result(new_source,
+                                                new_outcome,
+                                                exercise_solving_speed)
+        db_session.add(exercise)
+        db_session.commit()
+
+        self.update_fit_for_study(db_session)
+        self.update_learned_status(db_session)
+
+        UserExerciseSession.update_exercise_session(exercise, db_session)
+        BookmarkPriorityUpdater.update_bookmark_priority(db, self.user)
 
     def split_words_from_context(self):
 
