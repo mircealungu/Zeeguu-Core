@@ -53,7 +53,7 @@ class ExerciseOutcome(db.Model):
     def too_easy(self):
         return self.outcome in self.too_easy_outcomes
 
-    def unknown_feedback(self):
+    def free_text_feedback(self):
         """
             this can happen since the user can provide any free
             text feedback. in such a case it would probably be

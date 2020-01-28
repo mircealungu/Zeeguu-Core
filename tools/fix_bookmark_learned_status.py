@@ -1,3 +1,4 @@
+from zeeguu_core.definition_of_learned import is_learned_based_on_exercise_outcomes
 from zeeguu_core.model import Bookmark
 from zeeguu_core import db
 
@@ -16,7 +17,7 @@ def print_bookmarks_that_are_wrongly_learned(bookmarks):
         if not bookmark.learned_time:
             continue
 
-        algo_result, _ = bookmark.is_learned_based_on_exercise_outcomes()
+        algo_result = is_learned_based_on_exercise_outcomes(bookmark)
 
         if bookmark.learned != algo_result:
             print(f"){i}) mismatch: {bookmark} DB={bookmark.learned} ALGO={algo_result}")

@@ -1,6 +1,10 @@
 import random
 
-from zeeguu_core.model.bookmark import CORRECTS_IN_A_ROW_FOR_LEARNED, CORRECTS_IN_DISTINCT_DAYS_FOR_LEARNED
+from zeeguu_core.bookmark_quality import top_bookmarks, bad_quality_bookmark
+from zeeguu_core.definition_of_learned import is_learned_based_on_exercise_outcomes, \
+    CORRECTS_IN_DISTINCT_DAYS_FOR_LEARNED
+from zeeguu_core.model.SortedExerciseLog import SortedExerciseLog
+from zeeguu_core.model.bookmark import CORRECTS_IN_A_ROW_FOR_LEARNED
 from zeeguu_core_test.model_test_mixin import ModelTestMixIn
 
 from zeeguu_core_test.rules.bookmark_rule import BookmarkRule
@@ -80,12 +84,12 @@ class BookmarkTest(ModelTestMixIn):
         random_bookmarks[2].origin.word = self.faker.word()[:2]
 
         for b in random_bookmarks:
-            assert b.bad_quality_bookmark()
+            assert bad_quality_bookmark(b)
 
     def test_fit_for_study(self):
         random_bookmarks = [BookmarkRule(self.user).bookmark for _ in range(0, 2)]
         random_exercise = ExerciseRule().exercise
-        random_exercise.outcome = OutcomeRule().correct
+        random_exercise.outcome = OutcomeRule().wrong
 
         random_bookmarks[0].starred = True
         random_bookmarks[1].starred = True
@@ -150,29 +154,31 @@ class BookmarkTest(ModelTestMixIn):
 
     def test_latest_exercise_outcome(self):
         random_bookmark = self.user.all_bookmarks()[0]
-        assert random_bookmark.latest_exercise_outcome() is None
+        exercise_log = SortedExerciseLog(random_bookmark)
+        assert exercise_log.latest_exercise_outcome() is None
 
         random_exercise = ExerciseRule().exercise
         random_bookmark.add_new_exercise(random_exercise)
 
-        assert random_exercise.outcome == random_bookmark.latest_exercise_outcome()
+        assert random_exercise.outcome == SortedExerciseLog(random_bookmark).latest_exercise_outcome()
 
     def test_is_learned_based_on_exercise_outcomes(self):
         random_bookmarks = [BookmarkRule(self.user).bookmark for _ in range(0, 4)]
 
         # Empty exercise_log should lead to a False return
-        learned, _ = random_bookmarks[0].is_learned_based_on_exercise_outcomes()
+        learned = is_learned_based_on_exercise_outcomes(SortedExerciseLog(random_bookmarks[0]))
         assert not learned
 
         # An exercise with Outcome equal to TOO EASY results in True, and time of last exercise
         random_exercise = ExerciseRule().exercise
         random_exercise.outcome = OutcomeRule().too_easy
         random_bookmarks[1].add_new_exercise(random_exercise)
-        result_bool, result_time = random_bookmarks[1].is_learned_based_on_exercise_outcomes()
-        assert result_bool and result_time == random_exercise.time
+        learned = is_learned_based_on_exercise_outcomes(SortedExerciseLog(random_bookmarks[1]))
+        result_time = SortedExerciseLog(random_bookmarks[1]).last_exercise_time()
+        assert learned and result_time == random_exercise.time
 
         # Same test as above, but without a second return value
-        learned, _ = random_bookmarks[1].is_learned_based_on_exercise_outcomes()
+        learned = is_learned_based_on_exercise_outcomes(SortedExerciseLog(random_bookmarks[1]))
         assert learned
 
         # A bookmark with CORRECTS_IN_A_ROW_FOR_LEARNED correct exercises in a row
@@ -190,34 +196,23 @@ class BookmarkTest(ModelTestMixIn):
 
         correct_bookmark.update_learned_status(self.db.session)
 
-        result_bool, result_time = correct_bookmark.is_learned_based_on_exercise_outcomes()
-        assert result_bool
+        log = SortedExerciseLog(correct_bookmark)
+        learned = is_learned_based_on_exercise_outcomes(log)
+        result_time = log.last_exercise_time()
+        assert learned
 
-        learned_time_from_log = correct_bookmark.sorted_exercise_log()[0].time
+        log = SortedExerciseLog(correct_bookmark)
+        learned_time_from_log = log.last_exercise_time()
         assert result_time == learned_time_from_log
 
         # A bookmark with no TOO EASY outcome or less than 5 correct exercises in a row returns False, None
         wrong_exercise = ExerciseRule().exercise
         wrong_exercise.outcome = OutcomeRule().wrong
         random_bookmarks[3].add_new_exercise(wrong_exercise)
-        result_bool, result_None = random_bookmarks[3].is_learned_based_on_exercise_outcomes()
-        assert not result_bool and result_None is None
 
-        # Same as before, but without a second return value
-        learned, _ = random_bookmarks[3].is_learned_based_on_exercise_outcomes()
+        log = SortedExerciseLog(random_bookmarks[3])
+        learned = is_learned_based_on_exercise_outcomes(log)
         assert not learned
 
-    def test_has_been_learned(self):
-        random_bookmarks = [BookmarkRule(self.user).bookmark for _ in range(0, 2)]
-
-        random_exercise = ExerciseRule().exercise
-        random_exercise.outcome = OutcomeRule().too_easy
-        random_bookmarks[0].add_new_exercise(random_exercise)
-        result_bool, result_time = random_bookmarks[0].has_been_learned()
-        assert result_bool and result_time == random_bookmarks[0].exercise_log[-1].time
-
-        result_bool, result_None = random_bookmarks[1].has_been_learned()
-        assert not result_bool and result_None is None
-
     def test_top_bookmarks(self):
-        assert (self.user.top_bookmarks())
+        assert (top_bookmarks(self.user))
