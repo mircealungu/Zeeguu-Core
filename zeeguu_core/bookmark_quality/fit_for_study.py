@@ -6,12 +6,12 @@ from zeeguu_core.util.timer_logging_decorator import time_this
 
 @time_this
 def fit_for_study(bookmark):
-
+    
     exercise_log = SortedExerciseLog(bookmark)
 
     return (
 
-            quality_bookmark(bookmark) and
+            (quality_bookmark(bookmark) or bookmark.starred) and
 
             not is_learned_based_on_exercise_outcomes(exercise_log) and
 

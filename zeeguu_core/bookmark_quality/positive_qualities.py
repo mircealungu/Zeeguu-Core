@@ -3,13 +3,6 @@ from zeeguu_core.bookmark_quality.negative_qualities import bad_quality_bookmark
 
 
 def quality_bookmark(bookmark):
-    # If it's starred by the user, then it's good quality,
-    # Else it just should not be bad quality!
-
-    if bookmark.starred:
-        zeeguu_core.log("starred -> good quality")
-        return True
-
     return not bad_quality_bookmark(bookmark)
 
 

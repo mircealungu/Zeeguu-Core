@@ -2,7 +2,7 @@ import random
 import re
 from datetime import timedelta
 
-from zeeguu_core.bookmark_quality import quality_bookmark
+from zeeguu_core.bookmark_quality import quality_bookmark, bad_quality_bookmark
 from zeeguu_core_test.rules.base_rule import BaseRule
 from zeeguu_core_test.rules.language_rule import LanguageRule
 from zeeguu_core_test.rules.user_word_rule import UserWordRule
@@ -68,7 +68,7 @@ class BookmarkRule(BaseRule):
 
             bookmark = Bookmark(random_origin, random_translation, user,
                                 random_text, random_date)
-            if force_quality and not quality_bookmark(bookmark):
+            if force_quality and bad_quality_bookmark(bookmark):
                 print ("random bookmark was of low quality. retrying...")
                 bookmark = False
 
