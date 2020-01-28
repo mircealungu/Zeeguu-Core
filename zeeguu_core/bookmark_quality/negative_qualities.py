@@ -4,11 +4,11 @@ def bad_quality_bookmark(bookmark):
 
             origin_same_as_translation(bookmark) or
 
-            is_subset_of_larger_bookmark(bookmark) or
+            origin_is_subsumed_in_other_bookmark(bookmark) or
 
-            is_made_of_too_many_words(bookmark) or
+            origin_has_too_many_words(bookmark) or
 
-            is_a_very_short_word(bookmark) or
+            origin_is_a_very_short_word(bookmark) or
 
             context_is_too_long(bookmark) or
 
@@ -21,16 +21,16 @@ def context_is_too_long(bookmark):
     return bookmark.context_word_count() > 42
 
 
-def is_a_very_short_word(bookmark):
+def origin_is_a_very_short_word(bookmark):
     return len(bookmark.origin.word) < 3
 
 
-def is_made_of_too_many_words(bookmark):
+def origin_has_too_many_words(bookmark):
     words_in_origin = bookmark.origin.word.split(" ")
     return len(words_in_origin) > 2
 
 
-def is_subset_of_larger_bookmark(self):
+def origin_is_subsumed_in_other_bookmark(self):
     """
         if the user translates a superset of this sentence
     """
