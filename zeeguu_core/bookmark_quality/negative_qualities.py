@@ -1,8 +1,4 @@
 def bad_quality_bookmark(bookmark):
-    """
-    reasons that disqualify a bookmark from beeing quality
-
-    """
 
     return (
 

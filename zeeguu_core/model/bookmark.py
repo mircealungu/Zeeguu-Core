@@ -100,12 +100,6 @@ class Bookmark(db.Model):
     def content_is_not_too_long(self):
         return len(self.text.content) < 60
 
-    def smartwatch_events_prevent_further_study(self):
-        from zeeguu_core.model.smartwatch.watch_interaction_event import \
-            WatchInteractionEvent
-        events_for_self = WatchInteractionEvent.events_for_bookmark(self)
-        return any([x.prevents_further_study() for x in events_for_self])
-
     def update_fit_for_study(self, session=None):
         """
             Called when something happened to the bookmark,
