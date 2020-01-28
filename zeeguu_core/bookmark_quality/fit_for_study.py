@@ -6,7 +6,7 @@ from zeeguu_core.util.timer_logging_decorator import time_this
 
 @time_this
 def fit_for_study(bookmark):
-    
+
     exercise_log = SortedExerciseLog(bookmark)
 
     return (
