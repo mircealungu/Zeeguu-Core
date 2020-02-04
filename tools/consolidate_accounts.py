@@ -9,9 +9,14 @@
 
 import zeeguu_core
 from zeeguu_core.model import User, UserActivityData, Bookmark, UserArticle, UserReadingSession, UserExerciseSession
+from sys import argv
 
-PRIMARY_ID = 1
-SECONDARY_ID = 534
+if len(argv) < 3:
+    print("CALL: consolidate_accounts <primary_id> <secondary_id>")
+    exit(-1)
+
+PRIMARY_ID = argv[1]
+SECONDARY_ID = argv[2]
 
 tables_to_modify = [Bookmark, UserActivityData, UserArticle, UserReadingSession, UserExerciseSession]
 
