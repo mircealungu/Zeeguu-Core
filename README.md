@@ -17,6 +17,32 @@ to the path of a file which contains the info that's
 declared in `testing_default.cfg`. Only then can you start
 working with zeeguu model elements by importing `zeeguu.model`. 
 
+# Installing on Windows
+
+1. git clone https://github.com/zeeguu-ecosystem/Zeeguu-Core.git
+1. python -m venv zenv 
+1. cd Zeeguu-Core
+1. pip install -r requirements.txt
+1. ./run_tests.sh
+
+
+# Installing on Mac (Notes)
+If you get an error like this: 
+
+    ld: library not found for -lssl
+    
+when installing mysqlclient try to: 
+
+    brew install openssl
+    env LDFLAGS="-I/usr/local/opt/openssl/include -L/usr/local/opt/openssl/lib" pip install mysqlclient
+    
+this is cf. https://stackoverflow.com/a/51701291/1200070
+
+
+
+
+
+
 
 
 <!-- # Setup for Local Testing
