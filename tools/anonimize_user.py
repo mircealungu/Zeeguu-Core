@@ -23,8 +23,9 @@ for user in User.query.all():
             user.password = ""
             session.add(user)
             session.commit()
-            print (f"added {user.name}")
+            print (f"anonimized user id {user.id} to {user.name}")
             break
         except sqlalchemy.exc.IntegrityError as e:
+            session.rollback()
             print (f"retrying...")
             continue
