@@ -5,7 +5,7 @@ from zeeguu_core.language.difficulty_estimator_factory import DifficultyEstimato
 
 print("starting...")
 
-for article in Article.query.filter_by(language_id=13).limit(100):
+for article in Article.query.filter_by(language_id=13).all():
     print(f"Difficulty before: {article.fk_difficulty} for {article.title} ")
     fk_estimator = DifficultyEstimatorFactory.get_difficulty_estimator("fk")
     fk_difficulty = fk_estimator.estimate_difficulty(article.content, article.language, None)['grade']
