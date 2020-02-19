@@ -39,7 +39,7 @@ def recompute_for_users():
 
         recomputes only those caches that are already in the table
         and belong to a user. if multiple users have the same preferences
-        the computation is donne only for the first because this is how
+        the computation is done only for the first because this is how
         recompute_recommender_cache_if_needed does.
 
         To think about:
