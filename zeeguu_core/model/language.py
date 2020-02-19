@@ -77,6 +77,10 @@ class Language(db.Model):
 
     @classmethod
     def find_or_create(cls, language_id):
+        # due to the limitations of the WTFFOrms, the zh-CN can't be used in the UI...
+        if language_id == 'cn':
+            language_id = 'zh-CN'
+
         try:
             language = cls.find(language_id)
 
