@@ -10,24 +10,28 @@ class Language(db.Model):
     __table_args__ = {'mysql_collate': 'utf8_bin'}
     __tablename__ = 'language'
 
-    LANGUAGES_THAT_CAN_BE_LEARNED = ['de', 'es', 'fr', 'nl', 'en', 'it', 'da']
-    LANGUAGES_AVAILABLE_AS_NATIVE = ['en', 'nl', 'zh-CN']
+    LANGUAGE_NAMES = {
+
+        'da': 'Danish',
+        'de': 'German',
+        'en': 'English',
+        'es': 'Spanish',
+        'fr': 'French',
+        'it': 'Italian',
+        'nl': 'Dutch',
+        'pl': 'Polish',
+        'pt': 'Portuguese',
+        'ro': 'Romanian',
+        'zh-CN': 'Chinese'
+
+    }
+
+    CODES_OF_LANGUAGES_THAT_CAN_BE_LEARNED = ['de', 'es', 'fr', 'nl', 'en', 'it', 'da', 'pl']
+    CODES_OF_LANGUAGES_AVAILABLE_AS_NATIVE = ['da', 'en', 'nl', 'ro', 'zh-CN']
 
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(5))
     name = db.Column(db.String(255), unique=True)
-
-    languages = {
-        "de": "German",
-        "en": "English",
-        "es": "Spanish",
-        "fr": "French",
-        "nl": "Dutch",
-        "it": "Italian",
-        "zh-CN": "Chinese",
-        "da": "Danish",
-        "ro": "Romanian"
-    }
 
     def __init__(self, code, name):
         self.code = code
@@ -58,11 +62,13 @@ class Language(db.Model):
 
     @classmethod
     def native_languages(cls):
-        return [Language.find_or_create(code) for code in cls.LANGUAGES_AVAILABLE_AS_NATIVE]
+        return [Language.find_or_create(code)
+                for code in cls.CODES_OF_LANGUAGES_AVAILABLE_AS_NATIVE]
 
     @classmethod
     def available_languages(cls):
-        return ([Language.find_or_create(code) for code in cls.LANGUAGES_THAT_CAN_BE_LEARNED])
+        return [Language.find_or_create(code)
+                for code in cls.CODES_OF_LANGUAGES_THAT_CAN_BE_LEARNED]
 
     @classmethod
     def find(cls, code):
