@@ -81,7 +81,7 @@ class Language(db.Model):
             language = cls.find(language_id)
 
         except NoResultFound:
-            language = cls(language_id, cls.languages[language_id])
+            language = cls(language_id, cls.LANGUAGE_NAMES[language_id])
             db.session.add(language)
             db.session.commit()
 
