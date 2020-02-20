@@ -21,9 +21,6 @@ Session = sessionmaker(bind=engine)
 
 session = Session()
 
-for topic in session.query(Article).join(article_topic_map).filter(article_topic_map.c.article_id == ):
-    print(article)
-
 for article in session.query(Article).order_by(Article.id):
     doc = {
         'title': article.title,
@@ -35,6 +32,11 @@ for article in session.query(Article).order_by(Article.id):
     }
     res = es.index(index="zeeguu_articles", id=article.id, body=doc)
     print(res['result'] + str(article.id))
+
+res = es.search(index="zeeguu_articles", body={"size": 30, "query":
+                                                                        {"match": {"author": "Marcus"}
+                                                                         }
+                                                                    })
 
 #res = es.get(index="test", id=1)
 #print(res['result'])

@@ -5,6 +5,7 @@
 
 
 """
+from elasticsearch import Elasticsearch
 from sqlalchemy import not_, or_, any_
 from sqlalchemy.orm.exc import NoResultFound
 from zeeguu_core import log
@@ -271,6 +272,131 @@ def filter_subscribed_articles(search_subscriptions, topic_subscriptions, user_l
 
     return final_article_mix
 
+
+def filter_subscribed_articles_elastic(search_subscriptions, topic_subscriptions, user_languages, user):
+    """
+    :param subscribed_articles:
+    :param user_filters:
+    :param user_languages:
+    :param user_search_filters:
+    :return:
+
+            a generator which retrieves articles as needed
+
+    """
+
+    from zeeguu_core.model import Topic
+    user_search_filters = SearchFilter.all_for_user(user)
+
+    if len(user_languages) == 0:
+        return []
+    es = Elasticsearch(['127.0.0.1:9200'])
+
+
+    # TODO: shouldn't this be passed down from upstream?
+    total_article_count = 30
+    per_language_article_count = total_article_count / len(user_languages)
+
+    final_article_mix = set()
+    for language in user_languages:
+        print(f"language: {language}")
+
+        query = Article.query
+        query = query.order_by(Article.id.desc())
+        query = query.filter(Article.language == language)
+        query = query.filter(Article.broken == False)
+
+        # speed up a bit the stuff
+        # query = query.filter(Article.id > 500000)
+
+        # 0. Ensure appropriate difficulty
+        declared_level_min, declared_level_max = user.levels_for(language)
+        lower_bounds = declared_level_min * 10
+        upper_bounds = declared_level_max * 10
+
+        query = query.filter(lower_bounds < Article.fk_difficulty)
+        query = query.filter(upper_bounds > Article.fk_difficulty)
+
+        # 1. Keywords to exclude
+        # ==============================
+        keywords_to_avoid = []
+        for user_search_filter in user_search_filters:
+            keywords_to_avoid.append(user_search_filter.search.keywords)
+        print(f"keywords to exclude: {keywords_to_avoid}")
+
+        for keyword_to_avoid in keywords_to_avoid:
+            query = query.filter(not_(or_(Article.title.contains(keyword_to_avoid),
+                                          Article.content.contains(
+                                              keyword_to_avoid))))  # title does not contain keywords
+
+        # 2. Topics to exclude / filter out
+        # =================================
+        user_filters = TopicFilter.all_for_user(user)
+        to_exclude_topic_ids = [each.topic.id for each in user_filters]
+        print(f"to exlcude topic ids: {to_exclude_topic_ids}")
+        print(f"topics to exclude: {user_filters}")
+        query = query.filter(not_(Article.topics.any(Topic.id.in_(to_exclude_topic_ids))))
+
+        # 3. Topics subscribed, and thus to include
+        # =========================================
+        ids_of_topics_to_include = [subscription.topic.id for subscription in topic_subscriptions]
+        print(f"topics to include: {topic_subscriptions}")
+        print(f"topics ids to include: {ids_of_topics_to_include}")
+        # we comment out this line, because we want to do an or_between it and the
+        # one corresponding to searches later below!
+        # query = query.filter(Article.topics.any(Topic.id.in_(topic_ids)))
+
+        # 4. Searches to include
+        # ======================
+        print(f"Search subscriptions: {search_subscriptions}")
+        ids_for_articles_containing_search_terms = set()
+        for user_search in search_subscriptions:
+            search_string = user_search.search.keywords.lower()
+            print(search_string)
+
+            articles_for_word = ArticleWord.get_articles_for_word(search_string)
+            print(articles_for_word)
+            ids_for_articles_containing_search_terms.update([article.id for article in articles_for_word])
+        print(ids_for_articles_containing_search_terms)
+        # commenting out this line, in favor of it being part of a merge later
+        # query = query.filter(Article.id.in_(article_ids))
+
+        if (ids_of_topics_to_include or ids_for_articles_containing_search_terms):
+            query = query.filter(or_(
+                Article.topics.any(Topic.id.in_(ids_of_topics_to_include)),
+                Article.id.in_(ids_for_articles_containing_search_terms)
+            ))
+
+        query = query.limit(per_language_article_count)
+        final_article_mix.update(query.all())
+    res = es.search(index="zeeguu_articles", body={
+        "size": 30, "query": {
+            "bool": {
+                "should": {
+                    "match": {
+                        "author": "Marcus"
+                    }
+                }, "must": [{
+                    "match": {
+                        "language": "de"
+                    },
+                    "match": {
+                        "topic": "sport"
+                    }
+                }],
+                "filter": {
+                    "range": {
+                        "word_count": {
+                            "lt": 800,
+                            "gt": 200
+                        }
+                    }
+                }
+            }
+        }
+    })
+
+    return final_article_mix
 
 def get_user_articles_sources_languages(user, limit=1000):
     """
