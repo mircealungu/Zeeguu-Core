@@ -369,32 +369,36 @@ def filter_subscribed_articles_elastic(search_subscriptions, topic_subscriptions
 
         query = query.limit(per_language_article_count)
         final_article_mix.update(query.all())
-    res = es.search(index="zeeguu_articles", body={
-        "size": 30, "query": {
-            "bool": {
-                "should": {
-                    "match": {
-                        "author": "Marcus"
-                    }
-                }, "must": [{
-                    "match": {
-                        "language": "de"
+        res = es.search(index="zeeguu_articles", body={
+            "size": 30, "query": {
+                "bool": {
+                    "should": {
+                        "match": {
+                            "author": "Marcus"
+                        }
+                    }, "must": [{
+                        "match": {
+                            "language": language
+                        },
+                        "match": {
+                            "topic": ids_of_topics_to_include
+                        }
                     },
-                    "match": {
-                        "topic": "sport"
-                    }
-                }],
-                "filter": {
-                    "range": {
-                        "word_count": {
-                            "lt": 800,
-                            "gt": 200
+                    ],
+                    "must_not": {
+                        "match": to_exclude_topic_ids
+                    },
+                    "filter": {
+                        "range": {
+                            "fk_difficulty": {
+                                "lt": lower_bounds,
+                                "gt": upper_bounds
+                            }
                         }
                     }
                 }
             }
-        }
-    })
+        })
 
     return final_article_mix
 
