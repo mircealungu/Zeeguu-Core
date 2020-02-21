@@ -17,6 +17,7 @@ from zeeguu_core.content_retriever.content_cleaner import cleanup_non_content_bi
 from zeeguu_core.content_retriever.quality_filter import sufficient_quality
 from zeeguu_core.model import Url, RSSFeed, LocalizedTopic, ArticleWord
 from zeeguu_core.constants import SIMPLE_TIME_FORMAT
+from elasticsearch import Elasticsearch
 import requests
 
 LOG_CONTEXT = "FEED RETRIEVAL"
@@ -37,7 +38,7 @@ def _date_in_the_future(time):
     return time > datetime.now()
 
 
-def download_from_feed(feed: RSSFeed, session, limit=1000):
+def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=False):
     """
 
         Session is needed because this saves stuff to the DB.
@@ -135,6 +136,7 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
 
                     try:
                         # Create new article and save it to DB
+                        #todo replace with elasticsearch
                         new_article = zeeguu_core.model.Article(
                             Url.find_or_create(session, url),
                             title,
@@ -148,6 +150,18 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
                         session.add(new_article)
                         session.commit()
                         downloaded += 1
+
+                        if save_in_elastic:
+                            es = Elasticsearch(["127.0.0.1:9200"])
+                            doc = {
+                                'title': new_article.title,
+                                'author': new_article.authors,
+                                'content': new_article.content,
+                                'summary': new_article.summary,
+                                'word_count': new_article.word_count,
+                                'published_time': new_article.published_time
+                            }
+                            es.index(index="zeeguu_article", id=new_article.id, body=doc)
 
                         add_topics(new_article, session)
                         log("- added topics")
