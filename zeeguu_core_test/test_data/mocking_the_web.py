@@ -62,7 +62,7 @@ test_urls = {
 def mock_requests_get(m):
 
     def mock_requests_get_for_url(m, url):
-        f = open(os.path.join(TESTDATA_FOLDER, test_urls[url]))
+        f = open(os.path.join(TESTDATA_FOLDER, test_urls[url]),encoding="UTF-8")
         content = (f.read())
 
         m.get(url, text=content)
