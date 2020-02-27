@@ -12,6 +12,7 @@ from zeeguu_core.model import Article, User, Bookmark, \
     UserLanguage, TopicFilter, TopicSubscription, SearchFilter, \
     SearchSubscription, ArticleWord, ArticlesCache, CohortArticleMap, Cohort
 from sortedcontainers import SortedList
+from zeeguu_core.util.timer_logging_decorator import time_this
 
 
 def user_article_info(user: User, article: Article, with_content=False, with_translations=True):
@@ -120,6 +121,24 @@ def cohort_articles_for_user(user):
         return []
 
 
+@time_this
+def article_search_for_user_fulltext(user, count, search):
+    user_languages = UserLanguage.all_reading_for_user(user)
+    query = Article.query.filter(or_(Article.content.match(search), Article.title.match(search)))
+    # build OR condition with the users selected languages
+    conds = []
+    for language in user_languages:
+        conds.append(Article.language_id == language.id)
+    query = query.filter(or_(*conds))
+
+    final = query.limit(count).all()
+
+    # Sort them, so the first 'count' articles will be the most recent ones
+    final.sort(key=lambda each: each.published_time, reverse=True)
+
+    return [user_article_info(user, article) for article in final[:count]]
+
+@time_this
 def article_search_for_user(user, count, search):
     """
 
@@ -142,6 +161,7 @@ def article_search_for_user(user, count, search):
         s = set(all_articles)
         final = [article for article in search_articles if article in s]
         if len(final) < 5:
+            # so if low articles found via search, just return the top new articles in the users languages??
             all_articles = get_user_articles_sources_languages(user)
             s = set(all_articles)
             final = [article for article in search_articles if article in s]
