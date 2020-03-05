@@ -13,6 +13,10 @@ from zeeguu_core.model import Article, User, Bookmark, \
     SearchSubscription, ArticleWord, ArticlesCache, CohortArticleMap, Cohort
 from sortedcontainers import SortedList
 from zeeguu_core.util.timer_logging_decorator import time_this
+from zeeguu_core.content_recommender.mysqlFullText import build_mysql_query, add_symbol_in_front_of_words
+
+from sqlalchemy_fulltext import FullText, FullTextSearch
+import sqlalchemy_fulltext.modes as FullTextMode
 
 
 def user_article_info(user: User, article: Article, with_content=False, with_translations=True):
@@ -37,7 +41,6 @@ def user_article_info(user: User, article: Article, with_content=False, with_tra
         ua_info['translations'] = [each.serializable_dictionary() for each in translations]
 
     return ua_info
-
 
 def recompute_recommender_cache_if_needed(user, session):
     """
@@ -122,20 +125,21 @@ def cohort_articles_for_user(user):
 
 
 @time_this
-def article_search_for_user_fulltext(user, count, search):
-    user_languages = UserLanguage.all_reading_for_user(user)
-    query = Article.query.filter(or_(Article.content.match(search), Article.title.match(search)))
-    # build OR condition with the users selected languages
-    conds = []
-    for language in user_languages:
-        conds.append(Article.language_id == language.id)
-    query = query.filter(or_(*conds))
+def article_search_for_user_mysql_fulltext(user, count, search):
+    # fetch parameters need for the search
+    test = add_symbol_in_front_of_words("+", "")
+    #build query
+    #query = build_mysql_query(10, search, "10 11 12", "13 14 15", "soccor", "serena williams", "2", 100, 0, user)
+    query = build_mysql_query(10, "trump", "", "", "gun", "weapons", "2", 100, 0, user)
 
-    final = query.limit(count).all()
+    #execute query
+    final = query.all()
 
     # Sort them, so the first 'count' articles will be the most recent ones
     final.sort(key=lambda each: each.published_time, reverse=True)
 
+    if (count > len(final)):  # if we found less then the count just return all
+        return [user_article_info(user, article) for article in final]
     return [user_article_info(user, article) for article in final[:count]]
 
 @time_this
@@ -193,7 +197,7 @@ def find_articles_for_user(user):
 
     return subscribed_articles
 
-
+@time_this
 def filter_subscribed_articles(search_subscriptions, topic_subscriptions, user_languages, user):
     """
     :param subscribed_articles:
