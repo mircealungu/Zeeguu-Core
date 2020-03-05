@@ -1,0 +1,24 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+
+df = pd.read_csv("comparison.csv")
+
+df = df.loc[df['Difficulty'] == 4]
+fig, ax = plt.subplots()
+
+
+df = df.pivot(index='Size', columns='Index', values='Time in MS')
+
+df.plot()
+plt.show()
+# df = df.loc[(df['Difficulty'] == 5) & (df['Size'] == 10)]
+# df = df.sort_values(['Index', 'Difficulty'], ascending=[False, True])
+# ax = plt.gca()
+# df.plot(kind='line', x='Index', y='Time in MS', ax=ax)
+#
+# df = df.loc[(df['Difficulty'] == 5) & (df['Size'] == 100)]
+# df = df.sort_values(['Index', 'Difficulty'], ascending=[False, True])
+# ax = plt.gca()
+# # df.plot(kind='line',x='index',y='num_pets', color='red', ax=ax)
+# df.plot(kind='line', x='Index', y='Time in MS', ax=ax)

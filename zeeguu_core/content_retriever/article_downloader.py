@@ -38,7 +38,7 @@ def _date_in_the_future(time):
     return time > datetime.now()
 
 
-def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=False):
+def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=True):
     """
 
         Session is needed because this saves stuff to the DB.
@@ -149,8 +149,19 @@ def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=False
                         )
                         session.add(new_article)
                         session.commit()
+                        print("saved article in db")
                         downloaded += 1
 
+                        try:
+                            add_topics(new_article, session)
+                            log("- added topics")
+                            add_searches(title, url, new_article, session)
+                            log("- added keywords")
+                        except Exception as e:
+                            print(e)
+                        # Saves the news article at ElasticSearch.
+                        # We recommend that everything is stored both in SQL and Elasticsearch
+                        # as ElasticSearch isn't persistant data
                         if save_in_elastic:
                             es = Elasticsearch(["127.0.0.1:9200"])
                             doc = {
@@ -159,14 +170,13 @@ def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=False
                                 'content': new_article.content,
                                 'summary': new_article.summary,
                                 'word_count': new_article.word_count,
-                                'published_time': new_article.published_time
+                                'published_time': new_article.published_time,
+                                'topic': " ".join(new_article.topics).strip(),
+                                'language': new_article.language.name,
+                                'fk_difficulty': new_article.fk_difficulty
                             }
-                            es.index(index="zeeguu_article", id=new_article.id, body=doc)
-
-                        add_topics(new_article, session)
-                        log("- added topics")
-                        add_searches(title, url, new_article, session)
-                        log("- added keywords")
+                            res = es.index(index="zeeguu_articles", id=new_article.id, body=doc)
+                            print(res['result'])
                         session.commit()
 
                         if last_retrieval_time_seen_this_crawl:

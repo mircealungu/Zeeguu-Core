@@ -17,6 +17,7 @@ engine = database.create_engine('mysql://root:Svx83mcf@localhost/zeeguu?charset=
 Session = sessionmaker(bind=engine)
 session = Session()
 
+
 def main():
     max_id = session.query(func.max(Article.id)).first()[0]
     for i in range(0, max_id, 5000):
@@ -34,7 +35,7 @@ def main():
                 'language': language,
                 'fk_difficulty': article.fk_difficulty
             }
-            res = es.index(index="zeeguu_articles", id=article.id, body=doc)
+            res = es.index(index="zeeguu_articles100k", id=article.id, body=doc)
             if article.id % 1000 == 0:
                 print(res['result'] + str(article.id))
 

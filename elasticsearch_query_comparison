@@ -1,0 +1,300 @@
+import os
+
+from elasticsearch import Elasticsearch
+from zeeguu_core.model import full_query
+from timeit import default_timer as timer
+from zeeguu_core.model import Language
+import csv
+
+es = Elasticsearch(["127.0.0.1:9200"])
+
+
+def query_performance(difficulty, index, size_of_index, size, content, topics,
+                      unwanted_topics, user_topics, unwanted_user_topics):
+    language = Language("en", "English")
+    query_body = full_query(size, content, topics, unwanted_topics,
+                            user_topics, unwanted_user_topics, language, 100, 0)
+
+    time_lst = []
+    for i in range(50):
+        start = timer()
+        res = es.search(index=index, body=query_body)
+        end = timer()
+        time_lst.append(end - start)
+
+    write_results_to_csv(difficulty, size_of_index, "ElasticSearch", average(time_lst), len(res['hits'].get('hits')))
+
+
+def average(lst):
+    return (sum(lst) / len(lst))*1000
+
+
+def write_results_to_csv(difficulty, index, technology, time, count):
+    file_exists = os.path.isfile('comparison.csv')
+    with open(r'comparison.csv', 'a', newline='') as csvfile:
+        fieldnames = ['Difficulty', 'Index', 'Technology', "Time in MS", "Size"]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        if not file_exists:
+            writer.writeheader()
+
+        writer.writerow({'Difficulty': difficulty, 'Index': index, 'Technology': technology,
+                         'Time in MS': time, 'Size': count})
+
+
+if __name__ == '__main__':
+    # Difficulty is based on the complexity of the query.
+    # 5 - Full query with five search terms
+    # 4 - Full query with three search term
+    # 3 - Full query with one search term
+    # 2 - Query with missing content, user_topics and unwanted_user_topics (only pre configured topics)
+    # 1 - Language only query
+
+    # Difficulty 5: Returning 10 articles
+    query_performance(5, 'zeeguu_articles10k', '10k', 10, 'federer nadal wozniacki djokovic murray', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(5, 'zeeguu_articles100k', '100k', 10, 'federer nadal wozniacki djokovic murray', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(5, 'zeeguu_articles', '1000k', 10, 'federer nadal wozniacki djokovic murray', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+
+    # Difficulty 5: Returning 100 articles
+    query_performance(5, 'zeeguu_articles10k', '10k', 100, 'federer nadal wozniacki djokovic murray', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(5, 'zeeguu_articles100k', '100k', 100, 'federer nadal wozniacki djokovic murray', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(5, 'zeeguu_articles', '1000k', 100, 'federer nadal wozniacki djokovic murray', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+
+    # Difficulty 5: Returning 300 articles
+    query_performance(5, 'zeeguu_articles10k', '10k', 300, 'federer nadal wozniacki djokovic murray', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(5, 'zeeguu_articles100k', '100k', 300, 'federer nadal wozniacki djokovic murray', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(5, 'zeeguu_articles', '1000k', 300, 'federer nadal wozniacki djokovic murray', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+
+    # Difficulty 5: Returning 500 articles
+    query_performance(5, 'zeeguu_articles10k', '10k', 500, 'federer nadal wozniacki djokovic murray', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(5, 'zeeguu_articles100k', '100k', 500, 'federer nadal wozniacki djokovic murray', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(5, 'zeeguu_articles', '1000k', 500, 'federer nadal wozniacki djokovic murray', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+
+    # Difficulty 5: Returning 700 articles
+    query_performance(5, 'zeeguu_articles10k', '10k', 700, 'federer nadal wozniacki djokovic murray', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(5, 'zeeguu_articles100k', '100k', 700, 'federer nadal wozniacki djokovic murray', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(5, 'zeeguu_articles', '1000k', 700, 'federer nadal wozniacki djokovic murray', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+
+    # Difficulty 5: Returning 1000 articles
+    query_performance(5, 'zeeguu_articles10k', '10k', 1000, 'federer nadal wozniacki djokovic murray', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(5, 'zeeguu_articles100k', '100k', 1000, 'federer nadal wozniacki djokovic murray', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(5, 'zeeguu_articles', '1000k', 1000, 'federer nadal wozniacki djokovic murray', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+
+    print('Done with difficulty 5')
+    # ------------------------------------------------------------------------------------------------------------------
+    # Difficulty 4: Returning 10 articles
+    query_performance(4, 'zeeguu_articles10k', '10k', 10, 'federer nadal wozniacki', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(4, 'zeeguu_articles100k', '100k', 10, 'federer nadal wozniacki', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(4, 'zeeguu_articles', '1000k', 10, 'federer nadal wozniacki', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+
+    # Difficulty 4: Returning 100 articles
+    query_performance(4, 'zeeguu_articles10k', '10k', 100, 'federer nadal wozniacki', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(4, 'zeeguu_articles100k', '100k', 100, 'federer nadal wozniacki', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(4, 'zeeguu_articles', '1000k', 100, 'federer nadal wozniacki', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+
+    # Difficulty 4: Returning 300 articles
+    query_performance(4, 'zeeguu_articles10k', '10k', 300, 'federer nadal wozniacki', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(4, 'zeeguu_articles100k', '100k', 300, 'federer nadal wozniacki', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(4, 'zeeguu_articles', '1000k', 300, 'federer nadal wozniacki', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+
+    # Difficulty 4: Returning 500 articles
+    query_performance(4, 'zeeguu_articles10k', '10k', 500, 'federer nadal wozniacki', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(4, 'zeeguu_articles100k', '100k', 500, 'federer nadal wozniacki', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(4, 'zeeguu_articles', '1000k', 500, 'federer nadal wozniacki', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+
+    # Difficulty 4: Returning 700 articles
+    query_performance(4, 'zeeguu_articles10k', '10k', 700, 'federer nadal wozniacki', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(4, 'zeeguu_articles100k', '100k', 700, 'federer nadal wozniacki', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(4, 'zeeguu_articles', '1000k', 700, 'federer nadal wozniacki', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+
+    # Difficulty 4: Returning 1000 articles
+    query_performance(4, 'zeeguu_articles10k', '10k', 1000, 'federer nadal wozniacki', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(4, 'zeeguu_articles100k', '100k', 1000, 'federer nadal wozniacki', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(4, 'zeeguu_articles', '1000k', 1000, 'federer nadal wozniacki', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+
+    print('Done with difficulty 4')
+    # -----------------------------------------------------------------------------------------------------------------
+    # Difficulty 3: Returning 10 articles
+    query_performance(3, 'zeeguu_articles10k', '10k', 10, 'federer', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(3, 'zeeguu_articles100k', '100k', 10, 'federer', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(3, 'zeeguu_articles', '1000k', 10, 'federer', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+
+    # Difficulty 3: Returning 100 articles
+    query_performance(3, 'zeeguu_articles10k', '10k', 100, 'federer', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(3, 'zeeguu_articles100k', '100k', 100, 'federer', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(3, 'zeeguu_articles', '1000k', 100, 'federer', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+
+    # Difficulty 3: Returning 300 articles
+    query_performance(3, 'zeeguu_articles10k', '10k', 300, 'federer', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(3, 'zeeguu_articles100k', '100k', 300, 'federer', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(3, 'zeeguu_articles', '1000k', 300, 'federer', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+
+    # Difficulty 3: Returning 500 articles
+    query_performance(3, 'zeeguu_articles10k', '10k', 500, 'federer', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(3, 'zeeguu_articles100k', '100k', 500, 'federer', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(3, 'zeeguu_articles', '1000k', 500, 'federer', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+
+    # Difficulty 3: Returning 700 articles
+    query_performance(3, 'zeeguu_articles10k', '10k', 700, 'federer', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(3, 'zeeguu_articles100k', '100k', 700, 'federer', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(3, 'zeeguu_articles', '1000k', 700, 'federer', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+
+    # Difficulty 3: Returning 1000 articles
+    query_performance(3, 'zeeguu_articles10k', '10k', 1000, 'federer', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(3, 'zeeguu_articles100k', '100k', 1000, 'federer', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+    query_performance(3, 'zeeguu_articles', '1000k', 1000, 'federer', '10 11 12',
+                      '13 14 15', 'soccer', 'serena williams')
+
+    print('Done with difficulty 3')
+    # -----------------------------------------------------------------------------------------------------------------
+    # Difficulty 2: Returning 10 articles
+    query_performance(2, 'zeeguu_articles10k', '10k', 10, '', '10 11 12',
+                      '13 14 15', '', '')
+    query_performance(2, 'zeeguu_articles100k', '100k', 10, '', '10 11 12',
+                      '13 14 15', '', '')
+    query_performance(2, 'zeeguu_articles', '1000k', 10, '', '10 11 12',
+                      '13 14 15', '', '')
+
+    # Difficulty 2: Returning 100 articles
+    query_performance(2, 'zeeguu_articles10k', '10k', 100, '', '10 11 12',
+                      '13 14 15', '', '')
+    query_performance(2, 'zeeguu_articles100k', '100k', 100, '', '10 11 12',
+                      '13 14 15', '', '')
+    query_performance(2, 'zeeguu_articles', '1000k', 100, '', '10 11 12',
+                      '13 14 15', '', '')
+
+    # Difficulty 2: Returning 300 articles
+    query_performance(2, 'zeeguu_articles10k', '10k', 300, '', '10 11 12',
+                      '13 14 15', '', '')
+    query_performance(2, 'zeeguu_articles100k', '100k', 300, '', '10 11 12',
+                      '13 14 15', '', '')
+    query_performance(2, 'zeeguu_articles', '1000k', 300, '', '10 11 12',
+                      '13 14 15', '', '')
+
+    # Difficulty 2: Returning 500 articles
+    query_performance(2, 'zeeguu_articles10k', '10k', 500, '', '10 11 12',
+                      '13 14 15', '', '')
+    query_performance(2, 'zeeguu_articles100k', '100k', 500, '', '10 11 12',
+                      '13 14 15', '', '')
+    query_performance(2, 'zeeguu_articles', '1000k', 500, '', '10 11 12',
+                      '13 14 15', '', '')
+
+    # Difficulty 2: Returning 700 articles
+    query_performance(2, 'zeeguu_articles10k', '10k', 700, '', '10 11 12',
+                      '13 14 15', '', '')
+    query_performance(2, 'zeeguu_articles100k', '100k', 700, '', '10 11 12',
+                      '13 14 15', '', '')
+    query_performance(2, 'zeeguu_articles', '1000k', 700, '', '10 11 12',
+                      '13 14 15', '', '')
+
+    # Difficulty 2: Returning 1000 articles
+    query_performance(2, 'zeeguu_articles10k', '10k', 1000, '', '10 11 12',
+                      '13 14 15', '', '')
+    query_performance(2, 'zeeguu_articles100k', '100k', 1000, '', '10 11 12',
+                      '13 14 15', '', '')
+    query_performance(2, 'zeeguu_articles', '1000k', 1000, '', '10 11 12',
+                      '13 14 15', '', '')
+
+    print('Done with difficulty 2')
+    # -----------------------------------------------------------------------------------------------------------------
+    # Difficulty 1: Returning 10 articles
+    query_performance(1, 'zeeguu_articles10k', '10k', 10, '', '',
+                      '', '', '')
+    query_performance(1, 'zeeguu_articles100k', '100k', 10, '', '',
+                      '', '', '')
+    query_performance(1, 'zeeguu_articles', '1000k', 10, '', '',
+                      '', '', '')
+
+    # Difficulty 1: Returning 100 articles
+    query_performance(1, 'zeeguu_articles10k', '10k', 100, '', '',
+                      '', '', '')
+    query_performance(1, 'zeeguu_articles100k', '100k', 100, '', '',
+                      '', '', '')
+    query_performance(1, 'zeeguu_articles', '1000k', 100, '', '',
+                      '', '', '')
+
+    # Difficulty 1: Returning 300 articles
+    query_performance(1, 'zeeguu_articles10k', '10k', 300, '', '',
+                      '', '', '')
+    query_performance(1, 'zeeguu_articles100k', '100k', 300, '', '',
+                      '', '', '')
+    query_performance(1, 'zeeguu_articles', '1000k', 300, '', '',
+                      '', '', '')
+
+    # Difficulty 1: Returning 500 articles
+    query_performance(1, 'zeeguu_articles10k', '10k', 500, '', '',
+                      '', '', '')
+    query_performance(1, 'zeeguu_articles100k', '100k', 500, '', '',
+                      '', '', '')
+    query_performance(1, 'zeeguu_articles', '1000k', 500, '', '',
+                      '', '', '')
+
+    # Difficulty 1: Returning 700 articles
+    query_performance(1, 'zeeguu_articles10k', '10k', 700, '', '',
+                      '', '', '')
+    query_performance(1, 'zeeguu_articles100k', '100k', 700, '', '',
+                      '', '', '')
+    query_performance(1, 'zeeguu_articles', '1000k', 700, '', '',
+                      '', '', '')
+
+    # Difficulty 1: Returning 1000 articles
+    query_performance(1, 'zeeguu_articles10k', '10k', 1000, '', '',
+                      '', '', '')
+    query_performance(1, 'zeeguu_articles100k', '100k', 1000, '', '',
+                      '', '', '')
+    query_performance(1, 'zeeguu_articles', '1000k', 1000, '', '',
+                      '', '', '')
+
+    print('Done with difficulty 1')

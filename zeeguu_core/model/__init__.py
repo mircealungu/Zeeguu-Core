@@ -23,6 +23,7 @@ zeeguu_core.db = flask_sqlalchemy.SQLAlchemy(zeeguu_core.app)
 
 # the core model
 from .language import Language
+from .generate_query import full_query
 from .url import Url
 from .domain_name import DomainName
 from .article import Article
