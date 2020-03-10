@@ -54,7 +54,7 @@ class Student(object):
         dictionary = {
             'id': str(self.user_id),
             'name': user.name,
-            'cohort_name': user.cohort.name,
+            'cohort_name': user.cohort.name if user.cohort else '',
             'email': user.email,
             'reading_time': reading_time,
             'exercises_done': exercise_time,
