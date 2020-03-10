@@ -10,10 +10,8 @@ from sqlalchemy import Column, ForeignKey, Integer, func
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.exc import NoResultFound
 from zeeguu_core import util
-from zeeguu_core.bookmark_quality import quality_top_bookmark
 from zeeguu_core.language.difficulty_estimator_factory import DifficultyEstimatorFactory
 from zeeguu_core.model import Language
-from wordstats import Word
 
 db = zeeguu_core.db
 
@@ -89,6 +87,7 @@ class User(db.Model):
         new_user = cls(fake_email, uuid, password, learned_language=learned_language, native_language=native_language)
 
         return new_user
+
 
     def __repr__(self):
         return '<User %r>' % (self.email)
