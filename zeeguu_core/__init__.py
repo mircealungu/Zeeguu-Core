@@ -16,9 +16,9 @@ if log_dir:
 
 def log(text):
     text = f'{datetime.datetime.now()} {text}'
-
-    with open(log_file, "a", encoding='utf-8') as file:
-        file.write(f'{text}\n')
+    print(text)
+    # with open(log_file, "a", encoding='utf-8') as file:
+    #     file.write(f'{text}\n')
     return text
 
 

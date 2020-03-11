@@ -14,6 +14,7 @@ from zeeguu_core.model import Article, User, Bookmark, \
     SearchSubscription, ArticleWord, ArticlesCache, CohortArticleMap, Cohort, full_query
 from sortedcontainers import SortedList
 from zeeguu_core.util.timer_logging_decorator import time_this
+from zeeguu_core.content_recommender.mysqlFullText import build_mysql_query, add_symbol_in_front_of_words
 
 def user_article_info(user: User, article: Article, with_content=False, with_translations=True):
     from zeeguu_core.model import UserArticle
@@ -37,7 +38,6 @@ def user_article_info(user: User, article: Article, with_content=False, with_tra
         ua_info['translations'] = [each.serializable_dictionary() for each in translations]
 
     return ua_info
-
 
 def recompute_recommender_cache_if_needed(user, session):
     """
@@ -122,6 +122,25 @@ def cohort_articles_for_user(user):
         return []
 
 
+@time_this
+def article_search_for_user_mysql_fulltext(user, count, search):
+    # fetch parameters need for the search
+    test = add_symbol_in_front_of_words("+", "")
+    #build query
+    #query = build_mysql_query(10, search, "10 11 12", "13 14 15", "soccor", "serena williams", "2", 100, 0, user)
+    query = build_mysql_query(10, "trump", "", "", "gun", "weapons", "2", 100, 0, user)
+
+    #execute query
+    final = query.all()
+
+    # Sort them, so the first 'count' articles will be the most recent ones
+    final.sort(key=lambda each: each.published_time, reverse=True)
+
+    if (count > len(final)):  # if we found less then the count just return all
+        return [user_article_info(user, article) for article in final]
+    return [user_article_info(user, article) for article in final[:count]]
+
+@time_this
 def article_search_for_user(user, count, search):
     """
 
@@ -143,6 +162,7 @@ def article_search_for_user(user, count, search):
         s = set(all_articles)
         final = [article for article in search_articles if article in s]
         if len(final) < 5:
+            # so if low articles found via search, just return the top new articles in the users languages??
             all_articles = get_user_articles_sources_languages(user)
             s = set(all_articles)
             final = [article for article in search_articles if article in s]
@@ -280,13 +300,11 @@ def find_articles_for_user(user):
 
     return subscribed_articles
 
-
 def to_articles_from_ES_hits(hits):
     articles = []
     for hit in hits:
         articles.append(from_article_id_to_article(hit.get("_id")))
     return articles
-
 
 @time_this
 def filter_subscribed_articles(search_subscriptions, topic_subscriptions, user_languages, user):

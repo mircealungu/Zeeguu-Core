@@ -1,24 +1,25 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+from elasticsearch import Elasticsearch
+from pandasticsearch import Select
 
-df = pd.read_csv("comparison.csv")
+for i in range(5, 6):
+    df = pd.read_csv("Mircea_test.csv")
+    df = df.loc[(df['Difficulty'] == i)]
 
-df = df.loc[df['Difficulty'] == 4]
-fig, ax = plt.subplots()
+    data_np = df.values # converting to numpy
+    unique_classes = np.unique(data_np[:, 1])
+    data_dict = {}
+
+    for u_class in unique_classes:
+        class_data = data_np[data_np[:, 1] == u_class, :] # masks out rows from class
+        data_dict.update({u_class: {'x': class_data[:, 4], 'y': class_data[:, 2]}})
+        plt.plot(data_dict[u_class]['x'], data_dict[u_class]['y'], label=u_class)
+    plt.ylabel('Time in MS')
+    plt.xlabel('Returned articles')
+    plt.title('Difficulty ' + str(i))
+    plt.legend()
+    plt.show()
 
 
-df = df.pivot(index='Size', columns='Index', values='Time in MS')
-
-df.plot()
-plt.show()
-# df = df.loc[(df['Difficulty'] == 5) & (df['Size'] == 10)]
-# df = df.sort_values(['Index', 'Difficulty'], ascending=[False, True])
-# ax = plt.gca()
-# df.plot(kind='line', x='Index', y='Time in MS', ax=ax)
-#
-# df = df.loc[(df['Difficulty'] == 5) & (df['Size'] == 100)]
-# df = df.sort_values(['Index', 'Difficulty'], ascending=[False, True])
-# ax = plt.gca()
-# # df.plot(kind='line',x='index',y='num_pets', color='red', ax=ax)
-# df.plot(kind='line', x='Index', y='Time in MS', ax=ax)
