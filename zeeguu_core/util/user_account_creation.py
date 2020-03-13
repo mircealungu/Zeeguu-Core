@@ -6,17 +6,23 @@ from zeeguu_core.model import Cohort, User, Teacher
 
 
 def valid_invite_code(invite_code):
-    return (invite_code in zeeguu_core.app.config.get("INVITATION_CODES")
-            or Cohort.exists_with_invite_code(invite_code))
+    if (zeeguu_core.app.config.get("INVITATION_CODES") and
+            invite_code in zeeguu_core.app.config.get("INVITATION_CODES")):
+        return True
+
+    if Cohort.exists_with_invite_code(invite_code):
+        return True
+
+    return False
 
 
-def create_account(db_session, username, password, invite_code, email):
+def create_account(db_session, username, password, invite_code, email, learned_language=None, native_language=None):
     cohort_name = ""
     if password is None or len(password) < 4:
-        return "Password should be at least 4 characters long"
+        raise Exception("Password should be at least 4 characters long")
 
     if not valid_invite_code(invite_code):
-        return "Invitation code is not recognized. Please contact us."
+        raise Exception("Invitation code is not recognized. Please contact us.")
 
     try:
 
@@ -29,7 +35,8 @@ def create_account(db_session, username, password, invite_code, email):
 
             cohort_name = cohort.name
 
-        new_user = User(email, username, password, invitation_code=invite_code, cohort=cohort)
+        new_user = User(email, username, password, invitation_code=invite_code, cohort=cohort,
+                        learned_language=learned_language, native_language=native_language)
         db_session.add(new_user)
 
         if cohort:
@@ -41,10 +48,9 @@ def create_account(db_session, username, password, invite_code, email):
 
         send_new_user_account_email(username, invite_code, cohort_name)
 
+        return new_user
 
     except sqlalchemy.exc.IntegrityError:
-        return "There is already an account for this email."
+        raise Exception("There is already an account for this email.")
     except Exception as e:
-        return "Could not create the account"
-
-    return "OK"
+        raise Exception("Could not create the account")
