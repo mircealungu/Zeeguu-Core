@@ -5,6 +5,7 @@
 
 
 """
+
 from elasticsearch import Elasticsearch
 from sqlalchemy import not_, or_, any_
 from sqlalchemy.orm.exc import NoResultFound
@@ -14,7 +15,7 @@ from zeeguu_core.model import Article, User, Bookmark, \
     SearchSubscription, ArticleWord, ArticlesCache, CohortArticleMap, Cohort, full_query
 from sortedcontainers import SortedList
 from zeeguu_core.util.timer_logging_decorator import time_this
-from zeeguu_core.content_recommender.mysqlFullText import build_mysql_query, add_symbol_in_front_of_words
+from zeeguu_core.content_recommender.mysqlFullText import build_mysql_query
 
 def user_article_info(user: User, article: Article, with_content=False, with_translations=True):
     from zeeguu_core.model import UserArticle
@@ -122,23 +123,22 @@ def cohort_articles_for_user(user):
         return []
 
 
-@time_this
-def article_search_for_user_mysql_fulltext(user, count, search):
-    # fetch parameters need for the search
-    test = add_symbol_in_front_of_words("+", "")
-    #build query
-    #query = build_mysql_query(10, search, "10 11 12", "13 14 15", "soccor", "serena williams", "2", 100, 0, user)
-    query = build_mysql_query(10, "trump", "", "", "gun", "weapons", "2", 100, 0, user)
-
-    #execute query
-    final = query.all()
-
-    # Sort them, so the first 'count' articles will be the most recent ones
-    final.sort(key=lambda each: each.published_time, reverse=True)
-
-    if (count > len(final)):  # if we found less then the count just return all
-        return [user_article_info(user, article) for article in final]
-    return [user_article_info(user, article) for article in final[:count]]
+# @time_this
+# def article_search_for_user_mysql_fulltext(user, count, search):
+#     # fetch parameters need for the search
+#     #build query
+#     #query = build_mysql_query(10, search, "10 11 12", "13 14 15", "soccor", "serena williams", "2", 100, 0, user)
+#     query = build_mysql_query(10, "trump", "", "", "gun", "weapons", "2", 100, 0, user)
+#
+#     #execute query
+#     final = query.all()
+#
+#     # Sort them, so the first 'count' articles will be the most recent ones
+#     final.sort(key=lambda each: each.published_time, reverse=True)
+#
+#     if (count > len(final)):  # if we found less then the count just return all
+#         return [user_article_info(user, article) for article in final]
+#     return [user_article_info(user, article) for article in final[:count]]
 
 @time_this
 def article_search_for_user(user, count, search):
@@ -173,111 +173,111 @@ def article_search_for_user(user, count, search):
     return [user_article_info(user, article) for article in final[:count]]
 
 
-@time_this
-def article_search_for_user_elastic(user, count, search_terms):
-    """
-    A method that handles all types of searches.
-    Retrieve the articles from elasticsearch and find the relational values from the DB and return to API
-    :param user: requested which fit the
-    :param search: profile, for the selected sources of the user.
-
-    :return:
-
-    """
-    """
-        :param subscribed_articles:
-        :param user_filters:
-        :param user_languages:
-        :param user_search_filters:
-        :return:
-
-                a generator which retrieves articles as needed
-
-        """
-
-    from zeeguu_core.model import Topic
-
-    es = Elasticsearch(["127.0.0.1:9200"])
-
-    user_languages = UserLanguage.all_reading_for_user(user)
-
-    topic_subscriptions = TopicSubscription.all_for_user(user)
-
-    search_subscriptions = SearchSubscription.all_for_user(user)
-    user_search_filters = SearchFilter.all_for_user(user)
-
-    if len(user_languages) == 0:
-        return []
-
-    # TODO: shouldn't this be passed down from upstream?
-    per_language_article_count = count / len(user_languages)
-
-    final_article_mix = []
-    for language in user_languages:
-        print(f"language: {language}")
-
-        # 0. Ensure appropriate difficulty
-        declared_level_min, declared_level_max = user.levels_for(language)
-        lower_bounds = declared_level_min * 10
-        upper_bounds = declared_level_max * 10
-
-        # 1. Keywords to exclude
-        # ==============================
-        keywords_to_avoid = []
-        for user_search_filter in user_search_filters:
-            keywords_to_avoid.append(user_search_filter.search.keywords)
-        print(f"keywords to exclude: {keywords_to_avoid}")
-
-        # 2. Topics to exclude / filter out
-        # =================================
-        user_filters = TopicFilter.all_for_user(user)
-        to_exclude_topic_ids = [each.topic.id for each in user_filters]
-        print(f"to exlcude topic ids: {to_exclude_topic_ids}")
-        print(f"topics to exclude: {user_filters}")
-
-        # 3. Topics subscribed, and thus to include
-        # =========================================
-        ids_of_topics_to_include = [subscription.topic.id for subscription in topic_subscriptions]
-        print(f"topics to include: {topic_subscriptions}")
-        print(f"topics ids to include: {ids_of_topics_to_include}")
-        # we comment out this line, because we want to do an or_between it and the
-        # one corresponding to searches later below!
-        # query = query.filter(Article.topics.any(Topic.id.in_(topic_ids)))
-
-        # # 4. Searches to include
-        # # ======================
-        # print(f"Search subscriptions: {search_subscriptions}")
-        # ids_for_articles_containing_search_terms = set()
-        # for user_search in search_subscriptions:
-        #     search_string = user_search.search.keywords.lower()
-        #     print(search_string)
-        #
-        #     articles_for_word = ArticleWord.get_articles_for_word(search_string)
-        #     print(articles_for_word)
-        #     ids_for_articles_containing_search_terms.update([article.id for article in articles_for_word])
-        # print(ids_for_articles_containing_search_terms)
-        # commenting out this line, in favor of it being part of a merge later
-        # query = query.filter(Article.id.in_(article_ids))
-
-        # queries through ElasticSearch with the original parameters and criteria.
-        #
-        string_of_topics = list_to_string(ids_of_topics_to_include)
-        string_of_unwanted_topics = list_to_string(to_exclude_topic_ids)
-        string_of_user_topics = list_to_string(search_subscriptions)
-        string_of_unwanted_user_topics = list_to_string(user_search_filters)
-        query_body = full_query(per_language_article_count, search_terms, string_of_topics, string_of_unwanted_topics,
-                                string_of_user_topics, string_of_unwanted_user_topics, language, upper_bounds,
-                                lower_bounds)
-
-        res = es.search(index="zeeguu_articles", body=query_body)
-
-        hit_list = res['hits'].get('hits')
-        final_article_mix.extend(to_articles_from_ES_hits(hit_list))
-
-    # Sort them, so the first 'count' articles will be the most recent ones
-    final_article_mix.sort(key=lambda each: each.published_time, reverse=True)
-    # convert to result Dicts and return
-    return [user_article_info(user, article) for article in final_article_mix]
+# @time_this
+# def article_search_for_user_elastic(user, count, search_terms):
+#     """
+#     A method that handles all types of searches.
+#     Retrieve the articles from elasticsearch and find the relational values from the DB and return to API
+#     :param user: requested which fit the
+#     :param search: profile, for the selected sources of the user.
+#
+#     :return:
+#
+#     """
+#     """
+#         :param subscribed_articles:
+#         :param user_filters:
+#         :param user_languages:
+#         :param user_search_filters:
+#         :return:
+#
+#                 a generator which retrieves articles as needed
+#
+#         """
+#
+#     from zeeguu_core.model import Topic
+#
+#     es = Elasticsearch(["127.0.0.1:9200"])
+#
+#     user_languages = UserLanguage.all_reading_for_user(user)
+#
+#     topic_subscriptions = TopicSubscription.all_for_user(user)
+#
+#     search_subscriptions = SearchSubscription.all_for_user(user)
+#     user_search_filters = SearchFilter.all_for_user(user)
+#
+#     if len(user_languages) == 0:
+#         return []
+#
+#     # TODO: shouldn't this be passed down from upstream?
+#     per_language_article_count = count / len(user_languages)
+#
+#     final_article_mix = []
+#     for language in user_languages:
+#         print(f"language: {language}")
+#
+#         # 0. Ensure appropriate difficulty
+#         declared_level_min, declared_level_max = user.levels_for(language)
+#         lower_bounds = declared_level_min * 10
+#         upper_bounds = declared_level_max * 10
+#
+#         # 1. Keywords to exclude
+#         # ==============================
+#         keywords_to_avoid = []
+#         for user_search_filter in user_search_filters:
+#             keywords_to_avoid.append(user_search_filter.search.keywords)
+#         print(f"keywords to exclude: {keywords_to_avoid}")
+#
+#         # 2. Topics to exclude / filter out
+#         # =================================
+#         user_filters = TopicFilter.all_for_user(user)
+#         to_exclude_topic_ids = [each.topic.id for each in user_filters]
+#         print(f"to exlcude topic ids: {to_exclude_topic_ids}")
+#         print(f"topics to exclude: {user_filters}")
+#
+#         # 3. Topics subscribed, and thus to include
+#         # =========================================
+#         ids_of_topics_to_include = [subscription.topic.id for subscription in topic_subscriptions]
+#         print(f"topics to include: {topic_subscriptions}")
+#         print(f"topics ids to include: {ids_of_topics_to_include}")
+#         # we comment out this line, because we want to do an or_between it and the
+#         # one corresponding to searches later below!
+#         # query = query.filter(Article.topics.any(Topic.id.in_(topic_ids)))
+#
+#         # # 4. Searches to include
+#         # # ======================
+#         # print(f"Search subscriptions: {search_subscriptions}")
+#         # ids_for_articles_containing_search_terms = set()
+#         # for user_search in search_subscriptions:
+#         #     search_string = user_search.search.keywords.lower()
+#         #     print(search_string)
+#         #
+#         #     articles_for_word = ArticleWord.get_articles_for_word(search_string)
+#         #     print(articles_for_word)
+#         #     ids_for_articles_containing_search_terms.update([article.id for article in articles_for_word])
+#         # print(ids_for_articles_containing_search_terms)
+#         # commenting out this line, in favor of it being part of a merge later
+#         # query = query.filter(Article.id.in_(article_ids))
+#
+#         # queries through ElasticSearch with the original parameters and criteria.
+#         #
+#         string_of_topics = list_to_string(ids_of_topics_to_include)
+#         string_of_unwanted_topics = list_to_string(to_exclude_topic_ids)
+#         string_of_user_topics = list_to_string(search_subscriptions)
+#         string_of_unwanted_user_topics = list_to_string(user_search_filters)
+#         query_body = full_query(per_language_article_count, search_terms, string_of_topics, string_of_unwanted_topics,
+#                                 string_of_user_topics, string_of_unwanted_user_topics, language, upper_bounds,
+#                                 lower_bounds)
+#
+#         res = es.search(index="zeeguu_articles", body=query_body)
+#
+#         hit_list = res['hits'].get('hits')
+#         final_article_mix.extend(to_articles_from_ES_hits(hit_list))
+#
+#     # Sort them, so the first 'count' articles will be the most recent ones
+#     final_article_mix.sort(key=lambda each: each.published_time, reverse=True)
+#     # convert to result Dicts and return
+#     return [user_article_info(user, article) for article in final_article_mix]
 
 def from_article_id_to_article(id):
     return Article.query.filter(Article.id == id).first()
@@ -286,6 +286,7 @@ def find_articles_for_user(user):
     """
     This method gets all the topic and search subscriptions for a user.
     It then returns all the articles that are associated with these.
+
     :param user:
     :return:
     """
@@ -299,7 +300,6 @@ def find_articles_for_user(user):
     subscribed_articles = filter_subscribed_articles(search_subscriptions, topic_subscriptions, user_languages, user)
 
     return subscribed_articles
-
 def to_articles_from_ES_hits(hits):
     articles = []
     for hit in hits:

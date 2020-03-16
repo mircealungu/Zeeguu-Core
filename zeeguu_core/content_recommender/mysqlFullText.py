@@ -1,6 +1,6 @@
-from sqlalchemy import or_, desc
+from sqlalchemy import or_, desc, not_
 from sqlalchemy_fulltext import FullText, FullTextMode, FullTextSearch
-from zeeguu_core.model import UserLanguage, Article
+from zeeguu_core.model import Article
 
 
 def build_mysql_query(mysql, count, search_terms, topics, unwanted_topics, user_topics, unwanted_user_topics, language,
@@ -8,6 +8,7 @@ def build_mysql_query(mysql, count, search_terms, topics, unwanted_topics, user_
                       lower_bounds):
     class FulltextContext(FullText):
         __fulltext_columns__ = ('article.content', 'article.title')
+
     query = mysql.query(Article)
     # if no user topics wanted or un_wanted we can do natural language mode
     if not unwanted_user_topics and not user_topics:
@@ -15,7 +16,7 @@ def build_mysql_query(mysql, count, search_terms, topics, unwanted_topics, user_
         if search_terms:
             search = search_terms
             query = mysql.query(Article).filter(FullTextSearch(search, FulltextContext, FullTextMode.NATURAL))
-    else:  # build a boolean query instead'
+    else:  # build a boolean query instead
         boolean_query = True
         unwanted_user_topics = add_symbol_in_front_of_words('-', unwanted_user_topics)
         user_topics = add_symbol_in_front_of_words('', user_topics)
@@ -49,9 +50,62 @@ def build_mysql_query(mysql, count, search_terms, topics, unwanted_topics, user_
     # difficulty, upper and lower
     query = query.filter(lower_bounds < Article.fk_difficulty)
     query = query.filter(upper_bounds > Article.fk_difficulty)
-    # if boolean then order by relevance score
+    # if boolean search mode in fulltext then order by relevance score
     if boolean_query:
         query = query.order_by(desc(FullTextSearch(search, FulltextContext, FullTextMode.BOOLEAN)))
+
+    return query.limit(count)
+
+
+def old_mysql_query(mysql, count, search_terms, topics, unwanted_topics, user_topics, unwanted_user_topics, language,
+                    upper_bounds,
+                    lower_bounds):
+    query = mysql.query(Article)
+    # if no user topics wanted or un_wanted we can do natural language mode
+
+    # unwanted user topics
+    if unwanted_user_topics:
+        keywords_to_avoid = unwanted_user_topics.split()
+        for keyword_to_avoid in keywords_to_avoid:
+            query = query.filter(not_(or_(Article.title.contains(keyword_to_avoid),
+                                          Article.content.contains(
+                                              keyword_to_avoid))))
+    # wanted user topics
+    if user_topics:
+        keywords_to_include = user_topics.split()
+        for word in keywords_to_include:
+            query = query.filter(or_(Article.title.contains(word),
+                                     Article.content.contains(word)))
+    # like on search terms
+    if search_terms:
+        query.filter(or_(Article.title.like("%" + search_terms + "%"), Article.content.like("%" + search_terms + "%")))
+
+    # Language
+    query = query.filter(Article.language_id == language.id)
+
+    # Topics
+    # TODO for now we extract the id from a string given,
+    # but it would be better to just use the topic object returned by the database in the future
+    topic_IDs = split_numbers_in_string(topics)
+    topic_conditions = []
+    if topic_IDs:
+        for ID in topic_IDs:
+            topic_conditions.append(Article.Topic.id == ID)
+        query = query.filter(or_(*topic_conditions))
+
+    # Unwanted topics
+    # TODO same as above, dont use a string we split
+    unwanted_topic_IDs = split_numbers_in_string(unwanted_topics)
+    untopic_conditions = []
+
+    if unwanted_topic_IDs:
+        for ID in unwanted_topic_IDs:
+            untopic_conditions.append(Article.Topic.id != ID)
+        query = query.filter(or_(*untopic_conditions))
+
+    # difficulty, upper and lower
+    query = query.filter(lower_bounds < Article.fk_difficulty)
+    query = query.filter(upper_bounds > Article.fk_difficulty)
 
     return query.limit(count)
 
