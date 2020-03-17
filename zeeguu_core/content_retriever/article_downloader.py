@@ -136,7 +136,6 @@ def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=True)
 
                     try:
                         # Create new article and save it to DB
-                        #todo replace with elasticsearch
                         new_article = zeeguu_core.model.Article(
                             Url.find_or_create(session, url),
                             title,
@@ -162,23 +161,27 @@ def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=True)
                         # Saves the news article at ElasticSearch.
                         # We recommend that everything is stored both in SQL and Elasticsearch
                         # as ElasticSearch isn't persistant data
-                        if save_in_elastic:
-                            es = Elasticsearch(["127.0.0.1:9200"])
-                            doc = {
-                                'title': new_article.title,
-                                'author': new_article.authors,
-                                'content': new_article.content,
-                                'summary': new_article.summary,
-                                'word_count': new_article.word_count,
-                                'published_time': new_article.published_time,
-                                'topic': " ".join(new_article.topics).strip(),
-                                'language': new_article.language.name,
-                                'fk_difficulty': new_article.fk_difficulty
-                            }
-                            res = es.index(index="zeeguu_articles", id=new_article.id, body=doc)
-                            print(res['result'])
-                        session.commit()
+                        try:
+                            if save_in_elastic:
+                                #todo find a way to store ElasticInfo in a config file like for sqlalchemy
+                                es = Elasticsearch(["127.0.0.1:9200"])
+                                doc = {
+                                    'title': new_article.title,
+                                    'author': new_article.authors,
+                                    'content': new_article.content,
+                                    'summary': new_article.summary,
+                                    'word_count': new_article.word_count,
+                                    'published_time': new_article.published_time,
+                                    'topic': topics_tostring(new_article.topics),
+                                    'language': new_article.language.name,
+                                    'fk_difficulty': new_article.fk_difficulty
+                                }
+                                res = es.index(index="zeeguu", id=new_article.id, body=doc)
+                                print("elastic res: " + res['result'])
+                        except Exception as e:
+                            print("Elastic ERROR -> " + e)
 
+                        session.commit()
                         if last_retrieval_time_seen_this_crawl:
                             feed.last_crawled_time = last_retrieval_time_seen_this_crawl
                         session.add(feed)
@@ -198,6 +201,13 @@ def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=True)
     log(f'  Downloaded: {downloaded}')
     log(f'  Low Quality: {skipped_due_to_low_quality}')
     log(f'  Already in DB: {skipped_already_in_db}')
+
+
+def topics_tostring(topics):
+    res = ""
+    for t in topics:
+        res += " " + t.title
+    return res
 
 
 def add_topics(new_article, session):

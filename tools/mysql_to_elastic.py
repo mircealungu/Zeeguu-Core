@@ -12,7 +12,7 @@ db = zeeguu_core.db
 es = Elasticsearch(['127.0.0.1:9200'])
 
 # TODO: Remove user / pass from db string
-engine = database.create_engine('mysql://root:Svx83mcf@localhost/zeeguu?charset=utf8')
+engine = database.create_engine('mysql://root:1234@127.0.0.1/zeeguu?charset=utf8')
 # create a configured "Session" class
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -35,7 +35,7 @@ def main():
                 'language': language,
                 'fk_difficulty': article.fk_difficulty
             }
-            res = es.index(index="zeeguu_articles100k", id=article.id, body=doc)
+            res = es.index(index="zeeguu", id=article.id, body=doc)
             if article.id % 1000 == 0:
                 print(res['result'] + str(article.id))
 

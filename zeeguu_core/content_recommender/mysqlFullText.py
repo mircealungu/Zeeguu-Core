@@ -10,7 +10,8 @@ def build_mysql_query(mysql, count, search_terms, topics, unwanted_topics, user_
         __fulltext_columns__ = ('article.content', 'article.title')
 
     query = mysql.query(Article)
-    # if no user topics wanted or un_wanted we can do natural language mode
+    # if no user topics wanted or un_wanted we can do NATURAL LANGUAGE mode
+    # otherwise do BOOLEAN MODE
     if not unwanted_user_topics and not user_topics:
         boolean_query = False
         if search_terms:
