@@ -4,7 +4,6 @@ Pillow
 pytest
 flask
 Flask-SQLAlchemy
-SQLAlchemy-FullText-Search
 mysqlclient
 regex
 feedparser

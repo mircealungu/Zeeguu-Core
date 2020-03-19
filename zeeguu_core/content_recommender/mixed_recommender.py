@@ -6,13 +6,12 @@
 
 """
 
-from elasticsearch import Elasticsearch
 from sqlalchemy import not_, or_
 from sqlalchemy.orm.exc import NoResultFound
 from zeeguu_core import log
 from zeeguu_core.model import Article, User, Bookmark, \
     UserLanguage, TopicFilter, TopicSubscription, SearchFilter, \
-    SearchSubscription, ArticleWord, ArticlesCache, CohortArticleMap, Cohort, full_query
+    SearchSubscription, ArticleWord, ArticlesCache, CohortArticleMap, Cohort
 from sortedcontainers import SortedList
 from zeeguu_core.util.timer_logging_decorator import time_this
 
@@ -40,6 +39,7 @@ def user_article_info(user: User, article: Article, with_content=False, with_tra
 
     return ua_info
 
+
 def recompute_recommender_cache_if_needed(user, session):
     """
 
@@ -58,10 +58,10 @@ def recompute_recommender_cache_if_needed(user, session):
 
     articles_hash_obj = ArticlesCache.check_if_hash_exists(reading_pref_hash)
 
-    #TODO: Put if statement back in
-    # if articles_hash_obj is False:
-    print("recomputing recommender cache!")
-    recompute_recommender_cache(reading_pref_hash, session, user)
+
+    if articles_hash_obj is False:
+        print("recomputing recommender cache!")
+        recompute_recommender_cache(reading_pref_hash, session, user)
 
     print("no need to recomputed recommender cache!")
 
@@ -123,24 +123,6 @@ def cohort_articles_for_user(user):
         return []
 
 
-# @time_this
-# def article_search_for_user_mysql_fulltext(user, count, search):
-#     # fetch parameters need for the search
-#     #build query
-#     #query = build_mysql_query(10, search, "10 11 12", "13 14 15", "soccor", "serena williams", "2", 100, 0, user)
-#     query = build_mysql_query(10, "trump", "", "", "gun", "weapons", "2", 100, 0, user)
-#
-#     #execute query
-#     final = query.all()
-#
-#     # Sort them, so the first 'count' articles will be the most recent ones
-#     final.sort(key=lambda each: each.published_time, reverse=True)
-#
-#     if (count > len(final)):  # if we found less then the count just return all
-#         return [user_article_info(user, article) for article in final]
-#     return [user_article_info(user, article) for article in final[:count]]
-
-@time_this
 def article_search_for_user(user, count, search):
     """
 
@@ -172,8 +154,10 @@ def article_search_for_user(user, count, search):
 
     return [user_article_info(user, article) for article in final[:count]]
 
+
 def from_article_id_to_article(id):
     return Article.query.filter(Article.id == id).first()
+
 
 def find_articles_for_user(user):
     """
@@ -193,13 +177,15 @@ def find_articles_for_user(user):
     subscribed_articles = filter_subscribed_articles(search_subscriptions, topic_subscriptions, user_languages, user)
 
     return subscribed_articles
+
+
 def to_articles_from_ES_hits(hits):
     articles = []
     for hit in hits:
         articles.append(from_article_id_to_article(hit.get("_id")))
     return articles
 
-@time_this
+
 def filter_subscribed_articles(search_subscriptions, topic_subscriptions, user_languages, user):
     """
     :param subscribed_articles:
@@ -294,130 +280,8 @@ def filter_subscribed_articles(search_subscriptions, topic_subscriptions, user_l
         query = query.limit(per_language_article_count)
         final_article_mix.update(query.all())
 
-
     return final_article_mix
 
-@time_this
-def filter_subscribed_articles_elastic(search_subscriptions, topic_subscriptions, user_languages, user):
-    """
-    :param subscribed_articles:
-    :param user_filters:
-    :param user_languages:
-    :param user_search_filters:
-    :return:
-
-            a generator which retrieves articles as needed
-
-    """
-
-    user_search_filters = SearchFilter.all_for_user(user)
-
-    if len(user_languages) == 0:
-        return []
-
-
-
-    # TODO: shouldn't this be passed down from upstream?
-    total_article_count = 30
-    per_language_article_count = total_article_count / len(user_languages)
-
-    final_article_mix = []
-    for language in user_languages:
-        print(f"language: {language}")
-
-        # 0. Ensure appropriate difficulty
-        declared_level_min, declared_level_max = user.levels_for(language)
-        lower_bounds = declared_level_min * 10
-        upper_bounds = declared_level_max * 10
-
-        # 1. Keywords to exclude
-        # ==============================
-        keywords_to_avoid = []
-        for user_search_filter in user_search_filters:
-            keywords_to_avoid.append(user_search_filter.search.keywords)
-        print(f"keywords to exclude: {keywords_to_avoid}")
-
-        # 2. Topics to exclude / filter out
-        # =================================
-        user_filters = TopicFilter.all_for_user(user)
-        to_exclude_topic_ids = [each.topic.id for each in user_filters]
-        print(f"to exlcude topic ids: {to_exclude_topic_ids}")
-        print(f"topics to exclude: {user_filters}")
-
-        # 3. Topics subscribed, and thus to include
-        # =========================================
-        ids_of_topics_to_include = [subscription.topic.id for subscription in topic_subscriptions]
-        print(f"topics to include: {topic_subscriptions}")
-        print(f"topics ids to include: {ids_of_topics_to_include}")
-        # we comment out this line, because we want to do an or_between it and the
-        # one corresponding to searches later below!
-        # query = query.filter(Article.topics.any(Topic.id.in_(topic_ids)))
-
-        # 4. Searches to include
-        # ======================
-        print(f"Search subscriptions: {search_subscriptions}")
-        ids_for_articles_containing_search_terms = set()
-        for user_search in search_subscriptions:
-            search_string = user_search.search.keywords.lower()
-            print(search_string)
-
-            articles_for_word = ArticleWord.get_articles_for_word(search_string)
-            print(articles_for_word)
-            ids_for_articles_containing_search_terms.update([article.id for article in articles_for_word])
-        print(ids_for_articles_containing_search_terms)
-        # commenting out this line, in favor of it being part of a merge later
-        # query = query.filter(Article.id.in_(article_ids))
-
-        # queries through ElasticSearch with the original parameters and criteria.
-        #
-        string_of_ids_to_include = list_to_string(ids_of_topics_to_include)
-        string_of_ids_to_exclude = list_to_string(to_exclude_topic_ids)
-        string_of_search_terms_to_include = list_to_string(search_subscriptions)
-        string_of_user_filters = list_to_string(user_filters)
-        query_body = full_query("cake", string_of_ids_to_include, string_of_ids_to_exclude, string_of_search_terms_to_include,
-                      string_of_user_filters, language, upper_bounds, lower_bounds)
-
-        es = Elasticsearch(["127.0.0.1:9200"])
-        res = es.search(index="zeeguu_articles", body=query_body)
-
-        # res = es.search(index="zeeguu_articles", body={
-        #     "size": 30, "query": {
-        #         "bool": {
-        #             "must": {
-        #                 "match": {
-        #                     "language": language.name
-        #                 }
-        #             },
-        #             "should": [{
-        #                     "match": {
-        #                         "topics": string_of_ids_to_include
-        #                     }
-        #                 },
-        #                 {
-        #                     "match": {
-        #                         "content": "cake games"
-        #                     }
-        #                 }],
-        #             "must_not": {
-        #                  "match": {
-        #                      "topics": string_of_ids_to_exclude
-        #                  }
-        #              },
-        #             "filter": {
-        #                 "range": {
-        #                     "fk_difficulty": {
-        #                         "lt": upper_bounds,
-        #                         "gt": lower_bounds
-        #                     }
-        #                 }
-        #             }
-        #         }
-        #     }
-        # })
-        hit_list = res['hits'].get('hits')
-        final_article_mix.extend(to_articles_from_ES_hits(hit_list))
-    return set(final_article_mix)
-    # return final_article_mix
 
 def list_to_string(list):
     tmp = ""
@@ -426,7 +290,6 @@ def list_to_string(list):
     return tmp.rstrip()
 
 
-@time_this
 def get_user_articles_sources_languages(user, limit=1000):
     """
 
@@ -451,7 +314,7 @@ def get_user_articles_sources_languages(user, limit=1000):
 
     return all_articles
 
-@time_this
+
 def get_articles_for_search_term(search_term):
     search_terms = search_term.lower().split()
 
