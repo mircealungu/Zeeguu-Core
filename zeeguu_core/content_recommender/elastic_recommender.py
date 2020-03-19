@@ -173,7 +173,7 @@ def article_search_for_user(user, count, search_terms):
                                 string_of_user_topics, string_of_unwanted_user_topics, language, upper_bounds,
                                 lower_bounds)
 
-        res = es.search(index="zeeguu_articles", body=query_body)
+        res = es.search(index="zeeguu", body=query_body)
 
         hit_list = res['hits'].get('hits')
         final_article_mix.extend(to_articles_from_ES_hits(hit_list))

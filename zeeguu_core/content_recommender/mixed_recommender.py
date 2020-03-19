@@ -428,6 +428,7 @@ def list_to_string(list):
     return tmp.rstrip()
 
 
+@time_this
 def get_user_articles_sources_languages(user, limit=1000):
     """
 
@@ -452,7 +453,7 @@ def get_user_articles_sources_languages(user, limit=1000):
 
     return all_articles
 
-
+@time_this
 def get_articles_for_search_term(search_term):
     search_terms = search_term.lower().split()
 

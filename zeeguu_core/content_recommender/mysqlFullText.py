@@ -29,8 +29,6 @@ def build_mysql_query(mysql, count, search_terms, topics, unwanted_topics, user_
     query = query.filter(Article.language_id == language.id)
 
     # Topics
-    # TODO for now we extraxt the id from a string given,
-    # but it would be better to just use the topic object returned by the database in the future
     topic_IDs = split_numbers_in_string(topics)
     topic_conditions = []
     if topic_IDs:
@@ -39,7 +37,6 @@ def build_mysql_query(mysql, count, search_terms, topics, unwanted_topics, user_
         query = query.filter(or_(*topic_conditions))
 
     # Unwanted topics
-    # TODO same as above, dont use a string we split
     unwanted_topic_IDs = split_numbers_in_string(unwanted_topics)
     untopic_conditions = []
 
@@ -85,8 +82,6 @@ def old_mysql_query(mysql, count, search_terms, topics, unwanted_topics, user_to
     query = query.filter(Article.language_id == language.id)
 
     # Topics
-    # TODO for now we extract the id from a string given,
-    # but it would be better to just use the topic object returned by the database in the future
     topic_IDs = split_numbers_in_string(topics)
     topic_conditions = []
     if topic_IDs:
@@ -95,7 +90,6 @@ def old_mysql_query(mysql, count, search_terms, topics, unwanted_topics, user_to
         query = query.filter(or_(*topic_conditions))
 
     # Unwanted topics
-    # TODO same as above, dont use a string we split
     unwanted_topic_IDs = split_numbers_in_string(unwanted_topics)
     untopic_conditions = []
 

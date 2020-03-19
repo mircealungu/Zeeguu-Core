@@ -2,11 +2,10 @@
 import sqlalchemy as database
 from sqlalchemy import func
 from elasticsearch import Elasticsearch
-from datetime import datetime
 import zeeguu_core
-from sqlalchemy.orm import sessionmaker, relationship, backref
+from sqlalchemy.orm import sessionmaker
 from zeeguu_core.model import Topic, Article, Language
-from zeeguu_core.model.article import article_topic_map as ATM
+from zeeguu_core.model.article import article_topic_map
 
 db = zeeguu_core.db
 es = Elasticsearch(['127.0.0.1:9200'])
@@ -41,7 +40,7 @@ def main():
 
 
 def find_topics(article_id):
-    article_topic = session.query(Topic).join(ATM).filter(ATM.c.article_id == article_id)
+    article_topic = session.query(Topic).join(article_topic_map).filter(article_topic_map.c.article_id == article_id)
     topics = ""
     for t in article_topic:
         topics = topics + str(t.id) + " "

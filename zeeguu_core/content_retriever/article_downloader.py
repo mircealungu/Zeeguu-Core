@@ -163,7 +163,7 @@ def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=True)
                         # as ElasticSearch isn't persistant data
                         try:
                             if save_in_elastic:
-                                #todo find a way to store ElasticInfo in a config file like for sqlalchemy
+                                #Todo find a way to store ElasticInfo in a config file like for sqlalchemy
                                 es = Elasticsearch(["127.0.0.1:9200"])
                                 doc = {
                                     'title': new_article.title,
@@ -179,7 +179,7 @@ def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=True)
                                 res = es.index(index="zeeguu", id=new_article.id, body=doc)
                                 print("elastic res: " + res['result'])
                         except Exception as e:
-                            print("Elastic ERROR -> " + e)
+                            log("Elastic ERROR -> " + e)
 
                         session.commit()
                         if last_retrieval_time_seen_this_crawl:
