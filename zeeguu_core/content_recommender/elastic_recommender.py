@@ -1,9 +1,8 @@
 """
 
- Mixed recommender that uses elasticsearch for searching.
- still uses MySQL to find relations, between the user and things such as:
-    topics, language and user subscriptions.
-
+ Recommender that uses elasticsearch instead of mysql for searching. Based on mixed recommender.
+ still uses MySQL to find relations between the user and things such as:
+   - topics, language and user subscriptions.
 
 """
 
@@ -11,7 +10,8 @@ from elasticsearch import Elasticsearch
 
 from zeeguu_core.model import Article, User, Bookmark, \
     UserLanguage, TopicFilter, TopicSubscription, SearchFilter, \
-    SearchSubscription, ArticleWord, ArticlesCache, full_query
+    SearchSubscription, ArticleWord, ArticlesCache
+from zeeguu_core.content_recommender.elastic_query_builder import full_query
 from sortedcontainers import SortedList
 from zeeguu_core.util.timer_logging_decorator import time_this
 from zeeguu_core.elasticSettings import settings
@@ -111,14 +111,17 @@ def find_articles_for_user(user):
 @time_this
 def article_search_for_user(user, count, search_terms):
     """
-    A method that handles all types of searches.
-    Retrieve the articles from elasticsearch and find the relational values from the DB and return them
-    :param user: requested which fit the
-    :param search: profile, for the selected sources of the user.
+    Handles searching.
+    Find the relational values from the database and use them to search in elasticsearch for relative articles.
+
+    :param user:
+    :param search_terms: the inputed search string by the user
 
     :return: articles
 
     """
+
+    #TODO maybe remove all the prints in this method
 
     es = Elasticsearch(settings["ip"])
 
@@ -165,23 +168,23 @@ def article_search_for_user(user, count, search_terms):
         print(f"topics ids to include: {ids_of_topics_to_include}")
 
         # queries through ElasticSearch with the original parameters and criteria.
-        #
-        string_of_topics = list_to_string(ids_of_topics_to_include)
-        string_of_unwanted_topics = list_to_string(to_exclude_topic_ids)
-        string_of_user_topics = list_to_string(search_subscriptions)
-        string_of_unwanted_user_topics = list_to_string(user_search_filters)
-        query_body = full_query(per_language_article_count, search_terms, string_of_topics, string_of_unwanted_topics,
-                                string_of_user_topics, string_of_unwanted_user_topics, language, upper_bounds,
-                                lower_bounds)
+        topic_ids_include = list_to_string(ids_of_topics_to_include)
+        topic_ids_exclude = list_to_string(to_exclude_topic_ids)
+        user_subscriptions = list_to_string(search_subscriptions)
+        user_filters_string = list_to_string(user_filters)
+        # build the query using elastic_query_builder
+        query_body = full_query(20, None, topic_ids_include, topic_ids_exclude, user_subscriptions,
+                                user_filters_string, language, upper_bounds, lower_bounds)
 
         res = es.search(index=settings["index"], body=query_body)
 
         hit_list = res['hits'].get('hits')
         final_article_mix.extend(to_articles_from_ES_hits(hit_list))
 
-    # Sort them, so the first 'count' articles will be the most recent ones
+    # Sort them by published time.
+    # todo: Idea, maybe give user option to sort by publish time or relevance.
     final_article_mix.sort(key=lambda each: each.published_time, reverse=True)
-    # convert to result Dicts and return
+    # convert to article_info and return
     return [user_article_info(user, article) for article in final_article_mix]
 
 
@@ -259,8 +262,8 @@ def filter_subscribed_articles(search_subscriptions, topic_subscriptions, user_l
         query_body = full_query(20, None, topic_ids_include, topic_ids_exclude, user_subscriptions,
                                 user_filters_string, language, upper_bounds, lower_bounds)
 
-        es = Elasticsearch(["127.0.0.1:9200"]) #TODO dont use localhost IP
-        res = es.search(index="zeeguu_articles", body=query_body)
+        es = Elasticsearch([settings["ip"]])
+        res = es.search(index=settings["index"], body=query_body)
 
         hit_list = res['hits'].get('hits')
         final_article_mix.extend(to_articles_from_ES_hits(hit_list))
@@ -292,9 +295,9 @@ def user_article_info(user: User, article: Article, with_content=False, with_tra
     return ua_info
 
 
-def list_to_string(list):
+def list_to_string(input_list):
     tmp = ""
-    for ele in list:
+    for ele in input_list:
         tmp = tmp + str(ele) + " "
     return tmp.rstrip()
 
