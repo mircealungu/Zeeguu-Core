@@ -28,7 +28,7 @@ def build_mysql_query(mysql, count, search_terms, topics, unwanted_topics, user_
     query = query.filter(Article.language_id == language.id)
 
     # Topics
-    # TODO for now we extraxt the id from a string given,
+    # TODO for now we extract the id from a string given,
     # but it would be better to just use the topic object returned by the database in the future
     topic_IDs = split_numbers_in_string(topics)
     topic_conditions = []
