@@ -177,13 +177,6 @@ def find_articles_for_user(user):
     return subscribed_articles
 
 
-def to_articles_from_ES_hits(hits):
-    articles = []
-    for hit in hits:
-        articles.append(from_article_id_to_article(hit.get("_id")))
-    return articles
-
-
 def filter_subscribed_articles(search_subscriptions, topic_subscriptions, user_languages, user):
     """
     :param subscribed_articles:
@@ -279,13 +272,6 @@ def filter_subscribed_articles(search_subscriptions, topic_subscriptions, user_l
         final_article_mix.update(query.all())
 
     return final_article_mix
-
-
-def list_to_string(list):
-    tmp = ""
-    for ele in list:
-        tmp = tmp + str(ele) + " "
-    return tmp.rstrip()
 
 
 def get_user_articles_sources_languages(user, limit=1000):
