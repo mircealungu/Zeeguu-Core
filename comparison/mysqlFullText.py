@@ -76,7 +76,8 @@ def old_mysql_query(mysql, count, search_terms, topics, unwanted_topics, user_to
     # like clause on search terms
     # todo, maybe split terms into seperate like conditions.
     if search_terms:
-        query.filter(or_(Article.title.like("%" + search_terms + "%"), Article.content.like("%" + search_terms + "%")))
+        search_str = "%" + search_terms + "%"
+        query = query.filter(or_(Article.title.like(search_str), Article.content.like(search_str)))
 
     # Language
     query = query.filter(Article.language_id == language.id)
