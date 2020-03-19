@@ -4,11 +4,11 @@ import numpy as np
 from elasticsearch import Elasticsearch
 from pandasticsearch import Select
 
-for i in range(5, 6):
-    df = pd.read_csv("Mircea_test.csv")
+for i in range(1, 6):
+    df = pd.read_csv("eminem_test.csv")
     df = df.loc[(df['Difficulty'] == i)]
 
-    data_np = df.values # converting to numpy
+    data_np = df.values  # converting to numpy
     unique_classes = np.unique(data_np[:, 1])
     data_dict = {}
 

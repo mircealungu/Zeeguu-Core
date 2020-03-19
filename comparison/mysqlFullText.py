@@ -59,7 +59,6 @@ def old_mysql_query(mysql, count, search_terms, topics, unwanted_topics, user_to
                     upper_bounds,
                     lower_bounds):
     query = mysql.query(Article)
-    # if no user topics wanted or un_wanted we can do natural language mode
 
     # unwanted user topics
     if unwanted_user_topics:
@@ -74,7 +73,8 @@ def old_mysql_query(mysql, count, search_terms, topics, unwanted_topics, user_to
         for word in keywords_to_include:
             query = query.filter(or_(Article.title.contains(word),
                                      Article.content.contains(word)))
-    # like on search terms
+    # like clause on search terms
+    # todo, maybe split terms into seperate like conditions.
     if search_terms:
         query.filter(or_(Article.title.like("%" + search_terms + "%"), Article.content.like("%" + search_terms + "%")))
 

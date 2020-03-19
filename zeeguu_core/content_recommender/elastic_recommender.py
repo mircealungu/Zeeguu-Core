@@ -14,6 +14,7 @@ from zeeguu_core.model import Article, User, Bookmark, \
     SearchSubscription, ArticleWord, ArticlesCache, full_query
 from sortedcontainers import SortedList
 from zeeguu_core.util.timer_logging_decorator import time_this
+from zeeguu_core.elasticSettings import settings
 
 
 def article_recommendations_for_user(user, count):
@@ -119,7 +120,7 @@ def article_search_for_user(user, count, search_terms):
 
     """
 
-    es = Elasticsearch(["127.0.0.1:9200"])
+    es = Elasticsearch(settings["ip"])
 
     user_languages = UserLanguage.all_reading_for_user(user)
 
@@ -173,7 +174,7 @@ def article_search_for_user(user, count, search_terms):
                                 string_of_user_topics, string_of_unwanted_user_topics, language, upper_bounds,
                                 lower_bounds)
 
-        res = es.search(index="zeeguu", body=query_body)
+        res = es.search(index=settings["index"], body=query_body)
 
         hit_list = res['hits'].get('hits')
         final_article_mix.extend(to_articles_from_ES_hits(hit_list))

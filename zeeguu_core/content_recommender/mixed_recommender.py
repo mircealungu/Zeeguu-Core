@@ -7,7 +7,7 @@
 """
 
 from elasticsearch import Elasticsearch
-from sqlalchemy import not_, or_, any_
+from sqlalchemy import not_, or_
 from sqlalchemy.orm.exc import NoResultFound
 from zeeguu_core import log
 from zeeguu_core.model import Article, User, Bookmark, \
@@ -15,7 +15,7 @@ from zeeguu_core.model import Article, User, Bookmark, \
     SearchSubscription, ArticleWord, ArticlesCache, CohortArticleMap, Cohort, full_query
 from sortedcontainers import SortedList
 from zeeguu_core.util.timer_logging_decorator import time_this
-from zeeguu_core.content_recommender.mysqlFullText import build_mysql_query
+
 
 def user_article_info(user: User, article: Article, with_content=False, with_translations=True):
     from zeeguu_core.model import UserArticle
@@ -311,7 +311,6 @@ def filter_subscribed_articles_elastic(search_subscriptions, topic_subscriptions
 
     """
 
-    from zeeguu_core.model import Topic
     user_search_filters = SearchFilter.all_for_user(user)
 
     if len(user_languages) == 0:

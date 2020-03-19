@@ -19,6 +19,7 @@ from zeeguu_core.model import Url, RSSFeed, LocalizedTopic, ArticleWord
 from zeeguu_core.constants import SIMPLE_TIME_FORMAT
 from elasticsearch import Elasticsearch
 import requests
+from zeeguu_core.elasticSettings import settings
 
 LOG_CONTEXT = "FEED RETRIEVAL"
 
@@ -163,8 +164,7 @@ def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=True)
                         # as ElasticSearch isn't persistant data
                         try:
                             if save_in_elastic:
-                                #Todo find a way to store ElasticInfo in a config file like for sqlalchemy
-                                es = Elasticsearch(["127.0.0.1:9200"])
+                                es = Elasticsearch([settings["ip"]])
                                 doc = {
                                     'title': new_article.title,
                                     'author': new_article.authors,
@@ -176,7 +176,7 @@ def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=True)
                                     'language': new_article.language.name,
                                     'fk_difficulty': new_article.fk_difficulty
                                 }
-                                res = es.index(index="zeeguu", id=new_article.id, body=doc)
+                                res = es.index(index=settings["index"], id=new_article.id, body=doc)
                                 print("elastic res: " + res['result'])
                         except Exception as e:
                             log("Elastic ERROR -> " + e)

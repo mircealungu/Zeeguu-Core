@@ -6,9 +6,9 @@ import zeeguu_core
 from sqlalchemy.orm import sessionmaker
 from zeeguu_core.model import Topic, Article, Language
 from zeeguu_core.model.article import article_topic_map
-
+from zeeguu_core.elasticSettings import settings
 db = zeeguu_core.db
-es = Elasticsearch(['127.0.0.1:9200'])
+es = Elasticsearch([settings["ip"]])
 
 # TODO: Remove user / pass from db string
 engine = database.create_engine('mysql://root:1234@127.0.0.1/zeeguu?charset=utf8')
@@ -34,7 +34,7 @@ def main():
                 'language': language,
                 'fk_difficulty': article.fk_difficulty
             }
-            res = es.index(index="zeeguu", id=article.id, body=doc)
+            res = es.index(index=settings["index"], id=article.id, body=doc)
             if article.id % 1000 == 0:
                 print(res['result'] + str(article.id))
 
