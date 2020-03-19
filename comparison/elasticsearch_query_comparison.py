@@ -3,12 +3,13 @@ import os
 from elasticsearch import Elasticsearch
 import sqlalchemy as database
 from sqlalchemy.orm import sessionmaker
-from zeeguu_core.model import full_query
+from zeeguu_core.content_recommender.elastic_query_builder import full_query
 from comparison.mysqlFullText import build_mysql_query, old_mysql_query
 from timeit import default_timer as timer
 from zeeguu_core.model import Language
 import csv
 from zeeguu_core.elasticSettings import settings
+from comparison.mysqlSettings import settings as sql_settings
 
 es = Elasticsearch([settings['ip']])
 
@@ -25,17 +26,17 @@ def query_performance(mysql, difficulty, index, size_of_index, size, content, to
     mysql_query_old = old_mysql_query(mysql, size, content, topics, unwanted_topics,
                                     user_topics, unwanted_user_topics, language, 100, 0)
 
-    # elastic_time_lst = []
-    # elastic_returned_articles = []
-    # for j in range(10):
-    #     start = timer()
-    #     res = es.search(index=index, body=elastic_query_body)
-    #     elastic_returned_articles.append(len(res['hits'].get('hits')))
-    #     end = timer()
-    #     elastic_time_lst.append(end - start)
-    #
-    # write_results_to_csv(difficulty, size_of_index + " elastic", average_time(elastic_time_lst), size,
-    #                      average(elastic_returned_articles))
+    elastic_time_lst = []
+    elastic_returned_articles = []
+    for j in range(10):
+        start = timer()
+        res = es.search(index=index, body=elastic_query_body)
+        elastic_returned_articles.append(len(res['hits'].get('hits')))
+        end = timer()
+        elastic_time_lst.append(end - start)
+
+    write_results_to_csv(difficulty, size_of_index + " elastic", average_time(elastic_time_lst), size,
+                         average(elastic_returned_articles))
 
     # #MySQL Full Text
     mysql_time_lst = []
@@ -50,18 +51,18 @@ def query_performance(mysql, difficulty, index, size_of_index, size, content, to
     write_results_to_csv(difficulty, size_of_index + " MySQL Full Text", average_time(mysql_time_lst),
                          size, average(mysql_returned_articles))
 
-    # # MySQL Old Version
-    # mysql_time_lst = []
-    # mysql_returned_articles = []
-    # for i in range(10):
-    #     start = timer()
-    #     result = mysql_query_old.all()
-    #     mysql_returned_articles.append(len(result))
-    #     end = timer()
-    #     mysql_time_lst.append(end - start)
-    #
-    # write_results_to_csv(difficulty, size_of_index + " MySQL Old Version", average_time(mysql_time_lst),
-    #                      size, average(mysql_returned_articles))
+    # MySQL Old Version
+    mysql_time_lst = []
+    mysql_returned_articles = []
+    for i in range(10):
+        start = timer()
+        result = mysql_query_old.all()
+        mysql_returned_articles.append(len(result))
+        end = timer()
+        mysql_time_lst.append(end - start)
+
+    write_results_to_csv(difficulty, size_of_index + " MySQL Old Version", average_time(mysql_time_lst),
+                         size, average(mysql_returned_articles))
 
 
 def average_time(lst):
@@ -151,15 +152,15 @@ if __name__ == '__main__':
     wanted_user_topics = ''
     unwanted_user_topics = ''
 
-    # engine10k = database.create_engine('mysql://root:Svx83mcf@localhost/zeeguu_10k?charset=utf8')
-    # Session10k = sessionmaker(bind=engine10k)
-    # session10k = Session10k()
-    #
-    # engine100k = database.create_engine('mysql://root:Svx83mcf@localhost/zeeguu_100k?charset=utf8')
-    # Session100k = sessionmaker(bind=engine100k)
-    # session100k = Session100k()
+    engine10k = database.create_engine(sql_settings['10k'])
+    Session10k = sessionmaker(bind=engine10k)
+    session10k = Session10k()
 
-    engine1000k = database.create_engine('mysql://root:1234@localhost/zeeguu?charset=utf8')
+    engine100k = database.create_engine(sql_settings['100k'])
+    Session100k = sessionmaker(bind=engine100k)
+    session100k = Session100k()
+
+    engine1000k = database.create_engine(sql_settings['1000k'])
     Session1000k = sessionmaker(bind=engine1000k)
     session1000k = Session1000k()
 
