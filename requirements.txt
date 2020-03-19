@@ -14,7 +14,6 @@ requests_mock
 nltk
 langdetect
 sortedcontainers
-mysql-connector-python
 elasticsearch
 pyphen
 numpy
