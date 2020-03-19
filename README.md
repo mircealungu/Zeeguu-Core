@@ -22,10 +22,8 @@ working with zeeguu model elements by importing `zeeguu.model`.
 1. git clone https://github.com/zeeguu-ecosystem/Zeeguu-Core.git
 1. python -m venv zenv 
 1. cd Zeeguu-Core
-1. python setup.py develop
 1. pip install -r requirements.txt
 1. python -m pytest
-
 
 # Installing on Mac (Notes)
 If you get an error like this: 
