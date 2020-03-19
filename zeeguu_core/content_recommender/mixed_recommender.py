@@ -153,10 +153,6 @@ def article_search_for_user(user, count, search):
     return [user_article_info(user, article) for article in final[:count]]
 
 
-def from_article_id_to_article(id):
-    return Article.query.filter(Article.id == id).first()
-
-
 def find_articles_for_user(user):
     """
     This method gets all the topic and search subscriptions for a user.
