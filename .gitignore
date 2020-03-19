@@ -19,3 +19,6 @@ activate_zeeguu.sh
 
 .in
 *.csv
+
+*flask_monitoringdashboard.db*
+

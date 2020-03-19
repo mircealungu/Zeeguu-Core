@@ -265,7 +265,7 @@ def filter_subscribed_articles(search_subscriptions, topic_subscriptions, user_l
         # 3. Topics subscribed, and thus to include
         # =========================================
         ids_of_topics_to_include = [subscription.topic.id for subscription in topic_subscriptions]
-        print(f"topics to include: {topic_subscriptions}")
+        # print(f"topics to include: {topic_subscriptions}")
         print(f"topics ids to include: {ids_of_topics_to_include}")
         # we comment out this line, because we want to do an or_between it and the
         # one corresponding to searches later below!
@@ -277,12 +277,11 @@ def filter_subscribed_articles(search_subscriptions, topic_subscriptions, user_l
         ids_for_articles_containing_search_terms = set()
         for user_search in search_subscriptions:
             search_string = user_search.search.keywords.lower()
-            print(search_string)
 
             articles_for_word = ArticleWord.get_articles_for_word(search_string)
-            print(articles_for_word)
+
             ids_for_articles_containing_search_terms.update([article.id for article in articles_for_word])
-        print(ids_for_articles_containing_search_terms)
+
         # commenting out this line, in favor of it being part of a merge later
         # query = query.filter(Article.id.in_(article_ids))
 

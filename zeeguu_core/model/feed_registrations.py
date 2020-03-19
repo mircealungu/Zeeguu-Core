@@ -50,6 +50,17 @@ class RSSFeedRegistration(db.Model):
         return cls.query.filter(cls.user == user).all()
 
     @classmethod
+    def non_subscribed_feeds(cls, user: 'User', language_code: 'str') -> '[RSSFeed]':
+
+        already_registered = [each.rss_feed for each in cls.feeds_for_user(user)]
+
+        all_available_for_language = RSSFeed.find_for_language_id(language_code)
+
+        return [feed
+                for feed in all_available_for_language
+                if not (feed in already_registered)]
+
+    @classmethod
     def with_id(cls, i):
         return (cls.query.filter(cls.id == i)).one()
 
