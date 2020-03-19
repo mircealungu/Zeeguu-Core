@@ -37,7 +37,22 @@ when installing mysqlclient try to:
     
 this is cf. https://stackoverflow.com/a/51701291/1200070
 
+# Setting up ElasticSearch (Mac / Linux)
+Follow instructions on: 
+  https://www.elastic.co/guide/en/elasticsearch/reference/current/targz.html
 
+Install on localhost for test (127.0.0.1:9200)
+
+When installing, we recommend at least 4 GB dedicated to ElasticSearch. This can easily support querying of 30+ concurrent users. If it is a single node cluster (one server), we recommend the node to both be able to ingest, hold data and be master. The two latter needs to be enabled. 
+
+To export data from MySQL to ElasticSearch run  Zeeguu_Core/Tools/mysql_to_elastic.py. Please notice that the name of the index is placed in elastic_settings.py located in the main folder of Zeeguu Core.
+
+This process takes approximately 1½ hours.
+
+Afterwards, please check that you can access the data on the following ip/port:
+http://127.0.0.1:9200/{index_name}/_doc/{id}
+
+Now you should be able to query with full text search through ElasticSearch.
 
 
 
