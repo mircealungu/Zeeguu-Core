@@ -1,3 +1,4 @@
+import re
 import flask_sqlalchemy
 
 import zeeguu_core
@@ -36,7 +37,6 @@ from .unique_code import UniqueCode
 from .word_knowledge.word_interaction_history import WordInteractionHistory
 
 from .user_language import UserLanguage
-
 
 from .topic import Topic
 from .user_article import UserArticle
@@ -77,10 +77,12 @@ from .user_exercise_session import UserExerciseSession
 # bookmark scheduling
 from zeeguu_core.model.bookmark_priority_arts import BookmarkPriorityARTS
 
-
 # Creating the DB tables if needed
 # Note that this must be called after all the model classes are loaded
 zeeguu_core.db.init_app(zeeguu_core.app)
 zeeguu_core.db.create_all(app=zeeguu_core.app)
 
-print(('ZEEGUU: Linked model with: ' + zeeguu_core.app.config["SQLALCHEMY_DATABASE_URI"]))
+# Log the DB connection string; after masking the password
+db_connection_string = zeeguu_core.app.config["SQLALCHEMY_DATABASE_URI"]
+anon_conn_string = re.sub(":([a-zA-Z_][a-zA-Z_0-9]*)@", ":****@", db_connection_string)
+zeeguu_core.warning('*** ==== ZEEGUU CORE: Linked model with: ' + anon_conn_string)
