@@ -33,7 +33,6 @@ class SourceRule(BaseRule):
         source = cls.sources[index]
 
         if source is None:
-            zeeguu_core.log("ExerciseSource {0} is not defined in SourceRule".format(source))
             raise KeyError
 
         new_source = ExerciseSource(source)
