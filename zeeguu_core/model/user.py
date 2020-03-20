@@ -9,7 +9,7 @@ import zeeguu_core
 from sqlalchemy import Column, ForeignKey, Integer, func
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.exc import NoResultFound
-from zeeguu_core import util
+from zeeguu_core import util, logger
 from zeeguu_core.language.difficulty_estimator_factory import DifficultyEstimatorFactory
 from zeeguu_core.model import Language
 
@@ -121,7 +121,7 @@ class User(db.Model):
         # Must have this import here to avoid circular dependency
 
         preference = UserPreference.get_difficulty_estimator(self) or "FleschKincaidDifficultyEstimator"
-        zeeguu_core.debug(f"Difficulty estimator for user {self.id}: {preference}")
+        logger.debug(f"Difficulty estimator for user {self.id}: {preference}")
         return preference
 
     def text_difficulty(self, text, language):
