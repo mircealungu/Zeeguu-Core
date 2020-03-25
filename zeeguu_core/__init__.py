@@ -1,31 +1,22 @@
 # -*- coding: utf8 -*-
-import os
+import logging
 
-import datetime
+logger = logging.getLogger(__name__)
 
-log_file = "zeeguu.log"
-
-log_dir = os.getenv('ZEEGUU_CORE_LOG_DIR')
-if log_dir:
-
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
-
-    log_file = f"{log_dir}/{log_file}"
+logging.basicConfig(format="%(asctime)s %(levelname)s %(name)s %(message)s")
 
 
-def log(text):
-    text = f'{datetime.datetime.now()} {text}'
-    with open(log_file, "a", encoding='utf-8') as file:
-        file.write(f'{text}\n')
-    return text
+def info(msg):
+    logger.info(msg)
 
 
-def logp(text):
-    """
+def log(msg):
+    info(msg)
 
-        Log and print to stdout at the same time
 
-    :return: None
-    """
-    print(log(text))
+def warning(msg):
+    logger.warning(msg)
+
+
+def critical(msg):
+    logger.critical(msg)

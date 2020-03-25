@@ -8,7 +8,7 @@
 
 from sqlalchemy import not_, or_
 from sqlalchemy.orm.exc import NoResultFound
-from zeeguu_core import log
+from zeeguu_core import info, logger
 from zeeguu_core.model import Article, User, Bookmark, \
     UserLanguage, TopicFilter, TopicSubscription, SearchFilter, \
     SearchSubscription, ArticleWord, ArticlesCache, CohortArticleMap, Cohort
@@ -53,16 +53,16 @@ def recompute_recommender_cache_if_needed(user, session):
     """
 
     reading_pref_hash = reading_preferences_hash(user)
-    print(f"Pref hash: {reading_pref_hash}")
+    logger.info(f"Pref hash: {reading_pref_hash}")
 
     articles_hash_obj = ArticlesCache.check_if_hash_exists(reading_pref_hash)
 
 
     if articles_hash_obj is False:
-        print("recomputing recommender cache!")
+        logger.info("Recomputing recommender cache...")
         recompute_recommender_cache(reading_pref_hash, session, user)
 
-    print("no need to recomputed recommender cache!")
+    logger.info("No need to recomputed recommender cache.")
 
 
 def recompute_recommender_cache(reading_preferences_hash_code, session, user, article_limit=42):
@@ -287,10 +287,10 @@ def get_user_articles_sources_languages(user, limit=1000):
     all_articles = []
 
     for language in user_languages:
-        log(f'Getting articles for {language}')
+        info(f'Getting articles for {language}')
         new_articles = language.get_articles(most_recent_first=True)
         all_articles.extend(new_articles)
-        log(f'Added {len(new_articles)} articles for {language}')
+        info(f'Added {len(new_articles)} articles for {language}')
 
     return all_articles
 

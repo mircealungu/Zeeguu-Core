@@ -9,7 +9,7 @@ import zeeguu_core
 from sqlalchemy import Column, ForeignKey, Integer, func
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.exc import NoResultFound
-from zeeguu_core import util
+from zeeguu_core import util, logger
 from zeeguu_core.language.difficulty_estimator_factory import DifficultyEstimatorFactory
 from zeeguu_core.model import Language
 
@@ -121,7 +121,7 @@ class User(db.Model):
         # Must have this import here to avoid circular dependency
 
         preference = UserPreference.get_difficulty_estimator(self) or "FleschKincaidDifficultyEstimator"
-        zeeguu_core.log(f"Difficulty estimator for user {self.id}: {preference}")
+        logger.debug(f"Difficulty estimator for user {self.id}: {preference}")
         return preference
 
     def text_difficulty(self, text, language):
@@ -505,7 +505,6 @@ class User(db.Model):
 
         if lang_info.cefr_level and lang_info.cefr_level > 0:
             declared_level_min, declared_level_max = CEFR_TO_DIFFICULTY_MAPPING[lang_info.cefr_level]
-            print(f"based on level {lang_info.cefr_level} min: {declared_level_min} and max: {declared_level_max}")
 
         # If there's cohort info, consider it
         if self.cohort:
@@ -567,6 +566,7 @@ class User(db.Model):
             if user.password == util.password_hash(password, bytes.fromhex(user.password_salt)):
                 return user
         except sqlalchemy.orm.exc.NoResultFound:
+            zeeguu_core.warning(f"Login attempt with wrong email: {email}")
             return None
 
     @classmethod
