@@ -7,10 +7,11 @@
 """
 
 from elasticsearch import Elasticsearch
+from sqlalchemy.orm.exc import NoResultFound
 
 from zeeguu_core.model import Article, User, Bookmark, \
     UserLanguage, TopicFilter, TopicSubscription, SearchFilter, \
-    SearchSubscription, UserArticle
+    SearchSubscription, UserArticle, Cohort, CohortArticleMap
 from elastic.elastic_query_builder import full_query
 from zeeguu_core.util.timer_logging_decorator import time_this
 from zeeguu_core.settings import ELASTIC_CONN_STRING, INDEX_NAME
@@ -89,7 +90,12 @@ def article_search_for_user(user, count, search_terms):
 
         # 4. Wanted user topics
         # =========================================
-        wanted_user_topics = SearchSubscription.all_for_user(user)
+        user_subscriptions = SearchSubscription.all_for_user(user)
+
+        wanted_user_topics = []
+        for sub in user_subscriptions:
+            wanted_user_topics.append(sub.search.keywords)
+        print(f"keywords to include: {wanted_user_topics}")
 
         # build the query using elastic_query_builder
         query_body = full_query(per_language_article_count,
@@ -135,6 +141,16 @@ def user_article_info(user: User, article: Article, with_content=False, with_tra
         ua_info['translations'] = [each.serializable_dictionary() for each in translations]
 
     return ua_info
+
+
+# used by the API so copied over from mixed_recommender
+def cohort_articles_for_user(user):
+    try:
+        cohort = Cohort.find(user.cohort_id)
+        cohort_articles = CohortArticleMap.get_articles_info_for_cohort(cohort)
+        return cohort_articles
+    except NoResultFound as e:
+        return []
 
 
 def list_to_string(input_list):
