@@ -14,7 +14,7 @@ from zeeguu_core.model import Article, User, Bookmark, \
     SearchSubscription, UserArticle, Cohort, CohortArticleMap
 from elastic.elastic_query_builder import build_elastic_query
 from zeeguu_core.util.timer_logging_decorator import time_this
-from zeeguu_core.settings import ELASTIC_CONN_STRING, INDEX_NAME
+from zeeguu_core.settings import ES_CONN_STRING, ES_ZINDEX
 
 
 def article_recommendations_for_user(user, count):
@@ -108,8 +108,8 @@ def article_search_for_user(user, count, search_terms):
                                          upper_bounds,
                                          lower_bounds)
 
-        es = Elasticsearch(ELASTIC_CONN_STRING)
-        res = es.search(index=INDEX_NAME, body=query_body)
+        es = Elasticsearch(ES_CONN_STRING)
+        res = es.search(index=ES_ZINDEX, body=query_body)
 
         hit_list = res['hits'].get('hits')
         final_article_mix.extend(to_articles_from_ES_hits(hit_list))

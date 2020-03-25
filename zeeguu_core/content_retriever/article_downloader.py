@@ -20,7 +20,7 @@ from zeeguu_core.model import Url, RSSFeed, LocalizedTopic, ArticleWord
 from zeeguu_core.constants import SIMPLE_TIME_FORMAT
 from elasticsearch import Elasticsearch
 import requests
-from zeeguu_core.settings import ELASTIC_CONN_STRING, INDEX_NAME
+from zeeguu_core.settings import ES_CONN_STRING, ES_ZINDEX
 
 LOG_CONTEXT = "FEED RETRIEVAL"
 
@@ -165,9 +165,9 @@ def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=True)
                         # as ElasticSearch isn't persistant data
                         try:
                             if save_in_elastic:
-                                es = Elasticsearch(ELASTIC_CONN_STRING)
+                                es = Elasticsearch(ES_CONN_STRING)
                                 doc = document_from_article(new_article, session)
-                                res = es.index(index=INDEX_NAME, id=new_article.id, body=doc)
+                                res = es.index(index=ES_ZINDEX, id=new_article.id, body=doc)
                                 print("elastic res: " + res['result'])
                         except Exception as e:
                             log("Elastic ERROR -> " + e)
