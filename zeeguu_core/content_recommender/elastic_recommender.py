@@ -12,7 +12,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from zeeguu_core.model import Article, User, Bookmark, \
     UserLanguage, TopicFilter, TopicSubscription, SearchFilter, \
     SearchSubscription, UserArticle, Cohort, CohortArticleMap
-from elastic.elastic_query_builder import full_query
+from elastic.elastic_query_builder import build_elastic_query
 from zeeguu_core.util.timer_logging_decorator import time_this
 from zeeguu_core.settings import ELASTIC_CONN_STRING, INDEX_NAME
 
@@ -98,15 +98,15 @@ def article_search_for_user(user, count, search_terms):
         print(f"keywords to include: {wanted_user_topics}")
 
         # build the query using elastic_query_builder
-        query_body = full_query(per_language_article_count,
-                                search_terms,
-                                list_to_string(topics_to_include),
-                                list_to_string(topics_to_exclude),
-                                list_to_string(wanted_user_topics),
-                                list_to_string(unwanted_user_topics),
-                                language,
-                                upper_bounds,
-                                lower_bounds)
+        query_body = build_elastic_query(per_language_article_count,
+                                         search_terms,
+                                         list_to_string(topics_to_include),
+                                         list_to_string(topics_to_exclude),
+                                         list_to_string(wanted_user_topics),
+                                         list_to_string(unwanted_user_topics),
+                                         language,
+                                         upper_bounds,
+                                         lower_bounds)
 
         es = Elasticsearch(ELASTIC_CONN_STRING)
         res = es.search(index=INDEX_NAME, body=query_body)
