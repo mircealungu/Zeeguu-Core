@@ -11,6 +11,7 @@ import newspaper
 import re
 
 import zeeguu_core
+from elastic.converting_from_mysql import document_from_article
 
 from zeeguu_core import model
 from zeeguu_core.content_retriever.content_cleaner import cleanup_non_content_bits
@@ -19,7 +20,7 @@ from zeeguu_core.model import Url, RSSFeed, LocalizedTopic, ArticleWord
 from zeeguu_core.constants import SIMPLE_TIME_FORMAT
 from elasticsearch import Elasticsearch
 import requests
-from zeeguu_core.elasticSettings import settings
+from zeeguu_core.settings import ELASTIC_CONN_STRING, INDEX_NAME
 
 LOG_CONTEXT = "FEED RETRIEVAL"
 
@@ -164,19 +165,9 @@ def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=True)
                         # as ElasticSearch isn't persistant data
                         try:
                             if save_in_elastic:
-                                es = Elasticsearch([settings["ip"]])
-                                doc = {
-                                    'title': new_article.title,
-                                    'author': new_article.authors,
-                                    'content': new_article.content,
-                                    'summary': new_article.summary,
-                                    'word_count': new_article.word_count,
-                                    'published_time': new_article.published_time,
-                                    'topic': topics_tostring(new_article.topics),
-                                    'language': new_article.language.name,
-                                    'fk_difficulty': new_article.fk_difficulty
-                                }
-                                res = es.index(index=settings["index"], id=new_article.id, body=doc)
+                                es = Elasticsearch(ELASTIC_CONN_STRING)
+                                doc = document_from_article(new_article, session)
+                                res = es.index(index=INDEX_NAME, id=new_article.id, body=doc)
                                 print("elastic res: " + res['result'])
                         except Exception as e:
                             log("Elastic ERROR -> " + e)
@@ -201,13 +192,6 @@ def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=True)
     log(f'  Downloaded: {downloaded}')
     log(f'  Low Quality: {skipped_due_to_low_quality}')
     log(f'  Already in DB: {skipped_already_in_db}')
-
-
-def topics_tostring(topics):
-    res = ""
-    for t in topics:
-        res += " " + t.title
-    return res
 
 
 def add_topics(new_article, session):

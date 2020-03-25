@@ -47,7 +47,7 @@ When installing, we recommend at least 4 GB dedicated to ElasticSearch. This can
 
 To export data from MySQL to ElasticSearch run  Zeeguu_Core/Tools/mysql_to_elastic.py. Please notice that the name of the index is placed in elastic_settings.py located in the main folder of Zeeguu Core.
 
-This process takes approximately 1½ hours.
+This process takes approximately 1.5h for 1 million articles.
 
 Afterwards, please check that you can access the data on the following ip/port:
 http://127.0.0.1:9200/{index_name}/_doc/{id}
