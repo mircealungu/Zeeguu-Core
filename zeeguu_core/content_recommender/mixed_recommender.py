@@ -95,6 +95,11 @@ def article_recommendations_for_user(user, count):
 
     """
 
+    # Temporary fix for the experiment of Gabriel
+    AIKI_USERS_COHORT_ID = 109
+    if user.cohort_id == AIKI_USERS_COHORT_ID:
+        return CohortArticleMap.get_articles_info_for_cohort(user.cohort)
+
     import zeeguu_core
 
     user_languages = UserLanguage.all_reading_for_user(user)
