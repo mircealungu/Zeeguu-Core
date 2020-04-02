@@ -17,21 +17,26 @@ from zeeguu_core.util.timer_logging_decorator import time_this
 from zeeguu_core.settings import ES_CONN_STRING, ES_ZINDEX
 
 
-def more_like_this_article(user, count, search_term):
-    user_languages = UserLanguage.all_reading_for_user(user)
+def more_like_this_article(user, count, article_id):
+    """
+        Given a article ID find more articles like that one via Elasticsearch "more_like_this"
 
-    user_languages = UserLanguage.all_reading_for_user(user)
-    if not user_languages:
-        return []
+    """
+    article = fetch_article_by_ID(article_id)
 
-    query_body = build_more_like_this_query(count, search_term, user_languages[1])
+    query_body = build_more_like_this_query(count, article.content, article.language)
 
     es = Elasticsearch(ES_CONN_STRING)
-    res = es.search(index=ES_ZINDEX, body=query_body)
-
+    res = es.search(index=ES_ZINDEX, body=query_body)  # execute search
     hit_list = res['hits'].get('hits')
+
+    # TODO need something to either make sure the searched on article is always a part of the list \
+    #  or that it is never there.
+    # it could be used to show on website; you searched on X, here is what we found related to X
+
     final_article_mix = to_articles_from_ES_hits(hit_list)
     return [user_article_info(user, article) for article in final_article_mix]
+
 
 def article_recommendations_for_user(user, count):
     """
@@ -44,10 +49,6 @@ def article_recommendations_for_user(user, count):
     :return:
 
     """
-
-    user_languages = UserLanguage.all_reading_for_user(user)
-    if not user_languages:
-        return []
 
     articles = article_search_for_user(user, count, "")
 
@@ -137,6 +138,7 @@ def article_search_for_user(user, count, search_terms, more_like_this):
     return [user_article_info(user, article) for article in final_article_mix]
 
 
+# exact same method as in mixed_recommender
 def user_article_info(user: User, article: Article, with_content=False, with_translations=True):
     prior_info = UserArticle.find(user, article)
 
