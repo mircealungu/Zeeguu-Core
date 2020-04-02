@@ -12,10 +12,26 @@ from sqlalchemy.orm.exc import NoResultFound
 from zeeguu_core.model import Article, User, Bookmark, \
     UserLanguage, TopicFilter, TopicSubscription, SearchFilter, \
     SearchSubscription, UserArticle, Cohort, CohortArticleMap
-from elastic.elastic_query_builder import build_elastic_query
+from elastic.elastic_query_builder import build_elastic_query, build_more_like_this_query
 from zeeguu_core.util.timer_logging_decorator import time_this
 from zeeguu_core.settings import ES_CONN_STRING, ES_ZINDEX
 
+
+def more_like_this_article(user, count, search_term):
+    user_languages = UserLanguage.all_reading_for_user(user)
+
+    user_languages = UserLanguage.all_reading_for_user(user)
+    if not user_languages:
+        return []
+
+    query_body = build_more_like_this_query(count, search_term, user_languages[1])
+
+    es = Elasticsearch(ES_CONN_STRING)
+    res = es.search(index=ES_ZINDEX, body=query_body)
+
+    hit_list = res['hits'].get('hits')
+    final_article_mix = to_articles_from_ES_hits(hit_list)
+    return [user_article_info(user, article) for article in final_article_mix]
 
 def article_recommendations_for_user(user, count):
     """
@@ -39,7 +55,7 @@ def article_recommendations_for_user(user, count):
 
 
 @time_this
-def article_search_for_user(user, count, search_terms):
+def article_search_for_user(user, count, search_terms, more_like_this):
     """
     Handles searching.
     Find the relational values from the database and use them to search in elasticsearch for relative articles.
@@ -47,7 +63,7 @@ def article_search_for_user(user, count, search_terms):
     :param user:
     :param count: max amount of articles to return
     :param search_terms: the inputed search string by the user
-
+    :param more_like_this: defines whether it should find similar articles
     :return: articles
 
     """
@@ -106,7 +122,8 @@ def article_search_for_user(user, count, search_terms):
                                          list_to_string(unwanted_user_topics),
                                          language,
                                          upper_bounds,
-                                         lower_bounds)
+                                         lower_bounds,
+                                         more_like_this)
 
         es = Elasticsearch(ES_CONN_STRING)
         res = es.search(index=ES_ZINDEX, body=query_body)

@@ -1,10 +1,32 @@
-
 def match(key, value):
     return {"match": {key: value}}
 
 
+def add_to_dict(dict, key, value):
+    dict.update({key: value})
+
+
+def build_more_like_this_query(count, search_terms, language):
+    query_body = {"size": count, "query": {"bool": {}}}  # initial empty query
+
+    must = []
+
+    if language:
+        more_like_this = {}
+        add_to_dict(more_like_this, "fields", ["content", "title"])
+        add_to_dict(more_like_this, "like", search_terms)
+        add_to_dict(more_like_this, "min_term_freq", 1)
+        add_to_dict(more_like_this, "max_query_terms", 25)
+        must.append({'more_like_this': more_like_this})
+
+        must.append(match("language", language.name))
+
+    query_body["query"]["bool"].update({"must": must})
+    return query_body
+
+
 def build_elastic_query(count, search_terms, topics, unwanted_topics, user_topics, unwanted_user_topics, language, upper_bounds,
-                        lower_bounds):
+                        lower_bounds, more_like_this_bool=False):
     """
 
         Builds an elastic search query.
@@ -48,6 +70,7 @@ def build_elastic_query(count, search_terms, topics, unwanted_topics, user_topic
     # must not = has to not occur
     # should = nice to have (extra points if it matches)
     must = []
+
     must_not = []
     should = []
 
