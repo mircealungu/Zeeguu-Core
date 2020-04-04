@@ -21,4 +21,4 @@ class CohortArticleMap(zeeguu_core.db.Model):
     @classmethod
     def get_articles_info_for_cohort(cls, cohort):
         articles = [relation.article.article_info() for relation in cls.query.filter_by(cohort=cohort).all()]
-        return sorted(articles, key= lambda x: x['id'], reverse=True)
+        return sorted(articles, key= lambda x: x['metrics']['difficulty'])
