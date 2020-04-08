@@ -83,8 +83,6 @@ def write_results_to_csv(article_id, best_topic, best_score, title):
 #     return sorted_topics
 
 
-
-
 # def assign_topic(article, sorted_topics):
 #     if not sorted_topics:
 #         return
