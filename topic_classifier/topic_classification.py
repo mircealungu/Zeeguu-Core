@@ -1,7 +1,5 @@
 from operator import itemgetter
 
-def 
-
 def get_best_category(response):
     topics = {}
     for hit in response['hits']['hits']:
