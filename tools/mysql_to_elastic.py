@@ -6,6 +6,7 @@ from elasticsearch import Elasticsearch
 import zeeguu_core
 from sqlalchemy.orm import sessionmaker
 from zeeguu_core.model import Article
+
 from zeeguu_core.settings import ES_ZINDEX, ES_CONN_STRING
 
 es = Elasticsearch([ES_CONN_STRING])
