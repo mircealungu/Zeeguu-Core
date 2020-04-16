@@ -2,6 +2,10 @@ def match(key, value):
     return {"match": {key: value}}
 
 
+def exists(field):
+    return {"exists": {"field": field}}
+
+
 def add_to_dict(dict, key, value):
     dict.update({key: value})
 
@@ -26,7 +30,7 @@ def build_more_like_this_query(count, content, language):
 
 
 def build_elastic_query(count, search_terms, topics, unwanted_topics, user_topics, unwanted_user_topics, language, upper_bounds,
-                        lower_bounds, more_like_this_bool=False):
+                        lower_bounds):
     """
 
         Builds an elastic search query.
@@ -74,7 +78,7 @@ def build_elastic_query(count, search_terms, topics, unwanted_topics, user_topic
     must_not = []
     should = []
 
-    query_body = {"size": count, "query": {"bool": {}}}  # initial empty query
+    bool_query_body = {"query": {"bool": {}}}  # initial empty bool query
 
     if language:
         must.append(match("language", language.name))
@@ -100,11 +104,27 @@ def build_elastic_query(count, search_terms, topics, unwanted_topics, user_topic
         must_not.append(match("content", unwanted_user_topics))
         must_not.append(match("title", unwanted_user_topics))
 
+    must.append(exists("published_time"))
     # add the must, must_not and should lists to the query body
-    query_body["query"]["bool"].update({"filter": {"range": {"fk_difficulty": {"gt": lower_bounds, "lt": upper_bounds}}}})
+    bool_query_body["query"]["bool"].update({"filter": {"range": {"fk_difficulty": {"gt": lower_bounds, "lt": upper_bounds}}}})
 
-    query_body["query"]["bool"].update({"should": should})
-    query_body["query"]["bool"].update({"must": must})
-    query_body["query"]["bool"].update({"must_not": must_not})
+    bool_query_body["query"]["bool"].update({"should": should})
+    bool_query_body["query"]["bool"].update({"must": must})
+    bool_query_body["query"]["bool"].update({"must_not": must_not})
 
-    return query_body
+
+    full_query = {"size": count, "query": {"function_score": {}}}
+
+    function1 = {
+            "gauss": {"published_time": {
+                    "scale": "365d",
+                    "offset": "7d",
+                    "decay": 0.3
+                }
+            }, "weight": 1.2
+          }
+
+    full_query["query"]["function_score"].update({"functions": [function1]})
+    full_query["query"]["function_score"].update(bool_query_body)
+
+    return full_query

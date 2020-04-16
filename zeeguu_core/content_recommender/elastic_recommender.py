@@ -56,7 +56,7 @@ def article_recommendations_for_user(user, count):
 
 
 @time_this
-def article_search_for_user(user, count, search_terms, more_like_this):
+def article_search_for_user(user, count, search_terms):
     """
     Handles searching.
     Find the relational values from the database and use them to search in elasticsearch for relative articles.
@@ -123,8 +123,7 @@ def article_search_for_user(user, count, search_terms, more_like_this):
                                          list_to_string(unwanted_user_topics),
                                          language,
                                          upper_bounds,
-                                         lower_bounds,
-                                         more_like_this)
+                                         lower_bounds)
 
         es = Elasticsearch(ES_CONN_STRING)
         res = es.search(index=ES_ZINDEX, body=query_body)
@@ -132,8 +131,6 @@ def article_search_for_user(user, count, search_terms, more_like_this):
         hit_list = res['hits'].get('hits')
         final_article_mix.extend(to_articles_from_ES_hits(hit_list))
 
-    # Sort them by published time.
-    final_article_mix.sort(key=lambda each: each.published_time, reverse=True)
     # convert to article_info and return
     return [user_article_info(user, article) for article in final_article_mix]
 
@@ -162,7 +159,7 @@ def user_article_info(user: User, article: Article, with_content=False, with_tra
     return ua_info
 
 
-# used by the API so copied over from mixed_recommender
+# exact same method as in mixed_recommender
 def cohort_articles_for_user(user):
     try:
         cohort = Cohort.find(user.cohort_id)
