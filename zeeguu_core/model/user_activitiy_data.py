@@ -219,19 +219,19 @@ class UserActivityData(db.Model):
     @classmethod
     def create_from_post_data(cls, session, data, user):
 
-        _time = data['time']
-        time = datetime.strptime(_time, JSON_TIME_FORMAT)
+        _time = data.get('time', None)
+        time = None
+        if _time:
+            time = datetime.strptime(_time, JSON_TIME_FORMAT)
 
-        event = data['event']
-        value = data['value']
+        event = data.get('event', '')
+        value = data.get('value', '')
 
-        extra_data = data['extra_data']
-        if extra_data == '{}':
-            extra_data = ''
+        extra_data = data.get('extra_data', '')
 
         article_id = None
         has_article_id = False
-        if data['article_id'] != '':
+        if data.get('article_id', None):
             article_id = int(data['article_id'])
             has_article_id = True
 
