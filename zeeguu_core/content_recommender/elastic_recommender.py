@@ -19,7 +19,7 @@ from zeeguu_core.settings import ES_CONN_STRING, ES_ZINDEX
 
 def more_like_this_article(user, count, article_id):
     """
-        Given a article ID find more articles like that one via Elasticsearch "more_like_this"
+        Given a article ID find more articles like that one via Elasticsearchs "more_like_this"
 
     """
     article = fetch_article_by_ID(article_id)
@@ -64,7 +64,6 @@ def article_search_for_user(user, count, search_terms):
     :param user:
     :param count: max amount of articles to return
     :param search_terms: the inputed search string by the user
-    :param more_like_this: defines whether it should find similar articles
     :return: articles
 
     """
