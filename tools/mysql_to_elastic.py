@@ -1,12 +1,13 @@
 # coding=utf-8
 import sqlalchemy as database
-from elastic.converting_from_mysql import document_from_article
+from zeeguu_core.elastic.converting_from_mysql import document_from_article
 from sqlalchemy import func
 from elasticsearch import Elasticsearch
 import zeeguu_core
 from sqlalchemy.orm import sessionmaker
 from zeeguu_core.model import Article
-from zeeguu_core.settings import ES_ZINDEX, ES_CONN_STRING
+
+from zeeguu_core.elastic.settings import ES_ZINDEX, ES_CONN_STRING
 
 es = Elasticsearch([ES_CONN_STRING])
 DB_URI = zeeguu_core.app.config["SQLALCHEMY_DATABASE_URI"]
@@ -23,7 +24,7 @@ def main():
             doc = document_from_article(article, session)
             res = es.index(index=ES_ZINDEX, id=article.id, body=doc)
             if article.id % 1000 == 0:
-                print(res['result'] + str(article.id))
+                print(res['result'] + ' ' + str(article.id))
 
 
 if __name__ == '__main__':

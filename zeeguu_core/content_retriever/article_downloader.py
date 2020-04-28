@@ -11,7 +11,7 @@ import newspaper
 import re
 
 import zeeguu_core
-from elastic.converting_from_mysql import document_from_article
+from zeeguu_core.elastic.converting_from_mysql import document_from_article
 
 from zeeguu_core import model
 from zeeguu_core.content_retriever.content_cleaner import cleanup_non_content_bits
@@ -20,7 +20,7 @@ from zeeguu_core.model import Url, RSSFeed, LocalizedTopic, ArticleWord
 from zeeguu_core.constants import SIMPLE_TIME_FORMAT
 from elasticsearch import Elasticsearch
 import requests
-from zeeguu_core.settings import ES_CONN_STRING, ES_ZINDEX
+from zeeguu_core.elastic.settings import ES_CONN_STRING, ES_ZINDEX
 
 LOG_CONTEXT = "FEED RETRIEVAL"
 

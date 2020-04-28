@@ -12,9 +12,30 @@ from sqlalchemy.orm.exc import NoResultFound
 from zeeguu_core.model import Article, User, Bookmark, \
     UserLanguage, TopicFilter, TopicSubscription, SearchFilter, \
     SearchSubscription, UserArticle, Cohort, CohortArticleMap
-from elastic.elastic_query_builder import build_elastic_query
+from zeeguu_core.elastic.elastic_query_builder import build_elastic_query, build_more_like_this_query
 from zeeguu_core.util.timer_logging_decorator import time_this
-from zeeguu_core.settings import ES_CONN_STRING, ES_ZINDEX
+from zeeguu_core.elastic.settings import ES_CONN_STRING, ES_ZINDEX
+
+
+def more_like_this_article(user, count, article_id):
+    """
+        Given a article ID find more articles like that one via Elasticsearchs "more_like_this" method
+
+    """
+    article = fetch_article_by_ID(article_id)
+
+    query_body = build_more_like_this_query(count, article.content, article.language)
+
+    es = Elasticsearch(ES_CONN_STRING)
+    res = es.search(index=ES_ZINDEX, body=query_body)  # execute search
+    hit_list = res['hits'].get('hits')
+
+    # TODO need to make sure either that the searched on article is always a part of the list \
+    #  or that it is never there.
+    #  it could be used to show on website; you searched on X, here is what we found related to X
+
+    final_article_mix = to_articles_from_ES_hits(hit_list)
+    return [user_article_info(user, article) for article in final_article_mix]
 
 
 def article_recommendations_for_user(user, count):
@@ -28,10 +49,6 @@ def article_recommendations_for_user(user, count):
     :return:
 
     """
-
-    user_languages = UserLanguage.all_reading_for_user(user)
-    if not user_languages:
-        return []
 
     articles = article_search_for_user(user, count, "")
 
@@ -47,7 +64,6 @@ def article_search_for_user(user, count, search_terms):
     :param user:
     :param count: max amount of articles to return
     :param search_terms: the inputed search string by the user
-
     :return: articles
 
     """
@@ -114,12 +130,11 @@ def article_search_for_user(user, count, search_terms):
         hit_list = res['hits'].get('hits')
         final_article_mix.extend(to_articles_from_ES_hits(hit_list))
 
-    # Sort them by published time.
-    final_article_mix.sort(key=lambda each: each.published_time, reverse=True)
     # convert to article_info and return
     return [user_article_info(user, article) for article in final_article_mix]
 
 
+# exact same method as in mixed_recommender
 def user_article_info(user: User, article: Article, with_content=False, with_translations=True):
     prior_info = UserArticle.find(user, article)
 
@@ -143,7 +158,7 @@ def user_article_info(user: User, article: Article, with_content=False, with_tra
     return ua_info
 
 
-# used by the API so copied over from mixed_recommender
+# exact same method as in mixed_recommender
 def cohort_articles_for_user(user):
     try:
         cohort = Cohort.find(user.cohort_id)
