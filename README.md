@@ -45,7 +45,7 @@ Install on localhost for test (127.0.0.1:9200)
 
 When installing, we recommend at least 4 GB dedicated to ElasticSearch. This can easily support querying of 30+ concurrent users. If it is a single node cluster (one server), we recommend the node to both be able to ingest, hold data and be master. The two latter needs to be enabled. 
 
-To export data from MySQL to ElasticSearch run  Zeeguu_Core/Tools/mysql_to_elastic.py. Please notice that the name of the index is placed in elastic_settings.py located in the main folder of Zeeguu Core.
+To export data from MySQL to ElasticSearch run  Zeeguu_Core/Tools/mysql_to_elastic.py. Please notice that the name of the index is placed in the settings.py located in zeeguu_core/Elastic.
 
 This process takes approximately 1.5h for 1 million articles.
 

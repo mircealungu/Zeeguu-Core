@@ -1,6 +1,6 @@
 # coding=utf-8
 import sqlalchemy as database
-from zeeguu_core.elastic import document_from_article
+from zeeguu_core.elastic.converting_from_mysql import document_from_article
 from sqlalchemy import func
 from elasticsearch import Elasticsearch
 import zeeguu_core
