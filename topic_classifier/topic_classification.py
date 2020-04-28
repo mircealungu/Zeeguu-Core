@@ -2,13 +2,9 @@ import csv
 import os
 
 import zeeguu_core
-from elastic import elastic_query_builder
-from operator import itemgetter
 from elasticsearch import Elasticsearch
-from topic_classifier.more_like_this_query import build_more_like_this_query
-from elastic.converting_from_mysql import find_topics
-from zeeguu_core.model import article, Topic
-from elastic.elastic_query_builder import build_elastic_query
+from elastic.elastic_query_builder import build_more_like_this_query
+from zeeguu_core.model import Topic
 from sqlalchemy.orm import sessionmaker
 from zeeguu_core.settings import ES_ZINDEX, ES_CONN_STRING
 import sqlalchemy as database
