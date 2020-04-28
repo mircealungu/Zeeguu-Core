@@ -1,13 +1,13 @@
 # coding=utf-8
 import sqlalchemy as database
-from elastic.converting_from_mysql import document_from_article
+from zeeguu_core.elastic import document_from_article
 from sqlalchemy import func
 from elasticsearch import Elasticsearch
 import zeeguu_core
 from sqlalchemy.orm import sessionmaker
 from zeeguu_core.model import Article
 
-from zeeguu_core.settings import ES_ZINDEX, ES_CONN_STRING
+from zeeguu_core.elastic.settings import ES_ZINDEX, ES_CONN_STRING
 
 es = Elasticsearch([ES_CONN_STRING])
 DB_URI = zeeguu_core.app.config["SQLALCHEMY_DATABASE_URI"]

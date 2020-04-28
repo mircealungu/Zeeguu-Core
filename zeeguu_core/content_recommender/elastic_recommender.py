@@ -12,9 +12,9 @@ from sqlalchemy.orm.exc import NoResultFound
 from zeeguu_core.model import Article, User, Bookmark, \
     UserLanguage, TopicFilter, TopicSubscription, SearchFilter, \
     SearchSubscription, UserArticle, Cohort, CohortArticleMap
-from elastic.elastic_query_builder import build_elastic_query, build_more_like_this_query
+from zeeguu_core.elastic.elastic_query_builder import build_elastic_query, build_more_like_this_query
 from zeeguu_core.util.timer_logging_decorator import time_this
-from zeeguu_core.settings import ES_CONN_STRING, ES_ZINDEX
+from zeeguu_core.elastic.settings import ES_CONN_STRING, ES_ZINDEX
 
 
 def more_like_this_article(user, count, article_id):
