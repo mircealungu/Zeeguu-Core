@@ -19,7 +19,7 @@ from zeeguu_core.settings import ES_CONN_STRING, ES_ZINDEX
 
 def more_like_this_article(user, count, article_id):
     """
-        Given a article ID find more articles like that one via Elasticsearchs "more_like_this"
+        Given a article ID find more articles like that one via Elasticsearchs "more_like_this" method
 
     """
     article = fetch_article_by_ID(article_id)
@@ -30,9 +30,9 @@ def more_like_this_article(user, count, article_id):
     res = es.search(index=ES_ZINDEX, body=query_body)  # execute search
     hit_list = res['hits'].get('hits')
 
-    # TODO need something to either make sure the searched on article is always a part of the list \
+    # TODO need to make sure either that the searched on article is always a part of the list \
     #  or that it is never there.
-    # it could be used to show on website; you searched on X, here is what we found related to X
+    #  it could be used to show on website; you searched on X, here is what we found related to X
 
     final_article_mix = to_articles_from_ES_hits(hit_list)
     return [user_article_info(user, article) for article in final_article_mix]

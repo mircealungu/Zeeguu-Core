@@ -24,7 +24,7 @@ def main():
             doc = document_from_article(article, session)
             res = es.index(index=ES_ZINDEX, id=article.id, body=doc)
             if article.id % 1000 == 0:
-                print(res['result'] + str(article.id))
+                print(res['result'] + ' ' + str(article.id))
 
 
 if __name__ == '__main__':
