@@ -6,6 +6,7 @@ from elasticsearch import Elasticsearch
 import zeeguu_core
 from sqlalchemy.orm import sessionmaker
 from zeeguu_core.model import Article
+import sys
 
 from zeeguu_core.elastic.settings import ES_ZINDEX, ES_CONN_STRING
 
@@ -16,10 +17,14 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 
-def main():
+def main(starting_index):
     max_id = session.query(func.max(Article.id)).first()[0]
-    for i in range(0, max_id, 5000):
+    print(f"max id in db: {max_id}")
+    print(f"starting import at: {max_id - starting_index}")
+
+    for i in range(starting_index, max_id, 5000):
         # fetch 5000 articles at a time, to avoid to much loaded into memory
+        print(i)
         for article in session.query(Article).order_by(Article.published_time.desc()).limit(5000).offset(i):
             try:
                 doc = document_from_article(article, session)
@@ -30,5 +35,12 @@ def main():
                 print(f"something went wrong with article id {article.id}")
                 print(str(e))
 
+
 if __name__ == '__main__':
-    main()
+
+    starting_index = 0
+
+    if len(sys.argv) > 1:
+        starting_index = int(sys.argv[1])
+
+    main(starting_index)
