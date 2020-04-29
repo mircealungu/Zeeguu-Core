@@ -38,5 +38,5 @@ def article_search_for_user(user, count, search_terms):
     except Exception as e:
         log(ES_DOWN_MESSAGE)
         log(str(e))
-        
+
         return mixed_article_search_for_user(user, count, search_terms)

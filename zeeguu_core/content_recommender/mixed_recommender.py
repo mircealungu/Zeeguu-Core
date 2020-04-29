@@ -17,7 +17,8 @@ from zeeguu_core.model import (
     SearchFilter,
     SearchSubscription,
     ArticleWord,
-    ArticlesCache)
+    ArticlesCache,
+    CohortArticleMap)
 
 from sortedcontainers import SortedList
 
