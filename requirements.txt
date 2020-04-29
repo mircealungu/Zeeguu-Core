@@ -14,6 +14,7 @@ requests_mock
 nltk
 langdetect
 sortedcontainers
+elasticsearch
 pyphen
 numpy
 wordstats

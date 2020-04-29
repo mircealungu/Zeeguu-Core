@@ -11,13 +11,16 @@ import newspaper
 import re
 
 import zeeguu_core
+from zeeguu_core.elastic.converting_from_mysql import document_from_article
 
 from zeeguu_core import model
 from zeeguu_core.content_retriever.content_cleaner import cleanup_non_content_bits
 from zeeguu_core.content_retriever.quality_filter import sufficient_quality
 from zeeguu_core.model import Url, RSSFeed, LocalizedTopic, ArticleWord
 from zeeguu_core.constants import SIMPLE_TIME_FORMAT
+from elasticsearch import Elasticsearch
 import requests
+from zeeguu_core.elastic.settings import ES_CONN_STRING, ES_ZINDEX
 
 LOG_CONTEXT = "FEED RETRIEVAL"
 
@@ -37,7 +40,7 @@ def _date_in_the_future(time):
     return time > datetime.now()
 
 
-def download_from_feed(feed: RSSFeed, session, limit=1000):
+def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=True):
     """
 
         Session is needed because this saves stuff to the DB.
@@ -147,14 +150,29 @@ def download_from_feed(feed: RSSFeed, session, limit=1000):
                         )
                         session.add(new_article)
                         session.commit()
+                        print("saved article in db")
                         downloaded += 1
 
-                        add_topics(new_article, session)
-                        log("- added topics")
-                        add_searches(title, url, new_article, session)
-                        log("- added keywords")
-                        session.commit()
+                        try:
+                            add_topics(new_article, session)
+                            log("- added topics")
+                            add_searches(title, url, new_article, session)
+                            log("- added keywords")
+                        except Exception as e:
+                            print(e)
+                        # Saves the news article at ElasticSearch.
+                        # We recommend that everything is stored both in SQL and Elasticsearch
+                        # as ElasticSearch isn't persistent data
+                        try:
+                            if save_in_elastic:
+                                es = Elasticsearch(ES_CONN_STRING)
+                                doc = document_from_article(new_article, session)
+                                res = es.index(index=ES_ZINDEX, id=new_article.id, body=doc)
+                                print("elastic res: " + res['result'])
+                        except Exception as e:
+                            log("Elastic ERROR -> " + e)
 
+                        session.commit()
                         if last_retrieval_time_seen_this_crawl:
                             feed.last_crawled_time = last_retrieval_time_seen_this_crawl
                         session.add(feed)

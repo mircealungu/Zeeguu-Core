@@ -23,8 +23,7 @@ working with zeeguu model elements by importing `zeeguu.model`.
 1. python -m venv zenv 
 1. cd Zeeguu-Core
 1. pip install -r requirements.txt
-1. ./run_tests.sh
-
+1. python -m pytest
 
 # Installing on Mac (Notes)
 If you get an error like this: 
@@ -38,33 +37,21 @@ when installing mysqlclient try to:
     
 this is cf. https://stackoverflow.com/a/51701291/1200070
 
+# Setting up ElasticSearch 7.6.2 (Mac / Linux)
 
+Follow instructions on: 
+  https://www.elastic.co/guide/en/elasticsearch/reference/current/targz.html
 
+Install on localhost for test (127.0.0.1:9200)
 
+When installing, we recommend at least 4 GB dedicated to ElasticSearch. This can easily support querying of 30+ concurrent users. If it is a single node cluster (one server), we recommend the node to both be able to ingest, hold data and be master. The two latter needs to be enabled. 
 
+To export data from MySQL to ElasticSearch run zeeguu_core/tools/mysql_to_elastic.py. 
+Please notice that the name of the index is placed in the settings.py located in zeeguu_core/Elastic.
 
+This process takes approximately 1.5h for 1 million articles.
 
+Afterwards, please check that you can access the data on the following ip/port:
+http://127.0.0.1:9200/{index_name}/_doc/{id}
 
-<!-- # Setup for Local Testing
-6. Run `mysql -u root -p`
-   1. Run `CREATE DATABASE zeeguu;`
-   2. Run `exit`
-6. Run `mysql.server start`
-9. (Optional) You can populate the DB with the dataset that we used for the [CHI paper](https://github.com/zeeguu-ecosystem/CHI18-Paper/)
-   1. download the [anonymized database dump](https://github.com/zeeguu-ecosystem/CHI18-Paper/blob/master/data/chi18_dataset_anon_2018-01-15.sql.zip) and unzip the file
-   1. mysql -u root -p zeeguu < chi18_dataset_anon_2018-01-15.sql
-   3. The database *should* be populated by now.
- -->
-
-<!-- # MySQL
-
-Install mysql and also the connection to python
-```
-apt-get install mysql-server libmysqlclient-dev python-mysqldb
-```
-
-# Project dev dependencies
-```
-apt-get install libxml2-dev libxslt1-dev
-```
- -->
+Now you should be able to query with full text search through ElasticSearch.

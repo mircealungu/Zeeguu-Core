@@ -18,5 +18,9 @@ testing_default.cfg
 activate_zeeguu.sh
 
 .in
+*.csv
+*.png
+src/
 
 *flask_monitoringdashboard.db*
+

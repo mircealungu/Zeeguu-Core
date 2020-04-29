@@ -2,7 +2,7 @@ from datetime import datetime
 
 from zeeguu_core.model import User
 
-from zeeguu_core.content_recommender.mixed_recommender import find_articles_for_user
+from zeeguu_core.content_recommender.mixed_recommender import _find_articles_for_user
 
 
 def test_performance():
@@ -10,7 +10,7 @@ def test_performance():
 
     a = datetime.now()
 
-    res = find_articles_for_user(me)
+    res = _find_articles_for_user(me)
     print(len(res))
 
     for each in res[0:20]:

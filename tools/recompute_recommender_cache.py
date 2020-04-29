@@ -9,8 +9,8 @@
 """
 
 import zeeguu_core
-from zeeguu_core.content_recommender.mixed_recommender import reading_preferences_hash, \
-    recompute_recommender_cache_if_needed
+from zeeguu_core.content_recommender.mixed_recommender import _reading_preferences_hash, \
+    _recompute_recommender_cache_if_needed
 from zeeguu_core.model import User, ArticlesCache
 
 session = zeeguu_core.db.session
@@ -39,19 +39,19 @@ def recompute_for_users():
 
         recomputes only those caches that are already in the table
         and belong to a user. if multiple users have the same preferences
-        the computation is donne only for the first because this is how
-        recompute_recommender_cache_if_needed does.
+        the computation is done only for the first because this is how
+        _recompute_recommender_cache_if_needed does.
 
         To think about:
         - what happens when this script is triggered simultaneously
-        with triggering recompute_recommender_cache_if_needed from
+        with triggering _recompute_recommender_cache_if_needed from
         the UI? will there end up be duplicated recommendations?
         should we add a uninque constraint on (hash x article)?
 
         Note:
 
         in theory, the recomputing should be doable independent of users
-        in practice, the recompute_recommender_cache takes the user as input.
+        in practice, the _recompute_recommender_cache takes the user as input.
         for that function to become independent of the user we need to be
         able to recover the ids of the languages, topics, searchers, etc. from the
         content_hash
@@ -68,9 +68,9 @@ def recompute_for_users():
     for user_id in User.all_recent_user_ids():
         try:
             user = User.find_by_id(user_id)
-            reading_pref_hash = reading_preferences_hash(user)
+            reading_pref_hash = _reading_preferences_hash(user)
             if reading_pref_hash not in already_done:
-                recompute_recommender_cache_if_needed(user, session)
+                _recompute_recommender_cache_if_needed(user, session)
                 zeeguu_core.logp(f"Success for {reading_pref_hash} and {user}")
                 already_done.append(reading_pref_hash)
             else:
