@@ -162,7 +162,7 @@ def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=True)
                             print(e)
                         # Saves the news article at ElasticSearch.
                         # We recommend that everything is stored both in SQL and Elasticsearch
-                        # as ElasticSearch isn't persistant data
+                        # as ElasticSearch isn't persistent data
                         try:
                             if save_in_elastic:
                                 es = Elasticsearch(ES_CONN_STRING)
