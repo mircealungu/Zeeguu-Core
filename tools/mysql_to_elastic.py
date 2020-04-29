@@ -7,6 +7,7 @@ import zeeguu_core
 from sqlalchemy.orm import sessionmaker
 from zeeguu_core.model import Article
 import sys
+from datetime import datetime
 
 from zeeguu_core.elastic.settings import ES_ZINDEX, ES_CONN_STRING
 
@@ -17,15 +18,18 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 
-def main(starting_index):
+def main(starting_index, article_batch_size):
+    # fetch article_batch_size articles at a time, to avoid to much loaded into memory
+
     max_id = session.query(func.max(Article.id)).first()[0]
     print(f"max id in db: {max_id}")
     print(f"starting import at: {max_id - starting_index}")
 
-    for i in range(starting_index, max_id, 5000):
-        # fetch 5000 articles at a time, to avoid to much loaded into memory
+    for i in range(starting_index, max_id, article_batch_size):
+
         print(i)
-        for article in session.query(Article).order_by(Article.published_time.desc()).limit(5000).offset(i):
+        for article in session.query(Article).order_by(Article.published_time.desc()).limit(article_batch_size).offset(
+                i):
             try:
                 doc = document_from_article(article, session)
                 res = es.index(index=ES_ZINDEX, id=article.id, body=doc)
@@ -38,9 +42,15 @@ def main(starting_index):
 
 if __name__ == '__main__':
 
+    print(f"started at: {datetime.now()}")
     starting_index = 0
+    article_batch_size = 5000
 
     if len(sys.argv) > 1:
         starting_index = int(sys.argv[1])
 
-    main(starting_index)
+    if len(sys.argv) > 2:
+        article_batch_size = int(sys.argv[2])
+
+    main(starting_index, article_batch_size)
+    print(f"ended at: {datetime.now()}")
