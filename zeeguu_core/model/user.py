@@ -180,6 +180,15 @@ class User(db.Model):
         a_while_ago = now - dateutil.relativedelta.relativedelta(days=days)
         return self.date_of_last_bookmark() > a_while_ago
 
+    def cohort_articles_for_user(self):
+        from zeeguu_core.model import Cohort, CohortArticleMap
+        try:
+            cohort = Cohort.find(self.cohort_id)
+            cohort_articles = CohortArticleMap.get_articles_info_for_cohort(cohort)
+            return cohort_articles
+        except NoResultFound as e:
+            return []
+
     @classmethod
     @sqlalchemy.orm.validates("email")
     def validate_email(cls, col, email):

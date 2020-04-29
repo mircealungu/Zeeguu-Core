@@ -7,82 +7,19 @@
 """
 
 from sqlalchemy import not_, or_
-from sqlalchemy.orm.exc import NoResultFound
 from zeeguu_core import info, logger
-from zeeguu_core.model import Article, User, Bookmark, \
-    UserLanguage, TopicFilter, TopicSubscription, SearchFilter, \
-    SearchSubscription, ArticleWord, ArticlesCache, CohortArticleMap, Cohort
+from zeeguu_core.model import (
+    Article,
+    UserArticle,
+    UserLanguage,
+    TopicFilter,
+    TopicSubscription,
+    SearchFilter,
+    SearchSubscription,
+    ArticleWord,
+    ArticlesCache)
+
 from sortedcontainers import SortedList
-
-
-def user_article_info(user: User, article: Article, with_content=False, with_translations=True):
-    from zeeguu_core.model import UserArticle
-    prior_info = UserArticle.find(user, article)
-
-    ua_info = article.article_info(with_content=with_content)
-
-    if not prior_info:
-        ua_info['starred'] = False
-        ua_info['opened'] = False
-        ua_info['liked'] = False
-        ua_info['translations'] = []
-        return ua_info
-
-    ua_info['starred'] = prior_info.starred is not None
-    ua_info['opened'] = prior_info.opened is not None
-    ua_info['liked'] = prior_info.liked
-
-    if with_translations:
-        translations = Bookmark.find_all_for_user_and_url(user, article.url)
-        ua_info['translations'] = [each.serializable_dictionary() for each in translations]
-
-    return ua_info
-
-
-def recompute_recommender_cache_if_needed(user, session):
-    """
-
-            This method first checks if there is an existing hash for the
-            user's content selection, and if so, is done. If non-existent,
-            it retrieves all the articles corresponding with this configuration
-            and stores them as ArticlesCache objects.
-
-    :param user: To retrieve the subscriptions of the user
-    :param session: Needed to store in the db
-
-    """
-
-    reading_pref_hash = reading_preferences_hash(user)
-    logger.info(f"Pref hash: {reading_pref_hash}")
-
-    articles_hash_obj = ArticlesCache.check_if_hash_exists(reading_pref_hash)
-
-
-    if articles_hash_obj is False:
-        logger.info("Recomputing recommender cache...")
-        recompute_recommender_cache(reading_pref_hash, session, user)
-
-    logger.info("No need to recomputed recommender cache.")
-
-
-def recompute_recommender_cache(reading_preferences_hash_code, session, user, article_limit=42):
-    """
-
-    :param reading_preferences_hash_code:
-    :param session:
-    :param user:
-
-    :param article_limit: set to something low ... say 42 when working in real time... ti's
-    a bit slow otherwise. however, when caching offline you can save
-
-    :return:
-    """
-    all_articles = find_articles_for_user(user)
-
-    for art in all_articles:
-        cache_obj = ArticlesCache(art, reading_preferences_hash_code)
-        session.add(cache_obj)
-        session.commit()
 
 
 def article_recommendations_for_user(user, count):
@@ -103,23 +40,14 @@ def article_recommendations_for_user(user, count):
     if not user_languages:
         return []
 
-    reading_pref_hash = reading_preferences_hash(user)
-    recompute_recommender_cache_if_needed(user, zeeguu_core.db.session)
+    reading_pref_hash = _reading_preferences_hash(user)
+    _recompute_recommender_cache_if_needed(user, zeeguu_core.db.session)
     all_articles = ArticlesCache.get_articles_for_hash(reading_pref_hash, count)
     all_articles = [each for each in all_articles if (not each.broken
                                                       and each.published_time)]
     all_articles = SortedList(all_articles, lambda x: x.published_time)
 
-    return [user_article_info(user, article) for article in reversed(all_articles)]
-
-
-def cohort_articles_for_user(user):
-    try:
-        cohort = Cohort.find(user.cohort_id)
-        cohort_articles = CohortArticleMap.get_articles_info_for_cohort(cohort)
-        return cohort_articles
-    except NoResultFound as e:
-        return []
+    return [UserArticle.user_article_info(user, article) for article in reversed(all_articles)]
 
 
 def article_search_for_user(user, count, search):
@@ -133,9 +61,9 @@ def article_search_for_user(user, count, search):
 
     """
 
-    all_articles = get_user_articles_sources_languages(user, 2500)
+    all_articles = _get_user_articles_sources_languages(user, 2500)
     # We are just using the first and second word of the user's search now
-    search_articles = get_articles_for_search_term(search)
+    search_articles = _get_articles_for_search_term(search)
 
     if search_articles is None:
         final = []
@@ -143,17 +71,62 @@ def article_search_for_user(user, count, search):
         s = set(all_articles)
         final = [article for article in search_articles if article in s]
         if len(final) < 5:
-            all_articles = get_user_articles_sources_languages(user)
+            all_articles = _get_user_articles_sources_languages(user)
             s = set(all_articles)
             final = [article for article in search_articles if article in s]
 
     # Sort them, so the first 'count' articles will be the most recent ones
     final.sort(key=lambda each: each.published_time, reverse=True)
 
-    return [user_article_info(user, article) for article in final[:count]]
+    return [UserArticle.user_article_info(user, article) for article in final[:count]]
 
 
-def find_articles_for_user(user):
+def _recompute_recommender_cache_if_needed(user, session):
+    """
+
+            This method first checks if there is an existing hash for the
+            user's content selection, and if so, is done. If non-existent,
+            it retrieves all the articles corresponding with this configuration
+            and stores them as ArticlesCache objects.
+
+    :param user: To retrieve the subscriptions of the user
+    :param session: Needed to store in the db
+
+    """
+
+    reading_pref_hash = _reading_preferences_hash(user)
+    logger.info(f"Pref hash: {reading_pref_hash}")
+
+    articles_hash_obj = ArticlesCache.check_if_hash_exists(reading_pref_hash)
+
+    if articles_hash_obj is False:
+        logger.info("Recomputing recommender cache...")
+        _recompute_recommender_cache(reading_pref_hash, session, user)
+
+    logger.info("No need to recomputed recommender cache.")
+
+
+def _recompute_recommender_cache(reading_preferences_hash_code, session, user, article_limit=42):
+    """
+
+    :param reading_preferences_hash_code:
+    :param session:
+    :param user:
+
+    :param article_limit: set to something low ... say 42 when working in real time... ti's
+    a bit slow otherwise. however, when caching offline you can save
+
+    :return:
+    """
+    all_articles = _find_articles_for_user(user)
+
+    for art in all_articles:
+        cache_obj = ArticlesCache(art, reading_preferences_hash_code)
+        session.add(cache_obj)
+        session.commit()
+
+
+def _find_articles_for_user(user):
     """
     This method gets all the topic and search subscriptions for a user.
     It then returns all the articles that are associated with these.
@@ -168,12 +141,12 @@ def find_articles_for_user(user):
 
     search_subscriptions = SearchSubscription.all_for_user(user)
 
-    subscribed_articles = filter_subscribed_articles(search_subscriptions, topic_subscriptions, user_languages, user)
+    subscribed_articles = _filter_subscribed_articles(search_subscriptions, topic_subscriptions, user_languages, user)
 
     return subscribed_articles
 
 
-def filter_subscribed_articles(search_subscriptions, topic_subscriptions, user_languages, user):
+def _filter_subscribed_articles(search_subscriptions, topic_subscriptions, user_languages, user):
     """
     :param subscribed_articles:
     :param user_filters:
@@ -270,7 +243,7 @@ def filter_subscribed_articles(search_subscriptions, topic_subscriptions, user_l
     return final_article_mix
 
 
-def get_user_articles_sources_languages(user, limit=1000):
+def _get_user_articles_sources_languages(user, limit=1000):
     """
 
     This method is used to get all the user articles for the sources if there are any
@@ -295,7 +268,7 @@ def get_user_articles_sources_languages(user, limit=1000):
     return all_articles
 
 
-def get_articles_for_search_term(search_term):
+def _get_articles_for_search_term(search_term):
     search_terms = search_term.lower().split()
 
     individual_term_results = []
@@ -306,7 +279,7 @@ def get_articles_for_search_term(search_term):
     return individual_term_results[0].intersection(*individual_term_results[1:])
 
 
-def reading_preferences_hash(user):
+def _reading_preferences_hash(user):
     """
 
             Method to retrieve the hash, as this is done several times.

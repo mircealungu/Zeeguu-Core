@@ -184,12 +184,10 @@ class UserArticle(zeeguu_core.db.Model):
         :return:
         """
 
-        from zeeguu_core.content_recommender.mixed_recommender import user_article_info
-
         user_articles = cls.all_starred_or_liked_articles_of_user(user)
 
         return [
-            user_article_info(user, each.article, with_translations=False)
+            cls.user_article_info(user, each.article, with_translations=False)
             for each in user_articles
             if each.last_interaction() is not None
         ]
@@ -203,3 +201,31 @@ class UserArticle(zeeguu_core.db.Model):
             return True
         except NoResultFound:
             return False
+
+    @classmethod
+    def user_article_info(cls, user: User, article: Article, with_content=False, with_translations=True):
+
+        from zeeguu_core.model import Bookmark
+
+        # Initialize returned info with the default article info
+        returned_info = article.article_info(with_content=with_content)
+
+        user_article_info = UserArticle.find(user, article)
+
+        if not user_article_info:
+            returned_info['starred'] = False
+            returned_info['opened'] = False
+            returned_info['liked'] = False
+            returned_info['translations'] = []
+
+            return returned_info
+
+        returned_info['starred'] = user_article_info.starred is not None
+        returned_info['opened'] = user_article_info.opened is not None
+        returned_info['liked'] = user_article_info.liked
+
+        if with_translations:
+            translations = Bookmark.find_all_for_user_and_url(user, article.url)
+            returned_info['translations'] = [each.serializable_dictionary() for each in translations]
+
+        return returned_info

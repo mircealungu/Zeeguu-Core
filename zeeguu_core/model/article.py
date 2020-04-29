@@ -159,7 +159,7 @@ class Article(db.Model):
         session.add(ua)
 
     @classmethod
-    def find_or_create(cls, session, _url:str, language=None, sleep_a_bit=False):
+    def find_or_create(cls, session, _url: str, language=None, sleep_a_bit=False):
         """
 
             If not found, download and extract all
@@ -229,6 +229,10 @@ class Article(db.Model):
                     time.sleep(0.3)
                     continue
                 break
+
+    @classmethod
+    def find_by_id(cls, id: int):
+        return Article.query.filter(Article.id == id).first()
 
     @classmethod
     def find(cls, url: str):
