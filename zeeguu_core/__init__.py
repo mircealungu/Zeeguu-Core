@@ -20,3 +20,8 @@ def warning(msg):
 
 def critical(msg):
     logger.critical(msg)
+
+
+def logp(msg):
+    log(msg)
+    print(msg)
