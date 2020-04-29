@@ -124,7 +124,7 @@ def more_like_this_article(user, count, article_id):
         Given a article ID find more articles like that one via Elasticsearchs "more_like_this" method
 
     """
-    article = Article.find_by_ID(article_id)
+    article = Article.find_by_id(article_id)
 
     query_body = build_more_like_this_query(count, article.content, article.language)
 
@@ -147,5 +147,5 @@ def _list_to_string(input_list):
 def _to_articles_from_ES_hits(hits):
     articles = []
     for hit in hits:
-        articles.append(Article.find_by_ID(hit.get("_id")))
+        articles.append(Article.find_by_id(hit.get("_id")))
     return articles
