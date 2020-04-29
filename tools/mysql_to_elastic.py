@@ -21,11 +21,14 @@ def main():
     for i in range(0, max_id, 5000):
         # fetch 5000 articles at a time, to avoid to much loaded into memory
         for article in session.query(Article).order_by(Article.published_time.desc()).limit(5000).offset(i):
-            doc = document_from_article(article, session)
-            res = es.index(index=ES_ZINDEX, id=article.id, body=doc)
-            if article.id % 1000 == 0:
-                print(res['result'] + ' ' + str(article.id))
-
+            try:
+                doc = document_from_article(article, session)
+                res = es.index(index=ES_ZINDEX, id=article.id, body=doc)
+                if article.id % 1000 == 0:
+                    print(res['result'] + ' ' + str(article.id))
+            except Exception as e:
+                print(f"something went wrong with article id {article.id}")
+                print(str(e))
 
 if __name__ == '__main__':
     main()
