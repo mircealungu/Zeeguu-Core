@@ -29,3 +29,7 @@ for language in languages:
             percentage = (100 * counter / total_articles) / 100
             print(f"{counter} dorticles done ({percentage}%). last article id: {article.id}. Comitting... ")
             session.commit()
+
+percentage = (100 * counter / total_articles) / 100
+print(f"{counter} dorticles done ({percentage}%). last article id: {article.id}. Comitting... ")
+session.commit()
