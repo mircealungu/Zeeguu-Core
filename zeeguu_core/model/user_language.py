@@ -87,15 +87,3 @@ class UserLanguage(db.Model):
             user_languages.append(user_main_learned_language)
 
         return user_languages
-
-    @classmethod
-    def all_reading_for_user(cls, user):
-        result = cls.query.filter(cls.user == user).filter(cls.reading_news == True).all()
-
-        return [language_id.language for language_id in result]
-
-    @classmethod
-    def all_user_languages__reading_for_user(cls, user):
-        result = cls.query.filter(cls.user == user).filter(cls.reading_news == True).all()
-
-        return result

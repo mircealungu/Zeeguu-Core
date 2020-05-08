@@ -151,3 +151,14 @@ class Language(db.Model):
         except Exception as e:
             raise (e)
             return None
+
+    @classmethod
+    def all_reading_for_user(cls, user):
+        """
+            this used to allow multiple languages for reading;
+            currently it simply returns the learned language
+        :param user:
+        :return:
+        """
+
+        return [user.learned_language]

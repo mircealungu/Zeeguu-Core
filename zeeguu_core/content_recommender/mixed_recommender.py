@@ -18,7 +18,7 @@ from zeeguu_core.model import (
     SearchSubscription,
     ArticleWord,
     ArticlesCache,
-    CohortArticleMap)
+    CohortArticleMap, Language)
 
 from sortedcontainers import SortedList
 
@@ -42,9 +42,9 @@ def article_recommendations_for_user(user, count):
 
     import zeeguu_core
 
-    user_languages = UserLanguage.all_reading_for_user(user)
+    user_languages = Language.all_reading_for_user(user)
     if not user_languages:
-        return []
+        return [user.learned_language]
 
     reading_pref_hash = _reading_preferences_hash(user)
     _recompute_recommender_cache_if_needed(user, zeeguu_core.db.session)
@@ -141,7 +141,7 @@ def _find_articles_for_user(user):
     :return:
     """
 
-    user_languages = UserLanguage.all_reading_for_user(user)
+    user_languages = Language.all_reading_for_user(user)
 
     topic_subscriptions = TopicSubscription.all_for_user(user)
 
@@ -166,9 +166,6 @@ def _filter_subscribed_articles(search_subscriptions, topic_subscriptions, user_
 
     from zeeguu_core.model import Topic
     user_search_filters = SearchFilter.all_for_user(user)
-
-    if len(user_languages) == 0:
-        return []
 
     # TODO: shouldn't this be passed down from upstream?
     total_article_count = 30
@@ -262,7 +259,7 @@ def _get_user_articles_sources_languages(user, limit=1000):
 
     """
 
-    user_languages = UserLanguage.all_reading_for_user(user)
+    user_languages = Language.all_reading_for_user(user)
     all_articles = []
 
     for language in user_languages:
@@ -300,7 +297,7 @@ def _reading_preferences_hash(user):
     user_topic_subscriptions = TopicSubscription.all_for_user(user)
     topics = [topic_id.topic for topic_id in user_topic_subscriptions]
 
-    user_languages = UserLanguage.all_user_languages__reading_for_user(user)
+    user_languages = Language.all_reading_for_user(user)
 
     user_search_filters = SearchFilter.all_for_user(user)
 

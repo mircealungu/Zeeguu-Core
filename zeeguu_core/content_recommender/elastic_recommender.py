@@ -16,7 +16,7 @@ from zeeguu_core.model import (
     SearchFilter,
     SearchSubscription,
     UserArticle,
-    UserLanguage)
+    UserLanguage, Language)
 
 from zeeguu_core.elastic.elastic_query_builder import build_elastic_query, build_more_like_this_query
 from zeeguu_core.util.timer_logging_decorator import time_this
@@ -53,10 +53,7 @@ def article_search_for_user(user, count, search_terms):
 
     """
 
-    user_languages = UserLanguage.all_reading_for_user(user)
-
-    if len(user_languages) == 0:
-        return []
+    user_languages = Language.all_reading_for_user(user)
 
     per_language_article_count = count / len(user_languages)
 
