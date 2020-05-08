@@ -25,13 +25,11 @@ def create_account(db_session, username, password, invite_code, email, learned_l
         raise Exception("Invitation code is not recognized. Please contact us.")
 
     cohort = Cohort.query.filter_by(inv_code=invite_code).first()
-
     if cohort:
-        # if the invite code is from a cohort, then there has to be capacity
-        if not cohort.cohort_still_has_capacity():
+        if cohort.cohort_still_has_capacity():
+            cohort_name = cohort.name
+        else:
             raise Exception("No more places in this class. Please contact us (zeeguu.team@gmail.com).")
-
-        cohort_name = cohort.name
 
     try:
 
