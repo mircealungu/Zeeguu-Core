@@ -12,7 +12,7 @@ class FeedTest(ModelTestMixIn, TestCase):
         super().setUp()
 
         self.spiegel = RSSFeedRule().feed1
-        download_from_feed(self.spiegel, self.db.session, 3)
+        download_from_feed(self.spiegel, self.db.session, 3, False)
 
     def test_feed_items(self):
         assert len(self.spiegel.get_articles()) == 3

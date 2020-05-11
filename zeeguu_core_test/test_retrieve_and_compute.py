@@ -22,7 +22,7 @@ class TestRetrieveAndCompute(ModelTestMixIn):
 
     def testDifficultyOfFeedItems(self):
         feed = RSSFeedRule().feed1
-        download_from_feed(feed, zeeguu_core.db.session, 3)
+        download_from_feed(feed, zeeguu_core.db.session, 3, False)
 
         articles = feed.get_articles(limit=2)
 
