@@ -99,13 +99,16 @@ class RSSFeed(db.Model):
             icon_name=self.icon_name
         )
 
-    def feed_items(self):
+    def feed_items(self, last_retrieval_time_from_DB = None):
         """
 
         :return: a dictionary with info about that feed
         extracted by feedparser
         and including: title, url, content, summary, time
         """
+
+        if not last_retrieval_time_from_DB:
+            last_retrieval_time_from_DB = datetime(1980,1,1)
 
         def publishing_date(item):
             # this used to be updated_parsed but cf the deprecation
@@ -124,6 +127,7 @@ class RSSFeed(db.Model):
         response = requests.get(self.url.as_string())
         feed_data = feedparser.parse(response.text)
 
+        skipped_due_to_time = 0
         feed_items = []
         for item in feed_data.entries:
             try:
@@ -134,12 +138,18 @@ class RSSFeed(db.Model):
                     summary=item.get("summary", ""),
                     published=time.strftime(SIMPLE_TIME_FORMAT, publishing_date(item))
                 )
-                feed_items.append(new_item_data_dict)
+
+                this_entry_time = datetime.strptime(new_item_data_dict['published'], SIMPLE_TIME_FORMAT)
+                this_entry_time = this_entry_time.replace(tzinfo=None)
+                if this_entry_time > last_retrieval_time_from_DB:
+                    feed_items.append(new_item_data_dict)
+                else:
+                    skipped_due_to_time+=1
 
             except AttributeError as e:
                 zeeguu_core.log(f'Exception {e} while trying to retrieve {item.get("link", "")}')
 
-        return feed_items
+        return feed_items, skipped_due_to_time
 
     @classmethod
     def exists(cls, rss_feed):

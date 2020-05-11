@@ -11,22 +11,31 @@ import newspaper
 import re
 
 import zeeguu_core
-from zeeguu_core.elastic.converting_from_mysql import document_from_article
+from zeeguu_core import log, debug
 
 from zeeguu_core import model
 from zeeguu_core.content_retriever.content_cleaner import cleanup_non_content_bits
 from zeeguu_core.content_retriever.quality_filter import sufficient_quality
 from zeeguu_core.model import Url, RSSFeed, LocalizedTopic, ArticleWord
 from zeeguu_core.constants import SIMPLE_TIME_FORMAT
-from elasticsearch import Elasticsearch
 import requests
+
+from elasticsearch import Elasticsearch
 from zeeguu_core.elastic.settings import ES_CONN_STRING, ES_ZINDEX
+from zeeguu_core.elastic.converting_from_mysql import document_from_article
 
 LOG_CONTEXT = "FEED RETRIEVAL"
 
 
-def log(msg: str):
-    zeeguu_core.log(LOG_CONTEXT + " " + msg)
+class SkippedForTooOld(Exception):
+    pass
+
+
+class SkippedForLowQuality(Exception):
+    pass
+
+class ElasticIsDown(Exception):
+    pass
 
 
 def _url_after_redirects(url):
@@ -52,10 +61,8 @@ def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=True)
 
 
     """
-    log(feed.title)
 
     downloaded = 0
-    skipped = 0
     skipped_due_to_low_quality = dict()
     skipped_already_in_db = 0
 
@@ -67,9 +74,9 @@ def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=True)
         log(f"last retrieval time from DB = {last_retrieval_time_from_DB}")
 
     try:
-        items = feed.feed_items()
-    except:
-        log("Failed to connect to feed")
+        items, skipped = feed.feed_items(last_retrieval_time_from_DB)
+    except Exception as e:
+        log(f"Failed to download feed ({e})")
         return
 
     for feed_item in items:
@@ -78,127 +85,162 @@ def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=True)
             break
 
         try:
-            url = _url_after_redirects(feed_item['url'])
-        except requests.exceptions.TooManyRedirects:
-            log(f"Too many redirects for: {url}")
+            (new_article,
+             last_retrieval_time_from_DB,
+             last_retrieval_time_seen_this_crawl,
+             skipped_already_in_db,
+             skipped_due_to_low_quality,
+             downloaded) = download_feed_item(session,
+                                              feed,
+                                              feed_item,
+                                              last_retrieval_time_from_DB,
+                                              last_retrieval_time_seen_this_crawl,
+                                              skipped_already_in_db,
+                                              skipped_due_to_low_quality,
+                                              downloaded)
+        except SkippedForTooOld:
+            log("- Article too old")
             continue
-        except Exception:
-            log(f"could not get url after redirects for: {url}")
+        except SkippedForLowQuality:
+            log(" - Too low quality")
+            continue
+        except Exception as e:
+            if hasattr(e, 'message'):
+                log(e.message)
+            else:
+                log(e)
             continue
 
+        # Saves the news article at ElasticSearch.
+        # We recommend that everything is stored both in SQL and Elasticsearch
+        # as ElasticSearch isn't persistent data
         try:
-            this_article_time = datetime.strptime(feed_item['published'], SIMPLE_TIME_FORMAT)
-            this_article_time = this_article_time.replace(tzinfo=None)
+            if save_in_elastic:
+                if new_article:
+                    es = Elasticsearch(ES_CONN_STRING)
+                    doc = document_from_article(new_article, session)
+                    res = es.index(index=ES_ZINDEX, id=new_article.id, body=doc)
+                    print("elastic res: " + res['result'])
         except:
-            log(f"can't get time from {url}: {feed_item['published']}")
-            continue
+            raise ElasticIsDown()
 
-        if _date_in_the_future(this_article_time):
-            log("article from the future...")
-            continue
+    log(f'** Skipped due to time: {skipped} ')
+    log(f'** Downloaded: {downloaded}')
+    log(f'** Low Quality: {skipped_due_to_low_quality}')
+    log(f'** Already in DB: {skipped_already_in_db}')
 
-        if last_retrieval_time_from_DB:
 
-            if this_article_time < last_retrieval_time_from_DB:
-                skipped += 1
-                continue
+def download_feed_item(session,
+                       feed,
+                       feed_item,
+                       last_retrieval_time_from_DB,
+                       last_retrieval_time_seen_this_crawl,
+                       skipped_already_in_db,
+                       skipped_due_to_low_quality,
+                       downloaded):
+    new_article = None
 
-        title = feed_item['title']
-        summary = feed_item['summary']
-
+    try:
+        url = _url_after_redirects(feed_item['url'])
         log(url)
+    except requests.exceptions.TooManyRedirects:
+        raise Exception(f"- Too many redirects")
+    except Exception:
+        raise Exception(f"- Could not get url after redirects for {feed_item['url']}")
 
-        try:
-            art = model.Article.find(url)
-        except:
-            import sys
-            ex = sys.exc_info()[0]
-            log(f" {LOG_CONTEXT}: For some reason excepted during Article.find \n{str(ex)}")
-            continue
+    try:
+        this_article_time = datetime.strptime(feed_item['published'], SIMPLE_TIME_FORMAT)
+        this_article_time = this_article_time.replace(tzinfo=None)
+    except:
+        raise Exception(f"Can't get time: {feed_item['published']}")
 
-        if (not last_retrieval_time_seen_this_crawl) or (this_article_time > last_retrieval_time_seen_this_crawl):
-            last_retrieval_time_seen_this_crawl = this_article_time
+    if _date_in_the_future(this_article_time):
+        raise Exception("Article from the future!")
 
-        if art:
-            skipped_already_in_db += 1
-            log("- already in db")
-        else:
-            try:
+    title = feed_item['title']
+    summary = feed_item['summary']
 
-                art = newspaper.Article(url)
-                art.download()
-                art.parse()
-                log("- succesfully parsed")
+    try:
+        art = model.Article.find(url)
+    except:
+        import sys
+        ex = sys.exc_info()[0]
+        raise Exception(f" {LOG_CONTEXT}: For some reason excepted during Article.find \n{str(ex)}")
 
-                cleaned_up_text = cleanup_non_content_bits(art.text)
+    if (not last_retrieval_time_seen_this_crawl) or (this_article_time > last_retrieval_time_seen_this_crawl):
+        last_retrieval_time_seen_this_crawl = this_article_time
 
-                quality_article = sufficient_quality(art, skipped_due_to_low_quality)
-                if quality_article:
-                    from zeeguu_core.language.difficulty_estimator_factory import DifficultyEstimatorFactory
+    if last_retrieval_time_seen_this_crawl > feed.last_crawled_time:
+        feed.last_crawled_time = last_retrieval_time_seen_this_crawl
+        print(f"updated feed's last crawled time to {last_retrieval_time_seen_this_crawl}")
 
-                    try:
-                        # Create new article and save it to DB
-                        new_article = zeeguu_core.model.Article(
-                            Url.find_or_create(session, url),
-                            title,
-                            ', '.join(art.authors),
-                            cleaned_up_text,
-                            summary,
-                            this_article_time,
-                            feed,
-                            feed.language
-                        )
-                        session.add(new_article)
-                        session.commit()
-                        print("saved article in db")
-                        downloaded += 1
+    session.add(feed)
 
-                        try:
-                            add_topics(new_article, session)
-                            log("- added topics")
-                            add_searches(title, url, new_article, session)
-                            log("- added keywords")
-                        except Exception as e:
-                            print(e)
-                        # Saves the news article at ElasticSearch.
-                        # We recommend that everything is stored both in SQL and Elasticsearch
-                        # as ElasticSearch isn't persistent data
-                        try:
-                            if save_in_elastic:
-                                es = Elasticsearch(ES_CONN_STRING)
-                                doc = document_from_article(new_article, session)
-                                res = es.index(index=ES_ZINDEX, id=new_article.id, body=doc)
-                                print("elastic res: " + res['result'])
-                        except Exception as e:
-                            log("Elastic ERROR -> " + e)
+    session.commit()
 
-                        session.commit()
-                        if last_retrieval_time_seen_this_crawl:
-                            feed.last_crawled_time = last_retrieval_time_seen_this_crawl
-                        session.add(feed)
+    if art:
+        skipped_already_in_db += 1
+        raise Exception("- already in db")
 
-                    except Exception as e:
-                        log(f'Something went wrong when creating article and attaching words/topics: {e}')
-                        log("rolling back the session... ")
-                        session.rollback()
+    try:
 
-            except Exception as e:
-                # raise e
-                import sys
-                ex = sys.exc_info()[0]
-                log(f"Failed to create zeeguu.Article from {url}\n{str(ex)}")
+        art = newspaper.Article(url)
+        art.download()
+        art.parse()
+        debug("- Succesfully parsed")
 
-    log(f'  Skipped due to time: {skipped} ')
-    log(f'  Downloaded: {downloaded}')
-    log(f'  Low Quality: {skipped_due_to_low_quality}')
-    log(f'  Already in DB: {skipped_already_in_db}')
+        cleaned_up_text = cleanup_non_content_bits(art.text)
+
+        quality_article = sufficient_quality(art, skipped_due_to_low_quality)
+        if not quality_article:
+            raise SkippedForLowQuality()
+
+        # Create new article and save it to DB
+        new_article = zeeguu_core.model.Article(
+            Url.find_or_create(session, url),
+            title,
+            ', '.join(art.authors),
+            cleaned_up_text,
+            summary,
+            this_article_time,
+            feed,
+            feed.language
+        )
+        session.add(new_article)
+
+        topics = add_topics(new_article, session)
+        log(f" Topics ({topics})")
+
+        add_searches(title, url, new_article, session)
+        debug(" Added keywords")
+
+        session.commit()
+
+    except SkippedForLowQuality:
+        raise SkippedForLowQuality()
+
+    except Exception as e:
+        log(f"* Rolling back session due to exception while creating article and attaching words/topics: {str(e)}")
+        session.rollback()
+
+    downloaded += 1
+
+    return (new_article,
+            last_retrieval_time_from_DB,
+            last_retrieval_time_seen_this_crawl,
+            skipped_already_in_db,
+            skipped_due_to_low_quality,
+            downloaded)
 
 
 def add_topics(new_article, session):
+    topics = []
     for loc_topic in LocalizedTopic.query.all():
         if loc_topic.language == new_article.language and loc_topic.matches_article(new_article):
+            topics.append(loc_topic.topic.title)
             new_article.add_topic(loc_topic.topic)
             session.add(new_article)
+    return topics
 
 
 def add_searches(title, url, new_article, session):

@@ -38,7 +38,7 @@ class TestRetrieveAndCompute(ModelTestMixIn):
         zeeguu_core.db.session.add(loc_topic)
         zeeguu_core.db.session.commit()
 
-        download_from_feed(feed, zeeguu_core.db.session, 3)
+        download_from_feed(feed, zeeguu_core.db.session, 3, False )
 
         article = feed.get_articles(limit=2)[0]
 
@@ -47,7 +47,7 @@ class TestRetrieveAndCompute(ModelTestMixIn):
     def testDownloadWithWords(self):
         feed = RSSFeedRule().feed1
 
-        download_from_feed(feed, zeeguu_core.db.session, 3)
+        download_from_feed(feed, zeeguu_core.db.session, 3, False)
 
         article = feed.get_articles(limit=2)[0]
 
