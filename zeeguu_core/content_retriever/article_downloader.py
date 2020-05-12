@@ -34,9 +34,6 @@ class SkippedForTooOld(Exception):
 class SkippedForLowQuality(Exception):
     pass
 
-class ElasticIsDown(Exception):
-    pass
-
 
 def _url_after_redirects(url):
     # solve redirects and save the clean url
@@ -122,7 +119,7 @@ def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=True)
                     res = es.index(index=ES_ZINDEX, id=new_article.id, body=doc)
                     print("elastic res: " + res['result'])
         except:
-            raise ElasticIsDown()
+            log("***OOPS***: ElasticSearch is down")
 
     log(f'** Skipped due to time: {skipped} ')
     log(f'** Downloaded: {downloaded}')

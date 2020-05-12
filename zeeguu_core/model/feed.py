@@ -129,25 +129,39 @@ class RSSFeed(db.Model):
 
         skipped_due_to_time = 0
         feed_items = []
+        skipped_items = []
+        zeeguu_core.debug(f"Feed contains {len(feed_data.entries)} articles")
         for item in feed_data.entries:
             try:
+                published_string = time.strftime(SIMPLE_TIME_FORMAT, publishing_date(item))
+
+                this_entry_time = datetime.strptime(published_string, SIMPLE_TIME_FORMAT)
+                this_entry_time = this_entry_time.replace(tzinfo=None)
+
                 new_item_data_dict = dict(
                     title=item.get("title", ""),
                     url=item.get("link", ""),
                     content=item.get("content", ""),
                     summary=item.get("summary", ""),
-                    published=time.strftime(SIMPLE_TIME_FORMAT, publishing_date(item))
+                    published=published_string,
+                    published_datetime=this_entry_time
                 )
 
-                this_entry_time = datetime.strptime(new_item_data_dict['published'], SIMPLE_TIME_FORMAT)
-                this_entry_time = this_entry_time.replace(tzinfo=None)
                 if this_entry_time > last_retrieval_time_from_DB:
                     feed_items.append(new_item_data_dict)
                 else:
                     skipped_due_to_time+=1
+                    skipped_items.append(new_item_data_dict)
 
             except AttributeError as e:
                 zeeguu_core.log(f'Exception {e} while trying to retrieve {item.get("link", "")}')
+
+        sorted_skipped_items = sorted(skipped_items, key= lambda x:x['published_datetime'])
+        for each in sorted_skipped_items:
+            zeeguu_core.debug(f"- skipped: {each['published_datetime']} - {each['title']}")
+
+        for each in feed_items:
+            zeeguu_core.debug(f"- to download: {each['published_datetime']} - {each['title']}")
 
         return feed_items, skipped_due_to_time
 

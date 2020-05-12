@@ -20,7 +20,7 @@ import traceback
 
 import zeeguu_core
 from zeeguu_core import log
-from zeeguu_core.content_retriever.article_downloader import download_from_feed, ElasticIsDown
+from zeeguu_core.content_retriever.article_downloader import download_from_feed
 from zeeguu_core.model import RSSFeed
 
 session = zeeguu_core.db.session
@@ -30,11 +30,12 @@ def retrieve_articles_from_all_feeds():
     counter = 0
     all_feeds = RSSFeed.query.all()
     all_feeds_count = len(all_feeds)
-    for feed in all_feeds[44:]:
+    for feed in all_feeds:
         counter += 1
         try:
             msg = f"{counter}/{all_feeds_count}: DOWNLOADING {feed.title}"#.encode('utf-8')
             log(msg)
+            log(f"Last crawled time: {feed.last_crawled_time}")
 
             download_from_feed(feed, zeeguu_core.db.session)
 
@@ -42,8 +43,6 @@ def retrieve_articles_from_all_feeds():
             log(msg)
             log(" ")
 
-        except ElasticIsDown as e:
-            log("***OOPS***: ElasticSearch seems to be down")
         except Exception as e:
             traceback.print_exc()
 
