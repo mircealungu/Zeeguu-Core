@@ -66,7 +66,7 @@ class TestRetrieveAndCompute(ModelTestMixIn):
         art.download()
         art.parse()
 
-        assert (sufficient_quality(art, {}))
+        assert (sufficient_quality(art))
 
     def test_new_scientist_overlay(self):
 
@@ -74,7 +74,8 @@ class TestRetrieveAndCompute(ModelTestMixIn):
         art.download()
         art.parse()
 
-        assert (not sufficient_quality(art, {}))
+        is_quality, _ = sufficient_quality(art)
+        assert (not is_quality)
 
     def test_le_monde_subscription(self):
 
@@ -82,7 +83,8 @@ class TestRetrieveAndCompute(ModelTestMixIn):
         art.download()
         art.parse()
 
-        assert (not sufficient_quality(art, {}))
+        is_quality, _ = sufficient_quality(art)
+        assert (not is_quality)
 
     def test_fragment_removal(self):
 
