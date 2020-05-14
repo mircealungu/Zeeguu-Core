@@ -138,8 +138,14 @@ def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=True)
                     doc = document_from_article(new_article, session)
                     res = es.index(index=ES_ZINDEX, id=new_article.id, body=doc)
                     print("elastic res: " + res['result'])
-        except:
-            log("***OOPS***: ElasticSearch is down")
+        except Exception as e:
+            log("***OOPS***: ElasticSearch seems down?")
+            if hasattr(e, 'message'):
+                log(e.message)
+            else:
+                log(e)
+            continue
+
 
     log(f'** Downloaded: {downloaded}')
     log(f'** Low Quality: {skipped_due_to_low_quality}')
