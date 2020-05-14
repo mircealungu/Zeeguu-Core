@@ -130,7 +130,7 @@ class RSSFeed(db.Model):
         skipped_due_to_time = 0
         feed_items = []
         skipped_items = []
-        zeeguu_core.debug(f"Feed contains {len(feed_data.entries)} articles")
+        zeeguu_core.log(f"** Articles in feed: {len(feed_data.entries)}")
         for item in feed_data.entries:
             try:
                 published_string = time.strftime(SIMPLE_TIME_FORMAT, publishing_date(item))
@@ -156,6 +156,7 @@ class RSSFeed(db.Model):
             except AttributeError as e:
                 zeeguu_core.log(f'Exception {e} while trying to retrieve {item.get("link", "")}')
 
+
         sorted_skipped_items = sorted(skipped_items, key= lambda x:x['published_datetime'])
         for each in sorted_skipped_items:
             zeeguu_core.debug(f"- skipped: {each['published_datetime']} - {each['title']}")
@@ -163,7 +164,10 @@ class RSSFeed(db.Model):
         for each in feed_items:
             zeeguu_core.debug(f"- to download: {each['published_datetime']} - {each['title']}")
 
-        return feed_items, skipped_due_to_time
+        zeeguu_core.log(f'** Skipped due to time: {len(skipped_items)} ')
+        zeeguu_core.log(f"** To download: {len(feed_items)}")
+
+        return feed_items
 
     @classmethod
     def exists(cls, rss_feed):

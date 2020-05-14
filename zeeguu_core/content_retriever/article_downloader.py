@@ -32,6 +32,11 @@ class SkippedForTooOld(Exception):
 
 
 class SkippedForLowQuality(Exception):
+    def __init__(self, reason):
+        self.reason = reason
+
+
+class SkippedAlreadyInDB(Exception):
     pass
 
 
@@ -60,7 +65,7 @@ def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=True)
     """
 
     downloaded = 0
-    skipped_due_to_low_quality = dict()
+    skipped_due_to_low_quality = 0
     skipped_already_in_db = 0
 
     last_retrieval_time_from_DB = None
@@ -68,39 +73,54 @@ def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=True)
 
     if feed.last_crawled_time:
         last_retrieval_time_from_DB = feed.last_crawled_time
-        log(f"last retrieval time from DB = {last_retrieval_time_from_DB}")
+        log(f"LAST CRAWLED::: {last_retrieval_time_from_DB}")
 
     try:
-        items, skipped = feed.feed_items(last_retrieval_time_from_DB)
+        items = feed.feed_items(last_retrieval_time_from_DB)
     except Exception as e:
         log(f"Failed to download feed ({e})")
         return
 
     for feed_item in items:
 
+        skipped_already_in_db = 0
+
         if downloaded >= limit:
             break
 
+        feed_item_timestamp = feed_item['published_datetime']
+
+        if _date_in_the_future(feed_item_timestamp):
+            log("Article from the future!")
+            continue
+
+        if (not last_retrieval_time_seen_this_crawl) or (feed_item_timestamp > last_retrieval_time_seen_this_crawl):
+            last_retrieval_time_seen_this_crawl = feed_item_timestamp
+
+        if last_retrieval_time_seen_this_crawl > feed.last_crawled_time:
+            feed.last_crawled_time = last_retrieval_time_seen_this_crawl
+            log(f"+updated feed's last crawled time to {last_retrieval_time_seen_this_crawl}")
+
+        session.add(feed)
+        session.commit()
+
         try:
-            (new_article,
-             last_retrieval_time_from_DB,
-             last_retrieval_time_seen_this_crawl,
-             skipped_already_in_db,
-             skipped_due_to_low_quality,
-             downloaded) = download_feed_item(session,
-                                              feed,
-                                              feed_item,
-                                              last_retrieval_time_from_DB,
-                                              last_retrieval_time_seen_this_crawl,
-                                              skipped_already_in_db,
-                                              skipped_due_to_low_quality,
-                                              downloaded)
+            new_article = download_feed_item(session,
+                                             feed,
+                                             feed_item)
+            downloaded += 1
         except SkippedForTooOld:
             log("- Article too old")
             continue
-        except SkippedForLowQuality:
-            log(" - Too low quality")
+        except SkippedForLowQuality as e:
+            log(f" - Low quality: {e.reason}")
+            skipped_due_to_low_quality += 1
             continue
+        except SkippedAlreadyInDB:
+            skipped_already_in_db += 1
+            log(" - Already in DB")
+            continue
+
         except Exception as e:
             if hasattr(e, 'message'):
                 log(e.message)
@@ -121,7 +141,6 @@ def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=True)
         except:
             log("***OOPS***: ElasticSearch is down")
 
-    log(f'** Skipped due to time: {skipped} ')
     log(f'** Downloaded: {downloaded}')
     log(f'** Low Quality: {skipped_due_to_low_quality}')
     log(f'** Already in DB: {skipped_already_in_db}')
@@ -129,33 +148,22 @@ def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=True)
 
 def download_feed_item(session,
                        feed,
-                       feed_item,
-                       last_retrieval_time_from_DB,
-                       last_retrieval_time_seen_this_crawl,
-                       skipped_already_in_db,
-                       skipped_due_to_low_quality,
-                       downloaded):
+                       feed_item):
     new_article = None
 
     try:
+
         url = _url_after_redirects(feed_item['url'])
         log(url)
+
     except requests.exceptions.TooManyRedirects:
         raise Exception(f"- Too many redirects")
     except Exception:
         raise Exception(f"- Could not get url after redirects for {feed_item['url']}")
 
-    try:
-        this_article_time = datetime.strptime(feed_item['published'], SIMPLE_TIME_FORMAT)
-        this_article_time = this_article_time.replace(tzinfo=None)
-    except:
-        raise Exception(f"Can't get time: {feed_item['published']}")
-
-    if _date_in_the_future(this_article_time):
-        raise Exception("Article from the future!")
-
     title = feed_item['title']
     summary = feed_item['summary']
+    published_datetime = feed_item['published_datetime']
 
     try:
         art = model.Article.find(url)
@@ -164,33 +172,23 @@ def download_feed_item(session,
         ex = sys.exc_info()[0]
         raise Exception(f" {LOG_CONTEXT}: For some reason excepted during Article.find \n{str(ex)}")
 
-    if (not last_retrieval_time_seen_this_crawl) or (this_article_time > last_retrieval_time_seen_this_crawl):
-        last_retrieval_time_seen_this_crawl = this_article_time
-
-    if last_retrieval_time_seen_this_crawl > feed.last_crawled_time:
-        feed.last_crawled_time = last_retrieval_time_seen_this_crawl
-        print(f"updated feed's last crawled time to {last_retrieval_time_seen_this_crawl}")
-
-    session.add(feed)
-
-    session.commit()
-
     if art:
-        skipped_already_in_db += 1
-        raise Exception("- already in db")
+        raise SkippedAlreadyInDB()
 
     try:
 
         art = newspaper.Article(url)
         art.download()
         art.parse()
+
         debug("- Succesfully parsed")
 
         cleaned_up_text = cleanup_non_content_bits(art.text)
 
-        quality_article = sufficient_quality(art, skipped_due_to_low_quality)
-        if not quality_article:
-            raise SkippedForLowQuality()
+        is_quality_article, reason = sufficient_quality(art)
+
+        if not is_quality_article:
+            raise SkippedForLowQuality(reason)
 
         # Create new article and save it to DB
         new_article = zeeguu_core.model.Article(
@@ -199,7 +197,7 @@ def download_feed_item(session,
             ', '.join(art.authors),
             cleaned_up_text,
             summary,
-            this_article_time,
+            published_datetime,
             feed,
             feed.language
         )
@@ -213,21 +211,14 @@ def download_feed_item(session,
 
         session.commit()
 
-    except SkippedForLowQuality:
-        raise SkippedForLowQuality()
+    except SkippedForLowQuality as e:
+        raise e
 
     except Exception as e:
         log(f"* Rolling back session due to exception while creating article and attaching words/topics: {str(e)}")
         session.rollback()
 
-    downloaded += 1
-
-    return (new_article,
-            last_retrieval_time_from_DB,
-            last_retrieval_time_seen_this_crawl,
-            skipped_already_in_db,
-            skipped_due_to_low_quality,
-            downloaded)
+    return new_article
 
 
 def add_topics(new_article, session):
