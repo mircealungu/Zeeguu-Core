@@ -33,7 +33,7 @@ def retrieve_articles_from_all_feeds():
     for feed in all_feeds:
         counter += 1
         try:
-            msg = f">>>>>>>>> {feed.title} ({counter}/{all_feeds_count}) <<<<<<<<<< "  # .encode('utf-8')
+            msg = f"*** >>>>>>>>> {feed.title} ({counter}/{all_feeds_count}) <<<<<<<<<< "  # .encode('utf-8')
             log("")
             log(f"{msg}")
 

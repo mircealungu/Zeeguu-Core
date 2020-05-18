@@ -164,8 +164,8 @@ class RSSFeed(db.Model):
         for each in feed_items:
             zeeguu_core.debug(f"- to download: {each['published_datetime']} - {each['title']}")
 
-        zeeguu_core.log(f'** Skipped due to time: {len(skipped_items)} ')
-        zeeguu_core.log(f"** To download: {len(feed_items)}")
+        zeeguu_core.log(f'*** Skipped due to time: {len(skipped_items)} ')
+        zeeguu_core.log(f"*** To download: {len(feed_items)}")
 
         return feed_items
 

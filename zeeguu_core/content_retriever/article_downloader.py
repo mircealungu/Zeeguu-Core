@@ -146,10 +146,10 @@ def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=True)
                 log(e)
             continue
 
-
-    log(f'** Downloaded: {downloaded}')
-    log(f'** Low Quality: {skipped_due_to_low_quality}')
-    log(f'** Already in DB: {skipped_already_in_db}')
+    log(f'*** Downloaded: {downloaded} From: {feed.title}')
+    log(f'*** Low Quality: {skipped_due_to_low_quality}')
+    log(f'*** Already in DB: {skipped_already_in_db}')
+    log(f'*** ')
 
 
 def download_feed_item(session,
