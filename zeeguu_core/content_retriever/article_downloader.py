@@ -216,6 +216,7 @@ def download_feed_item(session,
         debug(" Added keywords")
 
         session.commit()
+        log(f"SUCCESS for: {new_article.title}")
 
     except SkippedForLowQuality as e:
         raise e
