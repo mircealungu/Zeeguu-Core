@@ -22,6 +22,8 @@ article_topic_map = Table('article_topic_map',
                                  ForeignKey('topic.id'))
                           )
 
+MAX_CHAR_COUNT_IN_SUMMARY = 300
+
 
 class Article(db.Model):
     __table_args__ = {'mysql_collate': 'utf8_bin'}
@@ -112,11 +114,13 @@ class Article(db.Model):
         :return:
         """
 
+        summary = self.summary or self.content[:]
+
         result_dict = dict(
             id=self.id,
             title=self.title,
             url=self.url.as_string(),
-            summary=self.summary,
+            summary=self.summary[:MAX_CHAR_COUNT_IN_SUMMARY] or self.content[:MAX_CHAR_COUNT_IN_SUMMARY],
             language=self.language.code,
             authors=self.authors,
             topics=self.topics_as_string(),

@@ -23,6 +23,7 @@ import requests
 from elasticsearch import Elasticsearch
 from zeeguu_core.elastic.settings import ES_CONN_STRING, ES_ZINDEX
 from zeeguu_core.elastic.converting_from_mysql import document_from_article
+from zeeguu_core.model.article import MAX_CHAR_COUNT_IN_SUMMARY
 
 LOG_CONTEXT = "FEED RETRIEVAL"
 
@@ -168,7 +169,7 @@ def download_feed_item(session,
         raise Exception(f"- Could not get url after redirects for {feed_item['url']}")
 
     title = feed_item['title']
-    summary = feed_item['summary']
+    summary = feed_item['summary'][:MAX_CHAR_COUNT_IN_SUMMARY]
     published_datetime = feed_item['published_datetime']
 
     try:
