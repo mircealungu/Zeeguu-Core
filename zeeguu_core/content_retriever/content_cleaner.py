@@ -1,5 +1,5 @@
 import zeeguu_core
-from zeeguu_core.model import Article
+from zeeguu_core.model import Article, Language
 
 JUNK_PATTERNS = [
 
@@ -34,8 +34,9 @@ def cleanup_non_content_bits(text: str):
     return new_text
 
 
-def cleanup_all_articles_in_language(language_id):
-    all_articles = Article.query.filter_by(language_id).all()
+def cleanup_all_articles_in_language(language_code):
+    language_id = Language.find(language_code).id
+    all_articles = Article.query.filter_by(language_id=language_id).all()
     for each in all_articles:
         each.content = cleanup_non_content_bits(each.content)
         zeeguu_core.db.session.add(each)
