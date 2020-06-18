@@ -1,4 +1,5 @@
 import zeeguu_core
+from zeeguu_core.model import Article
 
 JUNK_PATTERNS = [
 
@@ -27,7 +28,16 @@ def cleanup_non_content_bits(text: str):
         cleaned = new_text.replace(junk_pattern, "")
 
         if cleaned != new_text:
-            zeeguu_core.log(f"cleaned: {junk_pattern}")
+            print(f"cleaned: {junk_pattern}")
             new_text = cleaned
 
     return new_text
+
+
+def cleanup_all_articles_in_language(language_id):
+    all_articles = Article.query.filter_by(language_id).all()
+    for each in all_articles:
+        each.content = cleanup_non_content_bits(each.content)
+        zeeguu_core.db.session.add(each)
+        print(each.title)
+    zeeguu_core.db.session.commit()
