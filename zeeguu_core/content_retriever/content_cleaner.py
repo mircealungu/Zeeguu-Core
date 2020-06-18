@@ -28,7 +28,7 @@ def cleanup_non_content_bits(text: str):
         cleaned = new_text.replace(junk_pattern, "")
 
         if cleaned != new_text:
-            print(f"cleaned: {junk_pattern}")
+            print(f"- cleaned: {junk_pattern}")
             new_text = cleaned
 
     return new_text
@@ -38,7 +38,9 @@ def cleanup_all_articles_in_language(language_code):
     language_id = Language.find(language_code).id
     all_articles = Article.query.filter_by(language_id=language_id).all()
     for each in all_articles:
-        each.content = cleanup_non_content_bits(each.content)
-        zeeguu_core.db.session.add(each)
-        print(each.title)
+        cleaned_content = cleanup_non_content_bits(each.content)
+        if cleaned_content != each.content:
+            each.content = cleaned_content
+            zeeguu_core.db.session.add(each)
+            print(each.title + "\n\n")
     zeeguu_core.db.session.commit()
