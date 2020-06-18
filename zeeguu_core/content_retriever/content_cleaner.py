@@ -1,5 +1,14 @@
 import zeeguu_core
 
+JUNK_PATTERNS = [
+
+    "\nAdvertisement\n",
+    "\ntrue\n",
+    "\nAutomatisk oplaæsing\n",
+    "Der er ikke oplæsning af denne artikel, så den oplæses derfor med maskinstemme. Kontakt os gerne på automatiskoplaesning@pol.dk, hvis du hører ord, hvis udtale kan forbedres. Du kan også hjælpe ved at udfylde spørgeskemaet herunder, hvor vi spørger, hvordan du har oplevet den automatiske oplæsning. Spørgeskema om automatisk oplæsning"
+
+]
+
 
 def cleanup_non_content_bits(text: str):
     """
@@ -13,10 +22,11 @@ def cleanup_non_content_bits(text: str):
     """
     new_text = text
 
-    new_text = new_text.replace("\nAdvertisement\n", "")
+    for junk_pattern in JUNK_PATTERNS:
+        cleaned = new_text.replace(junk_pattern, "")
 
-    new_text = new_text.replace("\ntrue\n", "")
-    if new_text != text:
-        zeeguu_core.log("clean")
+        if cleaned != new_text:
+            zeeguu_core.log(f"cleaned: {junk_pattern}")
+            new_text = cleaned
 
     return new_text
