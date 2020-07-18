@@ -170,15 +170,6 @@ def download_feed_item(session,
 
     title = feed_item['title']
 
-    summary = feed_item['summary']
-    # however, this is not so easy... there have been cases where
-    # the summary is just malformed HTML... thus we try to extract
-    # the text:
-    from bs4 import BeautifulSoup
-    soup = BeautifulSoup(summary)
-    summary = soup.get_text()
-    # then there are cases where the summary is huge... so we clip it
-    summary = summary[: MAX_CHAR_COUNT_IN_SUMMARY]
 
     published_datetime = feed_item['published_datetime']
 
@@ -207,7 +198,21 @@ def download_feed_item(session,
         if not is_quality_article:
             raise SkippedForLowQuality(reason)
 
-        # Create new article and save it to DB
+        summary = feed_item['summary']
+        # however, this is not so easy... there have been cases where
+        # the summary is just malformed HTML... thus we try to extract
+        # the text:
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(summary, "lxml")
+        summary = soup.get_text()
+        # then there are cases where the summary is huge... so we clip it
+        summary = summary[: MAX_CHAR_COUNT_IN_SUMMARY]
+        # and if there is still no summary, we simply use the beginning of
+        # the article
+        if len(summary) < 10:
+            summary = cleaned_up_text[: MAX_CHAR_COUNT_IN_SUMMARY]
+
+            # Create new article and save it to DB
         new_article = zeeguu_core.model.Article(
             Url.find_or_create(session, url),
             title,

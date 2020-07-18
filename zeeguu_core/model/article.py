@@ -116,11 +116,14 @@ class Article(db.Model):
 
         # transient fix for a donwloader bug;
         # added on Jul 18 2020; can be removed
-        # in a few weeks
+        # in a few weeks if speed is impacted
         from bs4 import BeautifulSoup
-        soup = BeautifulSoup(self.summary)
+        soup = BeautifulSoup(self.summary, "lxml")
         summary = soup.get_text()
-
+        # this is also as of Jul 18 2020 duplicating the
+        # functionality in the article_downloader.py
+        # so after a while this code can be removed
+        # for speed
         if len(summary[:MAX_CHAR_COUNT_IN_SUMMARY]) > 10:
             summary = summary[:MAX_CHAR_COUNT_IN_SUMMARY]
         else:
