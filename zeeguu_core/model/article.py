@@ -114,13 +114,16 @@ class Article(db.Model):
         :return:
         """
 
-        summary = self.summary or self.content[:]
+        if len(self.summary[:MAX_CHAR_COUNT_IN_SUMMARY]) > 10:
+            summary = self.summary[:MAX_CHAR_COUNT_IN_SUMMARY]
+        else:
+            summary = self.content[:MAX_CHAR_COUNT_IN_SUMMARY]
 
         result_dict = dict(
             id=self.id,
             title=self.title,
             url=self.url.as_string(),
-            summary=self.summary[:MAX_CHAR_COUNT_IN_SUMMARY] or self.content[:MAX_CHAR_COUNT_IN_SUMMARY],
+            summary=summary,
             language=self.language.code,
             authors=self.authors,
             topics=self.topics_as_string(),
