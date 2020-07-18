@@ -114,10 +114,17 @@ class Article(db.Model):
         :return:
         """
 
-        if len(self.summary[:MAX_CHAR_COUNT_IN_SUMMARY]) > 10:
-            summary = self.summary[:MAX_CHAR_COUNT_IN_SUMMARY]
+        # transient fix for a donwloader bug;
+        # added on Jul 18 2020; can be removed
+        # in a few weeks
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(self.summary)
+        summary = soup.get_text()
+
+        if len(summary[:MAX_CHAR_COUNT_IN_SUMMARY]) > 10:
+            summary = summary[:MAX_CHAR_COUNT_IN_SUMMARY]
         else:
-            summary = self.content[:MAX_CHAR_COUNT_IN_SUMMARY]
+            summary = summary[:MAX_CHAR_COUNT_IN_SUMMARY]
 
         result_dict = dict(
             id=self.id,
