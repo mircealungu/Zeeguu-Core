@@ -169,7 +169,17 @@ def download_feed_item(session,
         raise Exception(f"- Could not get url after redirects for {feed_item['url']}")
 
     title = feed_item['title']
-    summary = feed_item['summary'][:MAX_CHAR_COUNT_IN_SUMMARY]
+
+    summary = feed_item['summary']
+    # however, this is not so easy... there have been cases where
+    # the summary is just malformed HTML... thus we try to extract
+    # the text:
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(summary)
+    summary = soup.get_text()
+    # then there are cases where the summary is huge... so we clip it
+    summary = summary[: MAX_CHAR_COUNT_IN_SUMMARY]
+
     published_datetime = feed_item['published_datetime']
 
     try:
