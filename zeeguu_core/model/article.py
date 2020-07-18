@@ -124,7 +124,7 @@ class Article(db.Model):
         if len(summary[:MAX_CHAR_COUNT_IN_SUMMARY]) > 10:
             summary = summary[:MAX_CHAR_COUNT_IN_SUMMARY]
         else:
-            summary = summary[:MAX_CHAR_COUNT_IN_SUMMARY]
+            summary = self.content[:MAX_CHAR_COUNT_IN_SUMMARY]
 
         result_dict = dict(
             id=self.id,
