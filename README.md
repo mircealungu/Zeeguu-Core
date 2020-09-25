@@ -23,7 +23,7 @@ working with zeeguu model elements by importing `zeeguu.model`.
 1. python -m venv zenv 
 1. cd Zeeguu-Core
 1. pip install -r requirements.txt
-1. python -c 'import nltk; nltk.download("punkt")'
+1. python -c "import nltk; nltk.download('punkt')"
 1. python -m pytest
 
 # Installing on Mac (Notes)
