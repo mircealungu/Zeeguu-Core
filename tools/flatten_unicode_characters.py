@@ -15,8 +15,10 @@ def flatten_the_unicode_characters(language):
 
     counter = 0
     for each in all_danish_articles:
-        each.content = flatten_composed_unicode_characters(each.content)
-        db.session.add(each)
+        flattened = flatten_composed_unicode_characters(each.content)
+        if flattened != each.content:
+            each.content = flattened
+            db.session.add(each)
 
         counter += 1
         if counter % 10000 == 0:
