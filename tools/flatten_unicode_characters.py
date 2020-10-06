@@ -17,6 +17,7 @@ def flatten_the_unicode_characters(language):
     for each in all_danish_articles:
         flattened = flatten_composed_unicode_characters(each.content)
         if flattened != each.content:
+            print("Fixing article with id: {each.id}")
             each.content = flattened
             db.session.add(each)
 
