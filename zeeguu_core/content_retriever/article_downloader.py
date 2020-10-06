@@ -5,7 +5,6 @@
 
 
 """
-from datetime import datetime
 
 import newspaper
 import re
@@ -16,8 +15,8 @@ from zeeguu_core import log, debug
 from zeeguu_core import model
 from zeeguu_core.content_retriever.content_cleaner import cleanup_non_content_bits
 from zeeguu_core.content_retriever.quality_filter import sufficient_quality
+from zeeguu_core.content_retriever.unicode_normalization import flatten_composed_unicode_characters
 from zeeguu_core.model import Url, RSSFeed, LocalizedTopic, ArticleWord
-from zeeguu_core.constants import SIMPLE_TIME_FORMAT
 import requests
 
 from elasticsearch import Elasticsearch
@@ -170,7 +169,6 @@ def download_feed_item(session,
 
     title = feed_item['title']
 
-
     published_datetime = feed_item['published_datetime']
 
     try:
@@ -192,6 +190,8 @@ def download_feed_item(session,
         debug("- Succesfully parsed")
 
         cleaned_up_text = cleanup_non_content_bits(art.text)
+
+        cleaned_up_text = flatten_composed_unicode_characters(cleaned_up_text)
 
         is_quality_article, reason = sufficient_quality(art)
 
