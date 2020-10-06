@@ -14,9 +14,11 @@ def flatten_the_unicode_characters(language):
     print(f"Processing {len(all_danish_articles)} articles in: {language.name}\n...")
 
     counter = 0
+    fixed = 0
     for each in all_danish_articles:
         flattened = flatten_composed_unicode_characters(each.content)
         if flattened != each.content:
+            fixed += 1
             print("Fixing article with id: {each.id}")
             each.content = flattened
             db.session.add(each)
@@ -28,7 +30,7 @@ def flatten_the_unicode_characters(language):
     db.session.commit()
     db.session.close()
 
-    print(f"Success!")
+    print(f"Fixed a total of: {fixed} articles!")
 
 
 if __name__ == '__main__':
