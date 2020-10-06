@@ -19,7 +19,7 @@ def flatten_the_unicode_characters(language):
         flattened = flatten_composed_unicode_characters(each.content)
         if flattened != each.content:
             fixed += 1
-            print("Fixing article with id: {each.id}")
+            print(f"Fixing article with id: {each.id}")
             each.content = flattened
             db.session.add(each)
 
