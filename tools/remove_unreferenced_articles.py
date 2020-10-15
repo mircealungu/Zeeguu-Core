@@ -16,59 +16,81 @@
 #
 #
 #
+import sqlalchemy
+import traceback
 
-
-from zeeguu_core.model import Article, UserArticle, UserActivityData
+from zeeguu_core.model import Article, UserArticle, UserActivityData, UserReadingSession
 from zeeguu_core import db
-
-dbs = db.session
 
 import sys
 
-try:
-    DAYS = int(sys.argv[1])
-except:
-    print ("\nOOOPS: you must provide a number of days before which the articles to be deleted\n")
-    exit(-1)
+dbs = db.session
 
-deleted = []
+BATCH_COMMIT_SIZE = 5000
 
-print("1. finding urls in activity data...")
-all_urls = set()
-all_activity_data = UserActivityData.query.all()
-for each in all_activity_data:
-    url = each.find_url_in_extra_data()
-    if url:
-        all_urls.add(url)
-print(f" ... url count: {len(all_urls)}")
 
-#
+def is_the_article_referenced(article, print_reference_info):
+    info = UserArticle.find_by_article(article)
+    interaction_data = UserActivityData.query.filter_by(article_id=article.id).all()
+    reading_session_info = UserReadingSession.query.filter_by(article_id=article.id).all()
 
-print(f"2. finding articles older than {DAYS} days...")
-all_articles = Article.all_older_than(days=DAYS)
-print(f" ... article count: {len(all_articles)}")
+    referenced = info or interaction_data or reading_session_info
 
-i = 0
-for each in all_articles:
-    i += 1
-    info = UserArticle.find_by_article(each)
-    url_found = each.url.as_string() in all_urls
+    if print_reference_info and referenced:
+        print(f"WON'T DELETE ID:{article.id} -- {article.title}")
 
-    if info or url_found:
-        if info:
-            print(f"WON'T DELETE info! {each.id} {each.title}")
-            for ainfo in info:
-                print(ainfo.user_info_as_string())
-        if url_found:
-            print(f"WON'T DELETE url_found! {each.id} {each.title}")
-    else:
-        deleted.append(each.id)
-        dbs.delete(each)
+        for ainfo in info:
+            print(ainfo.user_info_as_string())
 
-    if i == 1000:
-        dbs.commit()
-        i = 0
+        if interaction_data:
+            print("interaction data: " + str(interaction_data[0]))
 
-dbs.commit()
+        if reading_session_info:
+            print("reading session info: " + str(reading_session_info[0]))
 
-print(f'Deleted: {deleted}')
+    return referenced
+
+
+def delete_articles_older_than(days):
+    print(f"Finding articles older than {DAYS} days...")
+    all_articles = Article.all_older_than(days=DAYS)
+    print(f" ... article count: {len(all_articles)}")
+
+    i = 0
+    referenced_in_this_batch = 0
+    deleted = []
+    for each in all_articles:
+        i += 1
+        print(f"#{i} -- ID: {each.id}")
+
+        if is_the_article_referenced(each, True):
+            referenced_in_this_batch += 1
+            continue
+
+        try:
+            deleted.append(each.id)
+            dbs.delete(each)
+
+            if i % BATCH_COMMIT_SIZE == 0:
+                print(f"Keeping {referenced_in_this_batch} articles from the last {BATCH_COMMIT_SIZE} batch...")
+                dbs.commit()
+                print("The rest are now deleted!!!")
+                referenced_in_this_batch = 0
+
+        except sqlalchemy.exc.IntegrityError as e:
+            traceback.print_exc()
+            dbs.rollback()
+            continue
+
+    print(f'Deleted: {deleted}')
+
+
+if __name__ == "__main__":
+
+    try:
+        DAYS = int(sys.argv[1])
+    except:
+        print("\nOOOPS: you must provide a number of days before which the articles to be deleted\n")
+        exit(-1)
+
+    delete_articles_older_than(DAYS)
