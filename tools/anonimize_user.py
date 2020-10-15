@@ -3,7 +3,7 @@
 """
 
    Script that goes through all the users in a DB
-   and renames their names with random ones.
+   and replaces their names and emails with random ones.
 
 """
 import sqlalchemy
