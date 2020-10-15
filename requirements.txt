@@ -18,3 +18,4 @@ elasticsearch
 pyphen
 numpy
 wordstats
+pytest
