@@ -20,7 +20,6 @@ for user in User.query.all():
         try:
             user.name = fake.name()
             user.email = fake.email()
-            user.password = ""
             session.add(user)
             session.commit()
             print (f"anonimized user id {user.id} to {user.name}")
