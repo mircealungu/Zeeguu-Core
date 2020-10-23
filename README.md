@@ -22,6 +22,7 @@ working with zeeguu model elements by importing `zeeguu.model`.
 
 1. git clone https://github.com/zeeguu-ecosystem/Zeeguu-Core.git
 1. python -m venv zenv 
+1. #activate the new enviroment by running ./zenv/bin/activate (on Mac/Linux) oir .\zenv\Scripts\activate.bat (on Win)
 1. cd Zeeguu-Core
 1. pip install -r requirements.txt
 1. python -c "import nltk; nltk.download('punkt')"
