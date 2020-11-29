@@ -542,6 +542,16 @@ class User(db.Model):
         return query.filter(func.lower(User.email) == email.lower()).one()
 
     @classmethod
+    def email_exists(cls, email):
+        query = zeeguu_core.db.session.query(User)
+        try:
+            query.filter(func.lower(User.email) == email.lower()).one()
+            return True
+        except sqlalchemy.orm.exc.NoResultFound:
+            return False
+
+
+    @classmethod
     def find_by_id(cls, id):
         return User.query.filter(User.id == id).one()
 
