@@ -200,7 +200,10 @@ class Article(db.Model):
             art.parse()
 
             if art.text == '':
-                raise Exception("Newspaper got empty article from: " + url)
+                # raise Exception("Newspaper got empty article from: " + url)
+                art.text = 'N/A'
+                # this is a temporary solution for allowing translations
+                # on pages that do not have "articles" downloadable by newspaper.
 
             if sleep_a_bit:
                 import time
