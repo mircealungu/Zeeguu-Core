@@ -48,7 +48,13 @@ def article_recommendations_for_user(user, count):
 
     reading_pref_hash = _reading_preferences_hash(user)
     _recompute_recommender_cache_if_needed(user, zeeguu_core.db.session)
-    all_articles = ArticlesCache.get_articles_for_hash(reading_pref_hash, count)
+
+    # race condition in _recompute_recommender_cache might result in
+    # duplicates in the db; since this is being sunset for the elastic search
+    # it's not worth fixing the race condition; instead we're simply
+    # ensuring that duplicate articles are removed at this point
+    all_articles = set(ArticlesCache.get_articles_for_hash(reading_pref_hash, count))
+
     all_articles = [each for each in all_articles if (not each.broken
                                                       and each.published_time)]
     all_articles = SortedList(all_articles, lambda x: x.published_time)
