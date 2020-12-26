@@ -26,6 +26,8 @@ def own_or_crowdsourced_translation(user, word: str, from_lang_code: str, contex
 def own_translation(user, word: str, from_lang_code: str, to_lang_code:str, context: str):
 
     own_past_translation = get_own_past_translation(user, word, from_lang_code, to_lang_code, context)
+    print(">>>>>>>>>> !!!!!! <<<<<<<<<<")
+    print(own_past_translation)
 
     if own_past_translation:
         translations = [{'translation': own_past_translation,
@@ -69,10 +71,17 @@ def _get_past_translation(word: str, from_lang_code: str, to_lang_code:str, cont
 
         text = Text.query.filter_by(content=context).one()
 
-        query = Bookmark.query.filter_by(origin_id=origin_word.id, text_id=text.id).join(UserWord).filter(UserWord.language_id==to_language.id)
+        query = Bookmark.query.join(UserWord, UserWord.id==Bookmark.translation_id).\
+            filter(UserWord.language_id==to_language.id,
+                   Bookmark.origin_id==origin_word.id,
+                   Bookmark.origin_id==origin_word.id,
+                   Bookmark.text_id==text.id)
+
+        print(query)
+
 
         if user:
-            query = query.filter_by(user_id=user.id)
+            query = query.filter(Bookmark.user_id==user.id)
 
         # prioritize older users
         query.order_by(Bookmark.user_id.asc())
