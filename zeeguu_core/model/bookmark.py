@@ -206,6 +206,9 @@ class Bookmark(db.Model):
             time=self.time.strftime(JSON_TIME_FORMAT)
         )
 
+        if self.text.article:
+            result['article_title'] = self.text.article.title
+
         result["from"] = self.origin.word
         if with_context:
             result['context'] = self.text.content

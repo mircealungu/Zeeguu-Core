@@ -144,9 +144,9 @@ class UserArticle(zeeguu_core.db.Model):
         return cls.query.filter_by(user=user).filter(UserArticle.starred.isnot(None)).all()
 
     @classmethod
-    def all_starred_or_liked_articles_of_user(cls, user):
+    def all_starred_or_liked_articles_of_user(cls, user, limit=30):
         return cls.query.filter_by(user=user).filter(
-            or_(UserArticle.starred.isnot(None), UserArticle.liked.isnot(False))).all()
+            or_(UserArticle.starred.isnot(None), UserArticle.liked.isnot(False))).order_by(UserArticle.article_id.desc()).limit(limit)
 
     @classmethod
     def all_starred_articles_of_user_info(cls, user):
@@ -223,6 +223,10 @@ class UserArticle(zeeguu_core.db.Model):
         returned_info['starred'] = user_article_info.starred is not None
         returned_info['opened'] = user_article_info.opened is not None
         returned_info['liked'] = user_article_info.liked
+        if user_article_info.starred:
+            returned_info['starred_time'] = user_article_info.starred.strftime(JSON_TIME_FORMAT)
+
+
 
         if with_translations:
             translations = Bookmark.find_all_for_user_and_url(user, article.url)
