@@ -4,9 +4,9 @@ from zeeguu_core.model import User, Language, UserWord, Text, Bookmark
 from deprecated import deprecated
 
 @deprecated(reason="there are now individual own_translation and crowdsourced_translations functions")
-def own_or_crowdsourced_translation(user, word: str, from_lang_code: str, context: str):
+def own_or_crowdsourced_translation(user, word: str, from_lang_code: str, to_lang_code: str, context: str):
 
-    own_past_translation = get_own_past_translation(user, word, from_lang_code, context)
+    own_past_translation = get_own_past_translation(user, word, from_lang_code, to_lang_code, context)
 
     if own_past_translation:
         translations = [{'translation': own_past_translation,
@@ -57,7 +57,7 @@ def get_others_past_translation(word: str, from_lang_code: str, context: str):
 
 
 def get_own_past_translation(user, word: str, from_lang_code: str, to_lang_code, context: str):
-    return _get_past_translation(word, from_lang_code,to_lang_code,  context, user)
+    return _get_past_translation(word, from_lang_code, to_lang_code, context, user)
 
 
 def _get_past_translation(word: str, from_lang_code: str, to_lang_code:str, context: str, user: User = None):
