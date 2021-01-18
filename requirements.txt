@@ -20,3 +20,4 @@ pyphen
 numpy
 wordstats
 pytest
+deprecated
