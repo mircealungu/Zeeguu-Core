@@ -75,9 +75,6 @@ def _get_past_translation(word: str, from_lang_code: str, to_lang_code:str, cont
                    Bookmark.origin_id==origin_word.id,
                    Bookmark.text_id==text.id)
 
-        print(query)
-
-
         if user:
             query = query.filter(Bookmark.user_id==user.id)
 
@@ -87,5 +84,4 @@ def _get_past_translation(word: str, from_lang_code: str, to_lang_code:str, cont
         return query.first().translation.word
 
     except Exception as e:
-        print(e)
         return None
