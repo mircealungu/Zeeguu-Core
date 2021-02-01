@@ -85,6 +85,9 @@ def _get_past_translation(word: str, from_lang_code: str, to_lang_code:str, cont
 
         return query.first().translation.word
 
+    except NoResultFound:
+        return None
+
     except Exception as e:
         capture_exception(e)
 
