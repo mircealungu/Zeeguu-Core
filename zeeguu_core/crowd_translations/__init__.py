@@ -2,7 +2,7 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from zeeguu_core.model import User, Language, UserWord, Text, Bookmark
 from deprecated import deprecated
-from sentry_sdk import capture_exception
+from sentry_sdk import capture_exception, capture_message
 
 
 @deprecated(reason="there are now individual own_translation and crowdsourced_translations functions")
@@ -85,7 +85,11 @@ def _get_past_translation(word: str, from_lang_code: str, to_lang_code:str, cont
         # prioritize older users
         query.order_by(Bookmark.user_id.asc())
 
-        return query.first().translation.word
+        if query.first():
+            capture_message("returning past translation")
+            return query.first().translation.word
+        else:
+            return None
 
     except Exception as e:
         capture_exception(e)
