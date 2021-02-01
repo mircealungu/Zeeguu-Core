@@ -189,6 +189,9 @@ class AlgorithmSimulator:
                         try:
                             new_priority = self.algo_wrapper.calculate(last_exercise, i)
                         except Exception as e:
+                            from sentry_sdk import capture_exception
+                            capture_exception(e)
+
                             print('Exception during priority calculation: ' + str(e), e)
                     bookmark_exercise.priorities.append([i, new_priority])
 

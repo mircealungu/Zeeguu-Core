@@ -187,7 +187,8 @@ class Bookmark(db.Model):
             try:
                 bookmark_title = self.text.article.title
             except Exception as e:
-                print(e)
+                from sentry_sdk import capture_exception
+                capture_exception(e)
                 print(f"could not find article title for bookmark with id: {self.id}")
 
         result = dict(

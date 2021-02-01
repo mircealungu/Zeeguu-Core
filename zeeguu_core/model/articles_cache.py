@@ -69,7 +69,8 @@ class ArticlesCache(db.Model):
                 return None
             return [article_id.article for article_id in result]
         except Exception as e:
-            print(e)
+            from sentry_sdk import capture_exception
+            capture_exception(e)
             return None
 
     @classmethod

@@ -132,6 +132,8 @@ class UserArticle(zeeguu_core.db.Model):
                 session.commit()
                 return new
             except Exception as e:
+                from sentry_sdk import capture_exception
+                capture_exception(e)
                 print("seems we avoided a race condition")
                 session.rollback()
                 return cls.query.filter_by(

@@ -83,6 +83,8 @@ class StarredArticle(zeeguu_core.db.Model):
                 session.commit()
                 return new
             except Exception as e:
+                from sentry_sdk import capture_exception
+                capture_exception(e)
                 print ("seems we avoided a race condition")
                 session.rollback()
                 return cls.query.filter_by(
@@ -104,7 +106,8 @@ class StarredArticle(zeeguu_core.db.Model):
             session.delete(item)
             session.commit()
         except Exception as e:
-            print(e)
+            from sentry_sdk import capture_exception
+            capture_exception(e)
 
     @classmethod
     def all_for_user(cls, user):

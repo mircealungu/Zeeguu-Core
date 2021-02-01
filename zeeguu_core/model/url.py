@@ -111,6 +111,9 @@ class Url(db.Model):
                     except Exception as e:
                         print("Exception of second degree in url..." + str(i) + str(e))
                         time.sleep(random.randrange(1, 10) * 0.1)
+                        from sentry_sdk import capture_message
+                        capture_message("Exception of second degree in url..." + str(i) + str(e))
+
                         continue
                     break
 

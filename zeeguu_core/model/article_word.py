@@ -61,7 +61,8 @@ class ArticleWord(db.Model):
         try:
             return cls.query.filter(cls.word == word).one_or_none()
         except Exception as e:
-            print(e)
+            from sentry_sdk import capture_exception
+            capture_exception(e)
             return None
 
     @classmethod
@@ -76,5 +77,6 @@ class ArticleWord(db.Model):
             return all_articles
 
         except Exception as e:
-            print(e)
+            from sentry_sdk import capture_exception
+            capture_exception(e)
             return None

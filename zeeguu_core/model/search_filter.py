@@ -68,5 +68,6 @@ class SearchFilter(db.Model):
         try:
             return (cls.query.filter(cls.search_id == search_id)).one()
         except Exception as e:
-            print(e)
+            from sentry_sdk import capture_exception
+            capture_exception(e)
             return None

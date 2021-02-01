@@ -79,6 +79,8 @@ def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=True)
         items = feed.feed_items(last_retrieval_time_from_DB)
     except Exception as e:
         log(f"Failed to download feed ({e})")
+        from sentry_sdk import capture_exception
+        capture_exception(e)
         return
 
     for feed_item in items:
@@ -122,6 +124,9 @@ def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=True)
             continue
 
         except Exception as e:
+            from sentry_sdk import capture_exception
+            capture_exception(e)
+
             if hasattr(e, 'message'):
                 log(e.message)
             else:
@@ -139,6 +144,9 @@ def download_from_feed(feed: RSSFeed, session, limit=1000, save_in_elastic=True)
                     res = es.index(index=ES_ZINDEX, id=new_article.id, body=doc)
                     print("elastic res: " + res['result'])
         except Exception as e:
+            from sentry_sdk import capture_exception
+            capture_exception(e)
+
             log("***OOPS***: ElasticSearch seems down?")
             if hasattr(e, 'message'):
                 log(e.message)
@@ -238,6 +246,9 @@ def download_feed_item(session,
         raise e
 
     except Exception as e:
+        from sentry_sdk import capture_exception
+        capture_exception(e)
+
         log(f"* Rolling back session due to exception while creating article and attaching words/topics: {str(e)}")
         session.rollback()
 

@@ -59,7 +59,8 @@ class Topic(db.Model):
         try:
             return cls.query.filter(cls.title == name).one()
         except Exception as e:
-            print(e)
+            from sentry_sdk import capture_exception
+            capture_exception(e)
             return None
 
     @classmethod
@@ -68,7 +69,8 @@ class Topic(db.Model):
             result = cls.query.filter(cls.id == i).one()
             return result
         except Exception as e:
-            print(e)
+            from sentry_sdk import capture_exception
+            capture_exception(e)
             return None
 
     @classmethod

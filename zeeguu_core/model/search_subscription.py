@@ -67,5 +67,7 @@ class SearchSubscription(db.Model):
         try:
             return (cls.query.filter(cls.search_id == search_id)).one()
         except Exception as e:
+            from sentry_sdk import capture_exception
+            capture_exception(e)
             print(e)
             return None
