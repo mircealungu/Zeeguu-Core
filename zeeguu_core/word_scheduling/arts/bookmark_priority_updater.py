@@ -10,6 +10,8 @@ from zeeguu_core.util.timer_logging_decorator import time_this
 from zeeguu_core.word_scheduling.arts.algorithm_wrapper import AlgorithmWrapper
 from zeeguu_core.word_scheduling.arts.analysis.normal_distribution import NormalDistribution
 from zeeguu_core.word_scheduling.arts.arts_rt import ArtsRT
+from sentry_sdk import capture_exception
+
 
 db = zeeguu_core.db
 
@@ -75,6 +77,7 @@ class BookmarkPriorityUpdater:
             db.session.commit()
         except Exception as e:
             db.session.rollback()
+            capture_exception(e)
             print('Error during updating bookmark priority')
             print(e)
             print(traceback.format_exc())

@@ -2,6 +2,8 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from zeeguu_core.model import User, Language, UserWord, Text, Bookmark
 from deprecated import deprecated
+from sentry_sdk import capture_exception
+
 
 @deprecated(reason="there are now individual own_translation and crowdsourced_translations functions")
 def own_or_crowdsourced_translation(user, word: str, from_lang_code: str, to_lang_code: str, context: str):
@@ -84,4 +86,6 @@ def _get_past_translation(word: str, from_lang_code: str, to_lang_code:str, cont
         return query.first().translation.word
 
     except Exception as e:
+        capture_exception(e)
+
         return None
