@@ -2,7 +2,7 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from zeeguu_core.model import User, Language, UserWord, Text, Bookmark
 from deprecated import deprecated
-from sentry_sdk import capture_exception
+from sentry_sdk import capture_exception, capture_message
 
 
 @deprecated(reason="there are now individual own_translation and crowdsourced_translations functions")
@@ -67,9 +67,12 @@ def _get_past_translation(word: str, from_lang_code: str, to_lang_code:str, cont
 
         to_language = Language.find(to_lang_code)
 
-        origin_word = UserWord.find(word, from_language)
-
-        text = Text.query.filter_by(content=context).one()
+        try:
+            origin_word = UserWord.find(word, from_language)
+            text = Text.query.filter_by(content=context).one()
+        except NoResultFound:
+            capture_message("past word or word in context not found")
+            return None
 
         query = Bookmark.query.join(UserWord, UserWord.id==Bookmark.translation_id).\
             filter(UserWord.language_id==to_language.id,
@@ -85,8 +88,6 @@ def _get_past_translation(word: str, from_lang_code: str, to_lang_code:str, cont
 
         return query.first().translation.word
 
-    except NoResultFound:
-        return None
 
     except Exception as e:
         capture_exception(e)
