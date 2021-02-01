@@ -71,7 +71,6 @@ def _get_past_translation(word: str, from_lang_code: str, to_lang_code:str, cont
             origin_word = UserWord.find(word, from_language)
             text = Text.query.filter_by(content=context).one()
         except NoResultFound:
-            capture_message("past word or word in context not found")
             return None
 
         query = Bookmark.query.join(UserWord, UserWord.id==Bookmark.translation_id).\
@@ -87,7 +86,6 @@ def _get_past_translation(word: str, from_lang_code: str, to_lang_code:str, cont
         query.order_by(Bookmark.user_id.asc())
 
         return query.first().translation.word
-
 
     except Exception as e:
         capture_exception(e)
