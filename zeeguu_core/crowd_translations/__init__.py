@@ -86,7 +86,6 @@ def _get_past_translation(word: str, from_lang_code: str, to_lang_code:str, cont
         query.order_by(Bookmark.user_id.asc())
 
         if query.first():
-            capture_message("returning past translation")
             return query.first().translation.word
         else:
             return None
