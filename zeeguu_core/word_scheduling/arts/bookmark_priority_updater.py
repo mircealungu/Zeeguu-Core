@@ -1,6 +1,8 @@
 import itertools
 import traceback
 
+from MySQLdb._exceptions import IntegrityError
+
 import zeeguu_core
 from zeeguu_core.model.bookmark_priority_arts import BookmarkPriorityARTS
 from zeeguu_core.model.exercise import Exercise
@@ -10,8 +12,7 @@ from zeeguu_core.util.timer_logging_decorator import time_this
 from zeeguu_core.word_scheduling.arts.algorithm_wrapper import AlgorithmWrapper
 from zeeguu_core.word_scheduling.arts.analysis.normal_distribution import NormalDistribution
 from zeeguu_core.word_scheduling.arts.arts_rt import ArtsRT
-from sentry_sdk import capture_exception
-
+from sentry_sdk import capture_exception, capture_message
 
 db = zeeguu_core.db
 
@@ -71,9 +72,23 @@ class BookmarkPriorityUpdater:
                 zeeguu_core.log(
                     f"Updating {each.bookmark.id} with priority: {each.priority} from: {entry.priority}")
                 entry.priority = each.priority
-                db.session.add(entry)
-                db.session.commit()
-                # print(entry)
+
+                max_retries = 3
+
+                while True:
+
+                    try:
+                        db.session.add(entry)
+                        db.session.commit()
+                        break
+                    except IntegrityError:
+                        db.session.rollback()
+                        capture_message("conflict in saving bookmark priority; will retry")
+                        max_retries -= 1
+                        if max_retries < 1:
+                            raise
+
+
 
         except Exception as e:
             db.session.rollback()
