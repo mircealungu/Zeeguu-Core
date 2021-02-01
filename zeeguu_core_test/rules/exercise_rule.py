@@ -23,7 +23,7 @@ class ExerciseRule(BaseRule):
         random_outcome = OutcomeRule().random
         random_source = SourceRule().random
         random_speed = random.randint(500, 5000)
-        random_time = self.faker.date_time_this_month()
+        random_time = self.faker.date_time_this_year()
 
         new_exercise = Exercise(random_outcome, random_source, random_speed, random_time)
 
