@@ -2,7 +2,7 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from zeeguu_core.model import User, Language, UserWord, Text, Bookmark
 from deprecated import deprecated
-from sentry_sdk import capture_exception, capture_message
+from sentry_sdk import capture_exception
 
 
 @deprecated(reason="there are now individual own_translation and crowdsourced_translations functions")
